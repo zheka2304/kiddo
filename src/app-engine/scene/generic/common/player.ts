@@ -3,6 +3,7 @@ import {Coords, Direction} from '../../common/entities';
 import {GenericSceneRenderContext} from '../../../../app/scene/generic-scene/render/generic-scene-render-context';
 import {GenericWriterService} from '../writers/generic-writer.service';
 import {DrawableCollection} from '../../../../app/scene/generic-scene/graphics/drawable-collection';
+import {GenericReaderService} from "../readers/generic-reader.service";
 
 
 export class GenericPlayer implements GenericGameObject {
@@ -39,6 +40,7 @@ export class GenericPlayer implements GenericGameObject {
   }
 
   draw(
+    reader: GenericReaderService,
     context: GenericSceneRenderContext,
     canvas: CanvasRenderingContext2D,
     renderData: { x: number; y: number; scale: number, interpolation: number }
@@ -61,6 +63,8 @@ export class GenericPlayer implements GenericGameObject {
     const r = 3;
     const r2 = r + 2;
     const field = writer.sceneModel.field;
+    const lightFlicker = 1;
+
     for (let x = -r2; x <= r2; x++) {
       if (x + this.position.x >= 0 && x + this.position.x < field.width) {
         for (let y = -r2; y <= r2; y++) {
@@ -70,7 +74,7 @@ export class GenericPlayer implements GenericGameObject {
 
             field.grid[
             (x + this.position.x) * field.height + (y + this.position.y)
-              ].lightLevel = Math.max(0, 1 - Math.sqrt(dx * dx + dy * dy) / r);
+              ].lightLevel = Math.max(0, 1 - Math.sqrt(dx * dx + dy * dy) / r) * lightFlicker;
           }
         }
       }

@@ -9,7 +9,7 @@ import {SceneModelService} from '../../scene-model.service';
 
 @Singleton
 export class GenericReaderService implements SceneReader {
-  public sceneModel: SceneModel;
+  public sceneModel: GenericSceneModel;
 
   constructor(
     private sceneModelService: SceneModelService

@@ -5,6 +5,7 @@ import {SceneAccessorsService} from '../../../../app-engine/scene/scene-accessor
 import {GenericGridField} from '../../../../app-engine/scene/generic/entities/generic-grid-field';
 import {LoadableGraphics} from '../graphics/loadable-graphics';
 import {GenericWriterService} from '../../../../app-engine/scene/generic/writers/generic-writer.service';
+import {GenericReaderService} from '../../../../app-engine/scene/generic/readers/generic-reader.service';
 
 
 export class GenericSceneRenderer {
@@ -55,6 +56,14 @@ export class GenericSceneRenderer {
     return this.sceneAccessorsService.reader.sceneModel as GenericSceneModel;
   }
 
+  getReader(): GenericReaderService {
+    return this.sceneAccessorsService.reader as GenericReaderService;
+  }
+
+  getWriter(): GenericWriterService {
+    return this.sceneAccessorsService.writer as GenericWriterService;
+  }
+
   getRenderInterpolationValue(): number {
     return (this.sceneAccessorsService.writer as GenericWriterService).getRenderInterpolationValue();
   }
@@ -90,6 +99,7 @@ export class GenericSceneRenderer {
 
   onStaticDraw(context: GenericSceneRenderContext, canvas: CanvasRenderingContext2D, viewport: Rect): void {
     const sceneModel = this.getSceneModel();
+    const reader = this.getReader();
     const cellSize = this.getCellSizeInPixels(viewport);
 
     canvas.fillStyle = 'white';
@@ -100,7 +110,7 @@ export class GenericSceneRenderer {
       for (let y = 0; y < sceneModel.field.height; y++) {
         for (const tile of sceneModel.field.grid[x * sceneModel.field.height + y].tiles) {
           if (this.checkGraphicsLoaded(context, tile)) {
-            tile.getTileGraphics().draw(canvas, {x: x * cellSize, y: y * cellSize, width: cellSize, height: cellSize});
+            tile.getTileGraphics(reader).draw(canvas, {x: x * cellSize, y: y * cellSize, width: cellSize, height: cellSize});
           } else {
             // if some background components are not loaded for some reason, force redraw on next frame
             this.isBackgroundForcedDirty = true;
@@ -148,6 +158,7 @@ export class GenericSceneRenderer {
 
   onForegroundDraw(context: GenericSceneRenderContext, ctx: CanvasRenderingContext2D, viewport: Rect): void {
     const sceneModel = this.getSceneModel();
+    const reader = this.getReader();
     const renderData = {
       x: -viewport.x,
       y: -viewport.y,
@@ -159,7 +170,7 @@ export class GenericSceneRenderer {
 
     for (const gameObject of sceneModel.gameObjects) {
       if (this.checkGraphicsLoaded(context, gameObject)) {
-        gameObject.draw(context, ctx, renderData);
+        gameObject.draw(reader, context, ctx, renderData);
       }
     }
   }

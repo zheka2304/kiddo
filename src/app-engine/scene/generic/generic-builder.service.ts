@@ -12,6 +12,7 @@ import {GenericGridTile} from './entities/generic-grid-tile';
 import {CanvasTextureRegion} from '../../../app/scene/generic-scene/graphics/canvas-texture-region';
 import {GenericSceneRenderContext} from '../../../app/scene/generic-scene/render/generic-scene-render-context';
 import {GenericPlayer} from './common/player';
+import {Drawable} from "../../../app/scene/generic-scene/graphics/drawable";
 
 
 class TestGridTile implements GenericGridTile {
@@ -28,7 +29,7 @@ class TestGridTile implements GenericGridTile {
   ) {
   }
 
-  getTileGraphics(): CanvasTextureRegion {
+  getTileGraphics(reader: GenericReaderService): Drawable {
     return this.texture;
   }
 
