@@ -20,10 +20,14 @@ export class GenericSceneRenderContext {
     this.outputCanvasElement.width = this.canvasSize.width;
     this.outputCanvasElement.height = this.canvasSize.height;
 
-    this.bufferCanvasElement = document.createElement('canvas');
-    this.bufferCanvasElement.width = this.canvasSize.width;
-    this.bufferCanvasElement.height = this.canvasSize.height;
-    this.bufferCanvasElement.style['image-rendering']  = 'pixelated';
+    if (!window.requestAnimationFrame) {
+      this.bufferCanvasElement = document.createElement('canvas');
+      this.bufferCanvasElement.width = this.canvasSize.width;
+      this.bufferCanvasElement.height = this.canvasSize.height;
+      this.bufferCanvasElement.style['image-rendering'] = 'pixelated';
+    } else {
+      this.bufferCanvasElement = null;
+    }
 
     this.staticCanvasElement = document.createElement('canvas');
     this.staticCanvasElement.style['image-rendering']  = 'pixelated';
@@ -88,20 +92,26 @@ export class GenericSceneRenderContext {
 
     // render
     if (this.renderer && this.isRendererInitialized) {
-      const bufferCanvasContext = this.bufferCanvasElement.getContext('2d');
+      const drawForeground = (canvas: CanvasRenderingContext2D) => {
+        // draw background
+        canvas.drawImage(
+          this.staticCanvasElement,
+          viewport.x, viewport.y, viewport.width, viewport.height,
+          0, 0, this.canvasSize.width, this.canvasSize.height
+        );
 
-      // draw background
-      bufferCanvasContext.drawImage(
-        this.staticCanvasElement,
-        viewport.x, viewport.y, viewport.width, viewport.height,
-        0, 0, this.bufferCanvasElement.width, this.bufferCanvasElement.height
-      );
+        // draw foreground
+        this.renderer.onForegroundDraw(this, canvas, viewport);
+      };
 
-      // draw foreground
-      this.renderer.onForegroundDraw(this, this.bufferCanvasElement.getContext('2d'), viewport);
-
-      // double buffer
-      this.outputCanvasElement.getContext('2d').drawImage(this.bufferCanvasElement, 0, 0, width, height);
+      if (window.requestAnimationFrame) {
+        // if window.requestAnimationFrame is available, draw directly to output canvas
+        window.requestAnimationFrame(() => drawForeground(this.outputCanvasElement.getContext('2d')));
+      } else {
+        // otherwise double buffer
+        drawForeground(this.bufferCanvasElement.getContext('2d'));
+        this.outputCanvasElement.getContext('2d').drawImage(this.bufferCanvasElement, 0, 0, width, height);
+      }
     } else {
       const ctx = this.outputCanvasElement.getContext('2d');
       ctx.fillStyle = 'black';
