@@ -9,4 +9,5 @@ export interface GenericGridField {
 export interface GenericGridCell {
   tiles: GenericGridTile[];
   lightLevel: number;
+  lightColor: string;
 }

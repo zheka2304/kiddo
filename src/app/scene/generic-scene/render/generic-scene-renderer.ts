@@ -4,7 +4,7 @@ import {GenericSceneModel} from '../../../../app-engine/scene/generic/models/gen
 import {SceneAccessorsService} from '../../../../app-engine/scene/scene-accessors.service';
 import {GenericGridField} from '../../../../app-engine/scene/generic/entities/generic-grid-field';
 import {LoadableGraphics} from '../graphics/loadable-graphics';
-import {GenericWriterService} from "../../../../app-engine/scene/generic/writers/generic-writer.service";
+import {GenericWriterService} from '../../../../app-engine/scene/generic/writers/generic-writer.service';
 
 
 export class GenericSceneRenderer {
@@ -69,6 +69,25 @@ export class GenericSceneRenderer {
   }
 
 
+  getBackgroundSize(viewport: Rect): { width: number, height: number } {
+    const field = this.getField();
+    const cellSize = this.getCellSizeInPixels(viewport);
+    return { width: field.width * cellSize, height: field.height * cellSize };
+  }
+
+  isBackgroundDirty(viewport: Rect): boolean {
+    const backgroundSize = this.getBackgroundSize(viewport);
+    if (this.isBackgroundForcedDirty ||
+      backgroundSize.width !== this.lastBackgroundSize.width ||
+      backgroundSize.height !== this.lastBackgroundSize.height) {
+      this.lastBackgroundSize = backgroundSize;
+      this.isBackgroundForcedDirty = false;
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   onStaticDraw(context: GenericSceneRenderContext, canvas: CanvasRenderingContext2D, viewport: Rect): void {
     const sceneModel = this.getSceneModel();
     const cellSize = this.getCellSizeInPixels(viewport);
@@ -91,24 +110,43 @@ export class GenericSceneRenderer {
     }
   }
 
-  getBackgroundSize(viewport: Rect): { width: number, height: number } {
-    const field = this.getField();
-    const cellSize = this.getCellSizeInPixels(viewport);
-    return { width: field.width * cellSize, height: field.height * cellSize };
+
+  isLightMapEnabled(): boolean {
+    return true;
   }
 
-  isBackgroundDirty(viewport: Rect): boolean {
-    const backgroundSize = this.getBackgroundSize(viewport);
-    if (this.isBackgroundForcedDirty ||
-        backgroundSize.width !== this.lastBackgroundSize.width ||
-        backgroundSize.height !== this.lastBackgroundSize.height) {
-      this.lastBackgroundSize = backgroundSize;
-      this.isBackgroundForcedDirty = false;
-      return true;
-    } else {
-      return false;
+  isLightMapDirty(viewport: Rect): boolean {
+    return true;
+  }
+
+  getLightMapSize(viewport: Rect): { width: number, height: number } {
+    return this.getSceneModel().field;
+  }
+
+  onLightMapDraw(
+    context: GenericSceneRenderContext,
+    canvas: CanvasRenderingContext2D,
+    size: {width: number, height: number},
+    viewport: Rect
+  ): void {
+    const sceneModel = this.getSceneModel();
+
+    const floatComponentToHex = c => {
+      // noinspection TypeScriptValidateJSTypes
+      const hex = Math.floor(Math.min(1, Math.max(0, c)) * 255).toString(16);
+      return hex.length === 1 ? '0' + hex : hex;
+    };
+
+    canvas.clearRect(0, 0, size.width, size.height);
+    for (let x = 0; x < sceneModel.field.width; x++) {
+      for (let y = 0; y < sceneModel.field.height; y++) {
+        const cell = sceneModel.field.grid[x * sceneModel.field.height + y];
+        canvas.fillStyle = cell.lightColor + floatComponentToHex(1 - cell.lightLevel);
+        canvas.fillRect(x, y, 1, 1);
+      }
     }
   }
+
 
   onForegroundDraw(context: GenericSceneRenderContext, ctx: CanvasRenderingContext2D, viewport: Rect): void {
     const sceneModel = this.getSceneModel();

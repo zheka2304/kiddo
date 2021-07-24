@@ -10,6 +10,7 @@ export class GenericSceneRenderContext {
 
   private bufferCanvasElement: HTMLCanvasElement = null;
   private staticCanvasElement: HTMLCanvasElement = null;
+  private lightMapCanvasElement: HTMLCanvasElement = null;
   private canvasSize: {width: number, height: number} = { width: 0, height: 0 };
 
   constructor(
@@ -31,6 +32,11 @@ export class GenericSceneRenderContext {
 
     this.staticCanvasElement = document.createElement('canvas');
     this.staticCanvasElement.style['image-rendering']  = 'pixelated';
+    this.lightMapCanvasElement = document.createElement('canvas');
+
+    this.lightMapCanvasElement.style.width = '500px';
+    this.lightMapCanvasElement.style.height = '500px';
+    document.body.append(this.lightMapCanvasElement);
   }
 
   setRenderer(renderer: GenericSceneRenderer): void {
@@ -44,6 +50,15 @@ export class GenericSceneRenderContext {
       this.staticCanvasElement.width = width;
       this.staticCanvasElement.height = height;
       this.renderer.onStaticDraw(this, this.staticCanvasElement.getContext('2d'), viewport);
+    }
+  }
+
+  private onLightMapDraw(viewport: Rect): void {
+    if (this.renderer) {
+      const size = this.renderer.getLightMapSize(viewport);
+      this.lightMapCanvasElement.width = size.width;
+      this.lightMapCanvasElement.height = size.height;
+      this.renderer.onLightMapDraw(this, this.lightMapCanvasElement.getContext('2d'), size, viewport);
     }
   }
 
@@ -90,9 +105,16 @@ export class GenericSceneRenderContext {
       this.onStaticDraw(viewport);
     }
 
+    // if light map is dirty, redraw it
+    if (this.renderer && this.renderer.isLightMapEnabled() && this.isRendererInitialized && this.renderer.isLightMapDirty(viewport)) {
+      this.onLightMapDraw(viewport);
+    }
+
     // render
     if (this.renderer && this.isRendererInitialized) {
       const drawForeground = (canvas: CanvasRenderingContext2D) => {
+        canvas.imageSmoothingEnabled = false;
+
         // draw background
         canvas.drawImage(
           this.staticCanvasElement,
@@ -102,6 +124,18 @@ export class GenericSceneRenderContext {
 
         // draw foreground
         this.renderer.onForegroundDraw(this, canvas, viewport);
+
+        // draw light map
+        if (this.renderer.isLightMapEnabled()) {
+          canvas.imageSmoothingEnabled = true;
+          const scaleX = this.lightMapCanvasElement.width / this.staticCanvasElement.width;
+          const scaleY = this.lightMapCanvasElement.height / this.staticCanvasElement.height;
+          canvas.drawImage(
+            this.lightMapCanvasElement,
+            viewport.x * scaleX, viewport.y * scaleY, viewport.width * scaleX, viewport.height * scaleY,
+            0, 0, this.canvasSize.width, this.canvasSize.height
+          );
+        }
       };
 
       if (window.requestAnimationFrame) {
