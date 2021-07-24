@@ -90,16 +90,14 @@ export class ScriptRunnerService {
     }
 
     this.sceneAccessorsService.sceneSkulptService.executionWasAborted = true;
-    this.executionState.next(scriptExecutionState.FINISHED);
+
+    // script is not yet finished, so we put it into shutting down state
+    this.executionState.next(scriptExecutionState.FINISHING);
   }
 
   startScenePlayback(): void {
     this.playbackIsRunning.next(true);
     this.scenePlayback.subscribe();
-  }
-
-  private doScenePlaybackStep(): void {
-
   }
 
   stopScenePlayback(): void {
@@ -138,7 +136,7 @@ export class ScriptRunnerService {
   }
 
   private processScriptFail(err: SkulptError): void {
-    console.log(err);
+    console.log('processScriptFail', err);
     this.googleAnalyticsService.emitEvent(environment.googleAnalytics.events.info, 'script-runner: script_execution_fail');
 
     const gameStatistics: GameStatistics = this.sceneAccessorsService.reader.getGameStatistics();

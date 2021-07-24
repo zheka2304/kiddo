@@ -34,8 +34,10 @@ export class CodeEditorToolbarComponent implements OnInit {
   launchButtonState = this.scriptRunnerService.executionState
     .pipe(
       map(state => {
+        console.log(state);
         if (state === scriptExecutionState.READY) return 'play';
         if (state === scriptExecutionState.RUNNING) return 'stop';
+        if (state === scriptExecutionState.FINISHING) return 'stopping';
         if (state === scriptExecutionState.FINISHED) return 'replay';
       })
     );
@@ -91,7 +93,8 @@ export class CodeEditorToolbarComponent implements OnInit {
     const colorsLookup = {
       play: 'green',
       stop: 'red',
-      replay: 'blue'
+      stopping: 'red',
+      replay: 'blue',
     };
     return this.launchButtonState.pipe(
       map(state => colorsLookup[state])
@@ -119,6 +122,9 @@ export class CodeEditorToolbarComponent implements OnInit {
   replay(): void {
     this.googleAnalyticsService.emitEvent(environment.googleAnalytics.events.buttonClick, 'code-editor: replay_script_click');
     this.scriptRunnerService.resetScene();
+  }
+
+  stopping(): void {
   }
 
   resetApp(): void {
