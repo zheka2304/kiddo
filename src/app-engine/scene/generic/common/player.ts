@@ -3,13 +3,11 @@ import {Coords, Direction} from '../../common/entities';
 import {GenericSceneRenderContext} from '../../../../app/scene/generic-scene/render/generic-scene-render-context';
 import {GenericWriterService} from '../writers/generic-writer.service';
 import {DrawableCollection} from '../../../../app/scene/generic-scene/graphics/drawable-collection';
-import {GenericReaderService} from "../readers/generic-reader.service";
+import {GenericReaderService} from '../readers/generic-reader.service';
+import {GameObjectBase} from './game-object-base';
 
 
-export class GenericPlayer implements GenericGameObject {
-  isGraphicsInitialized: boolean;
-  lastPosition: Coords = { x: 0, y: 0 };
-  position: Coords = { x: 0, y: 0 };
+export class GenericPlayer extends GameObjectBase {
   direction: Direction = Direction.RIGHT;
 
   private idleTexture: DrawableCollection;
@@ -53,9 +51,6 @@ export class GenericPlayer implements GenericGameObject {
 
   onTick(writer: GenericWriterService): void {
     this.lastPosition = { ...this.position };
-  }
-
-  onPostTick(writer: GenericWriterService): void {
   }
 
   onLightMapUpdate(writer: GenericWriterService, interpolatedPosition: Coords): void {

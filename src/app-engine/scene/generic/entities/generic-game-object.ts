@@ -3,9 +3,10 @@ import {Coords} from '../../common/entities';
 import {GenericWriterService} from '../writers/generic-writer.service';
 import {GenericSceneRenderContext} from '../../../../app/scene/generic-scene/render/generic-scene-render-context';
 import {GenericReaderService} from '../readers/generic-reader.service';
+import {Taggable} from './taggable';
 
 
-export interface GenericGameObject extends LoadableGraphics {
+export interface GenericGameObject extends LoadableGraphics, Taggable {
   position: Coords;
   lastPosition: Coords;
 

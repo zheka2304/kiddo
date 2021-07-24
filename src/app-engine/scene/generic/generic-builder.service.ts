@@ -12,10 +12,11 @@ import {GenericGridTile} from './entities/generic-grid-tile';
 import {CanvasTextureRegion} from '../../../app/scene/generic-scene/graphics/canvas-texture-region';
 import {GenericSceneRenderContext} from '../../../app/scene/generic-scene/render/generic-scene-render-context';
 import {GenericPlayer} from './common/player';
-import {Drawable} from "../../../app/scene/generic-scene/graphics/drawable";
+import {Drawable} from '../../../app/scene/generic-scene/graphics/drawable';
+import {GridTileBase} from './common/grid-tile-base';
 
 
-class TestGridTile implements GenericGridTile {
+class TestGridTile extends GridTileBase {
   isGraphicsInitialized = false;
 
   private texture: CanvasTextureRegion;
@@ -27,6 +28,7 @@ class TestGridTile implements GenericGridTile {
     private atlasW: number,
     private atlasH: number
   ) {
+    super();
   }
 
   getTileGraphics(reader: GenericReaderService): Drawable {
@@ -39,6 +41,7 @@ class TestGridTile implements GenericGridTile {
 
   onTick(writer: GenericWriterService): void {
   }
+
 }
 
 
@@ -79,7 +82,7 @@ export class GenericBuilderService implements SceneBuilder {
       inverseZoom: 8
     };
 
-    const player = new GenericPlayer();
+    const player = new GenericPlayer({x: 1, y: 1});
     sceneModel.gameObjects.push(player);
     sceneModel.player = player;
 
