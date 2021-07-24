@@ -75,7 +75,7 @@
     raccoon.go_down(2)
     */
 
-  const sceneConfig = `
+  const sceneConfig1 = `
     sceneType: raccoon
     generatingFunc: >-
       this.setPlayerPosition(1, 0);
@@ -90,6 +90,19 @@
       this.addTurrets([1, 1]);
       this.addMonster([3, 1], 'right', true);
       this.addCheckingLogic('return this.player.position.x === 5 && this.player.position.y === 3 ? null : "FINISH_NOT_REACHED"');
+    winButton:
+      url: ./task2
+      text: Следующий уровень
+    initialScript: |-
+      import raccoon
+      # Add your code here
+    taskDescription: Доведи енота до флага
+    `;
+
+    const sceneConfig = `
+    sceneType: generic
+    generatingFunc: >-
+
     winButton:
       url: ./task2
       text: Следующий уровень

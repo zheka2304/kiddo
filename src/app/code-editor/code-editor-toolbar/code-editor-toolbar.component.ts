@@ -34,7 +34,6 @@ export class CodeEditorToolbarComponent implements OnInit {
   launchButtonState = this.scriptRunnerService.executionState
     .pipe(
       map(state => {
-        console.log(state);
         if (state === scriptExecutionState.READY) return 'play';
         if (state === scriptExecutionState.RUNNING) return 'stop';
         if (state === scriptExecutionState.FINISHING) return 'stopping';

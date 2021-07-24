@@ -9,8 +9,6 @@ import { SkulptService } from './skulpt.service';
 import { scriptExecutionState } from './script-runner.types';
 import { SceneModelService } from '../scene/scene-model.service';
 import { SceneConfig } from '../scene/common/scene-config';
-import { RaccoonWriterService } from '../scene/raccoon/writers/raccoon-writer.service';
-import { PandemicWriterService } from '../scene/pandemic/writers/pandemic-writer.service';
 import { SceneAccessorsService } from '../scene/scene-accessors.service';
 import { SceneInitService } from '../scene/scene-init.service';
 import { GoogleAnalyticsService } from 'src/app/shared/services';
@@ -66,11 +64,20 @@ export class ScriptRunnerService {
     this.resetScene();
     this.executionState.next(scriptExecutionState.RUNNING);
     this.terminalService.print('CODE-EDITOR.SERVICE.EXECUTING_SCRIPT');
+
+    if (this.sceneAccessorsService.sceneSkulptService.onExecutionStarted) {
+      this.sceneAccessorsService.sceneSkulptService.onExecutionStarted();
+    }
+
     try {
       await this.skulptService.executeSkulpt(script);
       this.processScriptCompletion();
     } catch (err) {
       this.processScriptFail(err);
+    } finally {
+      if (this.sceneAccessorsService.sceneSkulptService.onExecutionFinished) {
+          this.sceneAccessorsService.sceneSkulptService.onExecutionFinished();
+      }
     }
   }
 

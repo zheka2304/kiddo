@@ -9,6 +9,13 @@
 //     font-display: block;
 // }
 
+@font-face {
+    font-family: "generic-scene-font";
+    font-style: normal;
+    font-weight: 400;
+    src: url("../assets/fonts/generic-scene.ttf") format("truetype");
+}
+
 i {
     /* use !important to prevent issues with browser extensions that change fonts */
     font-family: 'icomoon' !important;
