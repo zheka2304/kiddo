@@ -174,6 +174,10 @@ export class PandemicWriterService implements SceneWriter {
       });
   }
 
+  doPlaybackStep(): void {
+    this.moveGameObjects();
+  }
+
   turnOpposite(gameObject: GameObject): void {
     gameObject.direction = moveDirections[gameObject.direction].oppositeDirection;
   }

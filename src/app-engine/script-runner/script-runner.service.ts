@@ -31,7 +31,7 @@ export class ScriptRunnerService {
   private prefixPath = 'CODE-EDITOR.SERVICE.';
 
   private scenePlayback = interval(500).pipe(
-    tap(_ => (this.sceneAccessorsService.writer as RaccoonWriterService | PandemicWriterService).moveGameObjects()),
+    tap(_ => this.sceneAccessorsService.writer.doPlaybackStep()),
     switchMap(_ => this.playbackIsRunning),
     takeWhile(Boolean)
   );
@@ -96,6 +96,10 @@ export class ScriptRunnerService {
   startScenePlayback(): void {
     this.playbackIsRunning.next(true);
     this.scenePlayback.subscribe();
+  }
+
+  private doScenePlaybackStep(): void {
+
   }
 
   stopScenePlayback(): void {

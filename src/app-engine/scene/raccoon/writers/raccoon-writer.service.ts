@@ -137,6 +137,10 @@ export class RaccoonWriterService implements SceneWriter {
       });
   }
 
+  doPlaybackStep(): void {
+    this.moveGameObjects();
+  }
+
   detectAndHandleGameObjectsCollisions(): void {
     const gameObjectCollisions: Collision[] = this.reader.getGameObjectsCollisions();
     if (gameObjectCollisions.length) {
