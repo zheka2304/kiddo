@@ -11,6 +11,7 @@ export interface SceneReader {
   init(): void;
 
   getSceneType(): SceneType;
+  isLevelFinished(): boolean;
   getGameFailMessage(): string;
   getGameStatistics(): GameStatistics;
   sceneIsPlaybackable(): boolean;

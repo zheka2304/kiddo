@@ -272,6 +272,10 @@ export class PandemicReaderService implements SceneReader {
       || this.checkGameObjectOnTile(this.sceneModel.player, PassableTile.FINAL);
   }
 
+  isLevelFinished(): boolean {
+    return this.checkPlayerReachedFinish();
+  }
+
 
   checkMaskOn(): boolean {
     return !this.sceneModel.shouldPutOnMask || this.sceneModel.maskIsOn;

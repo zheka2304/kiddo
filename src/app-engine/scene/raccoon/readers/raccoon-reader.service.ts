@@ -58,6 +58,10 @@ export class RaccoonReaderService implements SceneReader {
       || this.checkGameObjectOnTile(this.getPlayer(), PassableTile.FINAL);
   }
 
+  isLevelFinished(): boolean {
+    return this.checkPlayerReachedFinish();
+  }
+
 
   getGameStatistics(): RaccoonGameStatistics {
     const gameStatistics: RaccoonGameStatistics = {
