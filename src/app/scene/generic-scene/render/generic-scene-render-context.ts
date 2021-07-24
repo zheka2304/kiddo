@@ -87,8 +87,10 @@ export class GenericSceneRenderContext {
       this.canvasSize = {width, height};
       this.outputCanvasElement.width = width;
       this.outputCanvasElement.height = height;
-      this.bufferCanvasElement.width = width;
-      this.bufferCanvasElement.height = height;
+      if (this.bufferCanvasElement) {
+        this.bufferCanvasElement.width = width;
+        this.bufferCanvasElement.height = height;
+      }
       this.onResize();
     }
 
@@ -105,8 +107,8 @@ export class GenericSceneRenderContext {
       this.onStaticDraw(viewport);
     }
 
-    // if light map is dirty, redraw it
-    if (this.renderer && this.renderer.isLightMapEnabled() && this.isRendererInitialized && this.renderer.isLightMapDirty(viewport)) {
+    // run light map updates
+    if (this.renderer && this.isRendererInitialized && this.renderer.isLightMapEnabled()) {
       this.onLightMapDraw(viewport);
     }
 

@@ -56,6 +56,28 @@ export class GenericPlayer implements GenericGameObject {
   onPostTick(writer: GenericWriterService): void {
   }
 
+  onLightMapUpdate(writer: GenericWriterService, interpolatedPosition: Coords): void {
+    // update light map
+    const r = 3;
+    const r2 = r + 2;
+    const field = writer.sceneModel.field;
+    for (let x = -r2; x <= r2; x++) {
+      if (x + this.position.x >= 0 && x + this.position.x < field.width) {
+        for (let y = -r2; y <= r2; y++) {
+          if (y + this.position.y >= 0 && y + this.position.y < field.height) {
+            const dx = interpolatedPosition.x - (this.position.x + x);
+            const dy = interpolatedPosition.y - (this.position.y + y);
+
+            field.grid[
+            (x + this.position.x) * field.height + (y + this.position.y)
+              ].lightLevel = Math.max(0, 1 - Math.sqrt(dx * dx + dy * dy) / r);
+          }
+        }
+      }
+    }
+  }
+
+
   go(): void {
     switch (this.direction) {
       case Direction.UP: {

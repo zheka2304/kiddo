@@ -3,6 +3,7 @@ import {Singleton} from '../../../singleton.decorator';
 import {SceneModelService} from '../../scene-model.service';
 import {GenericSceneModel} from '../models/generic-scene-model';
 import {GenericPlayer} from '../common/player';
+import {GenericSceneRenderContext} from "../../../../app/scene/generic-scene/render/generic-scene-render-context";
 
 
 @Singleton
@@ -25,6 +26,12 @@ export class GenericWriterService implements SceneWriter {
   reset(timePerFrame: number): void {
     this.timePerFrame = timePerFrame;
     this.queue = [];
+  }
+
+  doLightMapUpdates(context: GenericSceneRenderContext, interpolation: number): void {
+    for (const gameObject of this.sceneModel.gameObjects) {
+      gameObject.onLightMapUpdate(this, context.getInterpolatedPosition(gameObject.lastPosition, gameObject.position, interpolation));
+    }
   }
 
   doGameStep(): void {

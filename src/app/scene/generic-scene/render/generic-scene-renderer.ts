@@ -115,10 +115,6 @@ export class GenericSceneRenderer {
     return true;
   }
 
-  isLightMapDirty(viewport: Rect): boolean {
-    return true;
-  }
-
   getLightMapSize(viewport: Rect): { width: number, height: number } {
     return this.getSceneModel().field;
   }
@@ -136,6 +132,8 @@ export class GenericSceneRenderer {
       const hex = Math.floor(Math.min(1, Math.max(0, c)) * 255).toString(16);
       return hex.length === 1 ? '0' + hex : hex;
     };
+
+    (this.sceneAccessorsService.writer as GenericWriterService).doLightMapUpdates(context, this.getRenderInterpolationValue());
 
     canvas.clearRect(0, 0, size.width, size.height);
     for (let x = 0; x < sceneModel.field.width; x++) {

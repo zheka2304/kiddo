@@ -17,4 +17,5 @@ export interface GenericGameObject extends LoadableGraphics {
 
   onTick(writer: GenericWriterService): void;
   onPostTick(writer: GenericWriterService): void;
+  onLightMapUpdate?(writer: GenericWriterService, interpolatedPosition: Coords): void;
 }
