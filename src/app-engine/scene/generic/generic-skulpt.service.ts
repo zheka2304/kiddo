@@ -6,7 +6,7 @@ import {GenericWriterService} from './writers/generic-writer.service';
 import {interval, Subject} from 'rxjs';
 import {takeUntil, tap} from 'rxjs/operators';
 import {GameFailError} from '../common/errors';
-import {GenericPlayer} from './common/player';
+import {GenericPlayer, PlayerActionType} from './common/player';
 import {Direction} from '../common/entities';
 import {TerminalService} from '../../../app/code-editor/terminal/terminal.service';
 
@@ -86,9 +86,8 @@ export class GenericSkulptService implements SceneSkulptService {
         this.throwErrorIfScriptIsStopped();
         await this.writer.awaitNextStep();
         this.throwErrorIfScriptIsStopped();
-
         const player = this.getPlayer();
-        return [ ...this.reader.getAllTagsAt(x + player.position.x, y + player.position.y, [player]) ];
+        return [ ...player.getAllTagsRelativeToPlayer(this.reader, { x, y }, [player]) ];
       }
     });
   }

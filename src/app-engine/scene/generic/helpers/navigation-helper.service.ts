@@ -26,19 +26,19 @@ export class NavigationHelperService {
     }
   }
 
-  offset(position: Coords, direction: Direction, distance: number = 1): Coords {
+  offset(position: Coords, direction: Direction, offset: Coords = { x: 0, y: 1 }): Coords {
     switch (direction) {
       case Direction.UP: {
-        return { x: position.x, y: position.y - distance };
+        return { x: position.x + offset.x, y: position.y - offset.y };
       }
       case Direction.DOWN: {
-        return { x: position.x, y: position.y + distance };
+        return { x: position.x - offset.x, y: position.y + offset.y };
       }
       case Direction.LEFT: {
-        return { x: position.x - distance, y: position.y };
+        return { x: position.x - offset.y, y: position.y + offset.x };
       }
       case Direction.RIGHT: {
-        return { x: position.x + distance, y: position.y };
+        return { x: position.x + offset.y, y: position.y - offset.x };
       }
     }
     return position;

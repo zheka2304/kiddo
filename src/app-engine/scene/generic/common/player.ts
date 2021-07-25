@@ -5,14 +5,21 @@ import {GenericWriterService} from '../writers/generic-writer.service';
 import {DrawableCollection} from '../../../../app/scene/generic-scene/graphics/drawable-collection';
 import {GenericReaderService} from '../readers/generic-reader.service';
 import {GameObjectBase} from './game-object-base';
-import {DefaultTags} from "../entities/default-tags.enum";
+import {DefaultTags} from '../entities/default-tags.enum';
 
+
+export enum PlayerActionType {
+  READ = 'read',
+  INTERACT = 'interact',
+}
 
 export class GenericPlayer extends GameObjectBase {
   direction: Direction = Direction.RIGHT;
+  private thisTurnActions: ({ position: Coords, action: PlayerActionType })[] = [];
 
   private idleTexture: DrawableCollection;
   private walkingTexture: DrawableCollection;
+  private actionTexture: DrawableCollection;
 
   constructor(position: Coords) {
     super(position);
@@ -31,15 +38,23 @@ export class GenericPlayer extends GameObjectBase {
     });
 
     this.walkingTexture = await context.getTextureLoader().getTextureCollectionFromAtlas({
-        atlas: {src: 'assets:/sample-player-atlas.png', width: 10, height: 8},
-        items: {
-          [Direction.DOWN]: [[0, 9, 4, 4]],
-          [Direction.UP]: [[0, 9, 6, 6]],
-          [Direction.LEFT]: [[0, 9, 5, 5]],
-          [Direction.RIGHT]: [[0, 9, 7, 7]],
-        },
-        fps: 12
-      });
+      atlas: {src: 'assets:/sample-player-atlas.png', width: 10, height: 8},
+      items: {
+        [Direction.DOWN]: [[0, 9, 4, 4]],
+        [Direction.UP]: [[0, 9, 6, 6]],
+        [Direction.LEFT]: [[0, 9, 5, 5]],
+        [Direction.RIGHT]: [[0, 9, 7, 7]],
+      },
+      fps: 12
+    });
+
+    this.actionTexture = await context.getTextureLoader().getTextureCollectionFromAtlas({
+      atlas: {src: 'assets:/player-action-atlas.png', width: 4, height: 4},
+      items: {
+        [PlayerActionType.READ]: [[0, 0]],
+        [PlayerActionType.INTERACT]: [[1, 0]],
+      }
+    });
   }
 
   draw(
@@ -52,10 +67,16 @@ export class GenericPlayer extends GameObjectBase {
     const texture = (this.lastPosition.x === this.position.x && this.lastPosition.y === this.position.y ?
                         this.idleTexture : this.walkingTexture);
     texture.draw(canvas, this.direction, targetRect);
+
+    for (const action of this.thisTurnActions) {
+      const rect = context.renderDataAndPositionToRect(action.position, action.position, renderData);
+      this.actionTexture.draw(canvas, action.action, rect);
+    }
   }
 
   onTick(writer: GenericWriterService): void {
     super.onTick(writer);
+    this.thisTurnActions = [];
   }
 
   onLightMapUpdate(writer: GenericWriterService, interpolatedPosition: Coords): void {
@@ -82,7 +103,7 @@ export class GenericPlayer extends GameObjectBase {
 
 
   go(reader: GenericReaderService): boolean {
-    const position = this.navigationHelper.offset(this.position, this.direction, 1);
+    const position = this.navigationHelper.offset(this.position, this.direction, { x: 0, y: 1 });
     if (
       reader.isPositionOnField(position.x, position.y) &&
       !reader.getAllTagsAt(position.x, position.y, [this]).has(DefaultTags.OBSTACLE)
@@ -96,5 +117,20 @@ export class GenericPlayer extends GameObjectBase {
 
   turn(reader: GenericReaderService, rotate: Direction): void {
     this.direction = this.navigationHelper.rotate(this.direction, rotate);
+  }
+
+  getAllTagsRelativeToPlayer(reader: GenericReaderService, offset: Coords, exclude?: GenericGameObject[]): Set<string> {
+    const position = this.navigationHelper.offset(this.position, this.direction, offset);
+    this.addAction(position, PlayerActionType.READ);
+    return reader.getAllTagsAt(position.x, position.y, exclude);
+  }
+
+  addAction(position: Coords, action: PlayerActionType): void {
+    this.thisTurnActions.push({ position, action });
+  }
+
+  addActionRelative(offset: Coords, action: PlayerActionType): void {
+    const position = this.navigationHelper.offset(this.position, this.direction, offset);
+    this.addAction(position, action);
   }
 }

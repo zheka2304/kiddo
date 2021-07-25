@@ -5,6 +5,9 @@ export enum DefaultTags {
   // must not be added to any objects, returned, when accessing tiles outside of the field
   OUTSIDES = 'outsides',
 
+  // should be assigned to level goal, when player is
+  GOAL = 'goal',
+
   // only player must have this tag
   PLAYER = 'player',
 
