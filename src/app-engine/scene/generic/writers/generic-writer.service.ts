@@ -69,6 +69,18 @@ export class GenericWriterService implements SceneWriter {
     }
   }
 
+  runAllActionsSafely(): void {
+    for (const action of [ ...this.queue ]) {
+      if (action) {
+        try {
+          action(this);
+        } catch (err) {
+          console.error('error in action ignored: ', err);
+        }
+      }
+    }
+  }
+
   postAction(action: () => void): void {
     this.queue.push(action);
   }

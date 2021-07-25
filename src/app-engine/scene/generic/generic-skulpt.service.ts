@@ -9,12 +9,13 @@ import {GameFailError} from '../common/errors';
 import {GenericPlayer, PlayerActionType} from './common/player';
 import {Direction} from '../common/entities';
 import {TerminalService} from '../../../app/code-editor/terminal/terminal.service';
-import {GameCompletionInterruptError} from "../common/errors/game-completion-interrupt-error";
+import {GameCompletionInterruptError} from '../common/errors/game-completion-interrupt-error';
 
 
 @Singleton
 export class GenericSkulptService implements SceneSkulptService {
   executionWasAborted = false;
+  private tickExecutionError: Error = null;
   private tickingIsStopped = new Subject<any>();
 
   constructor(
@@ -96,10 +97,19 @@ export class GenericSkulptService implements SceneSkulptService {
   onExecutionStarted(): void {
     const timePerFrame = 250;
     this.writer.reset(timePerFrame);
+    this.tickExecutionError = null;
+
     interval(timePerFrame).pipe(
       takeUntil(this.tickingIsStopped),
       tap(_ => {
-        this.writer.doGameStep();
+        try {
+          this.writer.doGameStep();
+        } catch (err) {
+          this.executionWasAborted = true;
+          this.tickExecutionError = err;
+          console.error('error in generic scene runtime', err);
+          this.writer.runAllActionsSafely();
+        }
         if (this.executionWasAborted) {
           this.tickingIsStopped.next();
         }
@@ -112,6 +122,9 @@ export class GenericSkulptService implements SceneSkulptService {
   }
 
   private checkRunFailedCompletedOrAborted(): void {
+    if (this.tickExecutionError) {
+      throw this.tickExecutionError;
+    }
     const player = this.getPlayer();
     if (this.reader.checkLevelCompletedSuccessfully()) {
       throw new GameCompletionInterruptError();
