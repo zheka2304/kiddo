@@ -27,6 +27,7 @@ import {GenericWriterService} from './generic/writers/generic-writer.service';
 import {GenericSkulptService} from './generic/generic-skulpt.service';
 import {GenericBuilderService} from './generic/generic-builder.service';
 import {TerminalService} from '../../app/code-editor/terminal/terminal.service';
+import {CommonTileRegistryService} from "./generic/common-tile-registry.service";
 
 
 interface BuildersMap {
@@ -72,7 +73,8 @@ export class SceneInitService {
       const reader = new GenericReaderService(this.sceneModelService);
       const writer = new GenericWriterService(this.sceneModelService, reader);
       const api = new GenericSkulptService(this.skulptService, this.terminalService, reader, writer);
-      return new GenericBuilderService(reader, writer, api);
+      const tileRegistry = new CommonTileRegistryService();
+      return new GenericBuilderService(reader, writer, tileRegistry, api);
     }
   };
 

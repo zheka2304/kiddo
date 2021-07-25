@@ -9,73 +9,76 @@ import {SceneType} from '../common/models/scene-type.enum';
 import {GenericSceneModel} from './models/generic-scene-model';
 import {GenericGridCell, GenericGridField} from './entities/generic-grid-field';
 import {GenericGridTile} from './entities/generic-grid-tile';
-import {CanvasTextureRegion} from '../../../app/scene/generic-scene/graphics/canvas-texture-region';
-import {GenericSceneRenderContext} from '../../../app/scene/generic-scene/render/generic-scene-render-context';
 import {GenericPlayer} from './common/player';
-import {Drawable} from '../../../app/scene/generic-scene/graphics/drawable';
-import {GridTileBase} from './common/grid-tile-base';
-import {Coords} from '../common/entities';
-import {TextureAtlasSource} from '../../../app/scene/generic-scene/graphics/scene-texture-loader.service';
+import {CommonTileRegistryService} from './common-tile-registry.service';
 
 
-class TestGridTile extends GridTileBase {
-  isGraphicsInitialized = false;
-
-  private texture: CanvasTextureRegion;
-
-  constructor(
-    position: Coords,
-    private atlas: TextureAtlasSource,
-    private atlasX: number,
-    private atlasY: number,
-  ) {
-    super(position);
-  }
-
-  getTileGraphics(reader: GenericReaderService): Drawable {
-    return this.texture;
-  }
-
-  async onGraphicsInit(context: GenericSceneRenderContext): Promise<void> {
-    this.texture = await context.getTextureLoader().getTextureAtlasItem(this.atlas, this.atlasX, this.atlasY);
-  }
-
-  onTick(writer: GenericWriterService): void {
-  }
-
-}
-
+declare type TileOrDescription = string | GenericGridTile;
 
 @Singleton
 export class GenericBuilderService implements SceneBuilder {
   constructor(
     private reader: GenericReaderService,
     private writer: GenericWriterService,
-    private skulptService: GenericSkulptService
+    private commonTileRegistryService: CommonTileRegistryService,
+    private skulptService: GenericSkulptService,
   ) {
   }
 
-  buildScene(config: SceneConfig): SceneDescriptor {
+  private parseFieldFromArray(data: (TileOrDescription|TileOrDescription[])[][]): GenericGridField {
     const field: GenericGridField = {
       grid: [],
-      width: 20,
-      height: 20
+      width: data[0].length,
+      height: data.length,
     };
 
     for (let y = 0; y < field.height; y++) {
       for (let x = 0; x < field.width; x++) {
-        field.grid.push({
-          tiles: [new TestGridTile(
-            {x, y},
-            {src: 'assets:/sample-atlas.png', width: 2, height: 2},
-            (x + y) % 2, Math.floor(x / 2 + y / 2) % 2
-          )],
+        const cell: GenericGridCell = {
+          tiles: [],
           lightLevel: 0,
           lightColor: '#000000'
-        });
+        };
+        field.grid.push(cell);
+
+        const cellDescOrArray = data[y][x];
+        const cellDescriptionArray = Array.isArray(cellDescOrArray) ? cellDescOrArray : [ cellDescOrArray as TileOrDescription ];
+        for (const tileDescription of cellDescriptionArray) {
+          if (typeof(tileDescription) === 'string') {
+            for (const tile of this.commonTileRegistryService.parseTileArray(tileDescription, { x, y })) {
+              if (tile) {
+                cell.tiles.push(tile);
+              }
+            }
+          } else {
+            const tile = tileDescription as GenericGridTile;
+            tile.position = { x, y };
+            cell.tiles.push(tile);
+          }
+        }
       }
     }
 
+    return field;
+  }
+
+  buildScene(config: SceneConfig): SceneDescriptor {
+    const field: GenericGridField = this.parseFieldFromArray([
+      ['stone', 'grass', 'grass', 'grass', 'grass', 'stone', 'grass', 'grass', 'grass', 'grass', 'stone'],
+      ['stone', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'stone'],
+      ['stone', 'grass', 'grass', 'grass', 'grass', 'stone', 'grass', 'grass', 'grass', 'grass', 'stone'],
+      ['stone', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'stone'],
+      ['stone', 'grass', 'grass', 'grass', 'grass', 'stone', 'grass', 'grass', 'grass', 'grass', 'stone'],
+      ['stone', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'stone'],
+      ['stone', 'grass', 'grass', 'grass', 'grass', 'stone', 'grass', 'grass', 'grass', 'grass', 'stone'],
+      ['stone', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'stone'],
+      ['stone', 'grass', 'grass', 'grass', 'grass', 'stone', 'grass', 'grass', 'grass', 'grass', 'stone'],
+      ['stone', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'stone'],
+      ['stone', 'grass', 'grass', 'grass', 'grass', 'stone', 'grass', 'grass', 'grass', 'grass', 'stone'],
+      ['stone', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'stone'],
+      ['stone', 'grass', 'grass', 'grass', 'grass', 'stone', 'grass', 'grass', 'grass', 'grass', 'stone'],
+      ['stone', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'stone'],
+    ]);
 
     const sceneModel: GenericSceneModel = {
       sceneType: SceneType.GENERIC,
@@ -87,7 +90,7 @@ export class GenericBuilderService implements SceneBuilder {
       inverseZoom: 8
     };
 
-    const player = new GenericPlayer({x: 1, y: 1});
+    const player = new GenericPlayer({x: 1, y: 0});
     sceneModel.gameObjects.push(player);
     sceneModel.player = player;
 
