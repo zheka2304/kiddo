@@ -5,14 +5,32 @@ import {GenericSceneRenderContext} from '../../../../app/scene/generic-scene/ren
 import {GenericWriterService} from '../writers/generic-writer.service';
 import {Drawable} from '../../../../app/scene/generic-scene/graphics/drawable';
 import {Coords} from '../../common/entities';
+import {Rect} from '../../../../app/shared/interfaces/rect';
 
 
 export class GridTileBase extends TaggableBase implements GenericGridTile {
-  position: Coords;
   isGraphicsInitialized: boolean;
+
+  constructor(
+    public position: Coords
+  ) {
+    super();
+  }
 
   onGraphicsInit(context: GenericSceneRenderContext): Promise<void> {
     return Promise.resolve(null);
+  }
+
+  draw(
+    reader: GenericReaderService,
+    context: GenericSceneRenderContext,
+    canvas: CanvasRenderingContext2D,
+    targetRect: Rect
+  ): void {
+    const graphics = this.getTileGraphics(reader);
+    if (graphics != null) {
+      graphics.draw(canvas, targetRect);
+    }
   }
 
   getTileGraphics(reader: GenericReaderService): Drawable {

@@ -114,7 +114,7 @@ export class GenericSceneRenderer {
       for (let y = 0; y < sceneModel.field.height; y++) {
         for (const tile of sceneModel.field.grid[x + y * sceneModel.field.width].tiles) {
           if (this.checkGraphicsLoaded(context, tile)) {
-            tile.getTileGraphics(reader).draw(canvas, {x: x * cellSize, y: y * cellSize, width: cellSize, height: cellSize});
+            tile.draw(reader, context, canvas, {x: x * cellSize, y: y * cellSize, width: cellSize, height: cellSize});
           } else {
             // if some background components are not loaded for some reason, force redraw on next frame
             this.isBackgroundForcedDirty = true;
