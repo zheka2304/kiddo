@@ -4,7 +4,20 @@ import {AnimatedCanvasTextureRegion, CanvasTextureRegion} from './canvas-texture
 import {Injectable} from '@angular/core';
 import {environment} from '../../../../environments/environment';
 import {DrawableCollection} from './drawable-collection';
-import {Drawable} from "./drawable";
+import {Drawable} from './drawable';
+
+
+export interface TextureAtlasSource {
+  src: string;
+  width: number;
+  height: number;
+}
+
+export interface TextureAtlasItemCollection {
+  atlas: TextureAtlasSource;
+  items: {[key: string]: number[][]};
+  fps?: number;
+}
 
 
 @Injectable({
@@ -33,19 +46,19 @@ export class SceneTextureLoaderService {
   }
 
   async getTextureAtlasItem(
-      src: string,
-      atlasX: number, atlasY: number, atlasWidth: number, atlasHeight: number
+      atlas: TextureAtlasSource,
+      atlasX: number, atlasY: number
   ): Promise<CanvasTextureRegion> {
-    return await this.getTextureRegion(src, {
-      x: atlasX / atlasWidth,
-      y: atlasY / atlasHeight,
-      width: 1 / atlasWidth,
-      height: 1 / atlasHeight
+    return await this.getTextureRegion(atlas.src, {
+      x: atlasX / atlas.width,
+      y: atlasY / atlas.height,
+      width: 1 / atlas.width,
+      height: 1 / atlas.height
     });
   }
 
   async getAnimatedTextureItem(
-    atlas: { src: string, width: number, height: number },
+    atlas: TextureAtlasSource,
     atlasItems: number[][],
     fps: number
   ): Promise<AnimatedCanvasTextureRegion> {
@@ -54,11 +67,11 @@ export class SceneTextureLoaderService {
       if (atlasItem.length === 4) {
         for (let y = atlasItem[2]; y <= atlasItem[3]; y++) {
           for (let x = atlasItem[0]; x <= atlasItem[1]; x++) {
-            frames.push(await this.getTextureAtlasItem(atlas.src, x, y, atlas.width, atlas.height));
+            frames.push(await this.getTextureAtlasItem(atlas, x, y));
           }
         }
       } else if (atlasItem.length === 2) {
-        frames.push(await this.getTextureAtlasItem(atlas.src, atlasItem[0], atlasItem[1], atlas.width, atlas.height));
+        frames.push(await this.getTextureAtlasItem(atlas, atlasItem[0], atlasItem[1]));
       } else {
         throw new Error('invalid atlas item declared: ' + JSON.stringify(atlasItem));
       }
@@ -67,14 +80,12 @@ export class SceneTextureLoaderService {
   }
 
   async getTextureCollectionFromAtlas(
-    atlas: { src: string, width: number, height: number },
-    data: { [key: string]: number[][] },
-    fps: number
+    data: TextureAtlasItemCollection
   ): Promise<DrawableCollection> {
     const drawableMap = new Map<string, Drawable>();
-    for (const name in data) {
-      if (data.hasOwnProperty(name)) {
-        drawableMap.set(name, await this.getAnimatedTextureItem(atlas, data[name], fps));
+    for (const name in data.items) {
+      if (data.items.hasOwnProperty(name)) {
+        drawableMap.set(name, await this.getAnimatedTextureItem(data.atlas, data.items[name], data.fps || 1));
       }
     }
     return new DrawableCollection(drawableMap);

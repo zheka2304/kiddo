@@ -19,27 +19,26 @@ export class GenericPlayer extends GameObjectBase {
   }
 
   async onGraphicsInit(context: GenericSceneRenderContext): Promise<void> {
-    this.idleTexture = await context.getTextureLoader().getTextureCollectionFromAtlas(
-      {src: 'assets:/sample-player-atlas.png', width: 10, height: 8},
-      {
+    this.idleTexture = await context.getTextureLoader().getTextureCollectionFromAtlas({
+      atlas: {src: 'assets:/sample-player-atlas.png', width: 10, height: 8},
+      items: {
         [Direction.DOWN]: [[0, 0]],
         [Direction.UP]: [[0, 2]],
         [Direction.LEFT]: [[0, 1]],
         [Direction.RIGHT]: [[0, 3]],
-      },
-      1
-    );
+      }
+    });
 
-    this.walkingTexture = await context.getTextureLoader().getTextureCollectionFromAtlas(
-      {src: 'assets:/sample-player-atlas.png', width: 10, height: 8},
-      {
-        [Direction.DOWN]: [[0, 9, 4, 4]],
-        [Direction.UP]: [[0, 9, 6, 6]],
-        [Direction.LEFT]: [[0, 9, 5, 5]],
-        [Direction.RIGHT]: [[0, 9, 7, 7]],
-      },
-      12
-    );
+    this.walkingTexture = await context.getTextureLoader().getTextureCollectionFromAtlas({
+        atlas: {src: 'assets:/sample-player-atlas.png', width: 10, height: 8},
+        items: {
+          [Direction.DOWN]: [[0, 9, 4, 4]],
+          [Direction.UP]: [[0, 9, 6, 6]],
+          [Direction.LEFT]: [[0, 9, 5, 5]],
+          [Direction.RIGHT]: [[0, 9, 7, 7]],
+        },
+        fps: 12
+      });
   }
 
   draw(

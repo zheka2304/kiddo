@@ -15,6 +15,7 @@ import {GenericPlayer} from './common/player';
 import {Drawable} from '../../../app/scene/generic-scene/graphics/drawable';
 import {GridTileBase} from './common/grid-tile-base';
 import {Coords} from '../common/entities';
+import {TextureAtlasSource} from '../../../app/scene/generic-scene/graphics/scene-texture-loader.service';
 
 
 class TestGridTile extends GridTileBase {
@@ -24,11 +25,9 @@ class TestGridTile extends GridTileBase {
 
   constructor(
     position: Coords,
-    private src: string,
+    private atlas: TextureAtlasSource,
     private atlasX: number,
     private atlasY: number,
-    private atlasW: number,
-    private atlasH: number
   ) {
     super(position);
   }
@@ -38,7 +37,7 @@ class TestGridTile extends GridTileBase {
   }
 
   async onGraphicsInit(context: GenericSceneRenderContext): Promise<void> {
-    this.texture = await context.getTextureLoader().getTextureAtlasItem(this.src, this.atlasX, this.atlasY, this.atlasW, this.atlasH);
+    this.texture = await context.getTextureLoader().getTextureAtlasItem(this.atlas, this.atlasX, this.atlasY);
   }
 
   onTick(writer: GenericWriterService): void {
@@ -66,7 +65,11 @@ export class GenericBuilderService implements SceneBuilder {
     for (let y = 0; y < field.height; y++) {
       for (let x = 0; x < field.width; x++) {
         field.grid.push({
-          tiles: [new TestGridTile({x, y}, 'assets:/sample-atlas.png', (x + y) % 2, Math.floor(x / 2 + y / 2) % 2, 2, 2)],
+          tiles: [new TestGridTile(
+            {x, y},
+            {src: 'assets:/sample-atlas.png', width: 2, height: 2},
+            (x + y) % 2, Math.floor(x / 2 + y / 2) % 2
+          )],
           lightLevel: 0,
           lightColor: '#000000'
         });
