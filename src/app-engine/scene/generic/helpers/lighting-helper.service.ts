@@ -21,6 +21,10 @@ export class LightingHelperService {
     interpolatedPos: Coords,
     params: LightSourceParams
   ): void {
+    if (!reader.sceneModel.lightMapEnabled) {
+      return;
+    }
+
     const offset = params.offset || { x: 0, y: 0 };
     if (params.shadows) {
       this.lightAroundWithShadows(

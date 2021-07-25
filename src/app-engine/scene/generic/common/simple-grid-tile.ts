@@ -27,9 +27,9 @@ export class SimpleGridTile extends GridTileBase {
   private texture: DrawableCollection = null;
 
   constructor(
-    position: Coords,
     private definition: SimpleGridTileDefinition,
-    private params: SimpleGridTileAdditionalParameters
+    private params: SimpleGridTileAdditionalParameters,
+    position?: Coords
   ) {
     super(position);
 

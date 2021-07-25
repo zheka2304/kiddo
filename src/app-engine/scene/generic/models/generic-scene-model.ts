@@ -5,6 +5,9 @@ import {GenericPlayer} from '../common/player';
 
 
 export interface GenericSceneModel extends SceneModel {
+  // unique string used to force render rebuild, when scene is re-initialized
+  sceneUid: string;
+
   field: GenericGridField;
   gameObjects: GenericGameObject[];
   player: GenericPlayer;

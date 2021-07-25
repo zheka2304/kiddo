@@ -10,11 +10,15 @@ import {Rect} from '../../../../app/shared/interfaces/rect';
 
 export class GridTileBase extends TaggableBase implements GenericGridTile {
   isGraphicsInitialized: boolean;
+  position: Coords = { x: 0, y: 0 };
 
   constructor(
-    public position: Coords
+    position?: Coords
   ) {
     super();
+    if (position) {
+      this.position = position;
+    }
   }
 
   onGraphicsInit(context: GenericSceneRenderContext): Promise<void> {

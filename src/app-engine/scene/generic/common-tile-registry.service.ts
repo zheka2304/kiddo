@@ -21,7 +21,7 @@ export class CommonTileRegistryService {
   }
 
   addBasicTile(name: string, definition: SimpleGridTileDefinition): void {
-    this.addTileFactory(name, (position: Coords, parameters: any) => new SimpleGridTile(position, definition, parameters));
+    this.addTileFactory(name, (position: Coords, parameters: any) => new SimpleGridTile(definition, parameters, position));
   }
 
   newTile(name: string, position: Coords, parameters: any): GenericGridTile {
@@ -33,7 +33,7 @@ export class CommonTileRegistryService {
     }
   }
 
-  parseTile(description: string, position: Coords): GenericGridTile {
+  parseTile(description: string, position: Coords, abortOnError?: boolean): GenericGridTile {
     const regex = /^([A-Za-z0-9\-_]+)(:([^;]+))?$/;
     const data = regex.exec(description.trim());
     if (data) {
@@ -42,18 +42,27 @@ export class CommonTileRegistryService {
         const parameters = data[3] ? JSON.parse(data[3]) : null;
         return this.newTile(name, position, parameters);
       } catch (err) {
-        console.error('error in parsing tile description: ' + description, 'error: ', err);
+        if (abortOnError) {
+          throw err;
+        } else {
+          console.error('error in parsing tile description: ' + description, 'error: ', err);
+        }
       }
     } else {
-      console.error('error in parsing tile description: ' + description + ', regex is not parsed');
+      const err = 'error in parsing tile description: ' + description + ', regex is not parsed';
+      if (abortOnError) {
+        throw new Error(err);
+      } else {
+        console.error(err);
+      }
     }
     return null;
   }
 
-  parseTileArray(descriptions: string, position: Coords): GenericGridTile[] {
+  parseTileArray(descriptions: string, position: Coords, abortOnError?: boolean): GenericGridTile[] {
     const tiles: GenericGridTile[] = [];
     for (const description of descriptions.split(';')) {
-      tiles.push(this.parseTile(description, position));
+      tiles.push(this.parseTile(description, position, abortOnError));
     }
     return tiles;
   }

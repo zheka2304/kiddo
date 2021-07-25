@@ -1,4 +1,6 @@
 import {GenericGridTile} from './generic-grid-tile';
+import {Coords} from '../../common/entities';
+
 
 export interface GenericGridField {
   grid: GenericGridCell[];
@@ -7,6 +9,7 @@ export interface GenericGridField {
 }
 
 export interface GenericGridCell {
+  position: Coords;
   tiles: GenericGridTile[];
   light: {
     level: number,

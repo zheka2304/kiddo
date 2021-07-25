@@ -2,6 +2,7 @@ import {AfterViewInit, Component, ElementRef, Input, OnDestroy, OnInit, ViewChil
 import {GenericSceneRenderService} from './render/generic-scene-render.service';
 import {GenericSceneRenderer} from './render/generic-scene-renderer';
 import {SceneAccessorsService} from '../../../app-engine/scene/scene-accessors.service';
+import {GenericSceneRenderContext} from './render/generic-scene-render-context';
 
 
 @Component({
@@ -14,6 +15,8 @@ export class GenericSceneComponent implements AfterViewInit, OnDestroy {
   @ViewChild('genericSceneCanvas') canvasRef: ElementRef;
 
   private sceneAccessorsService: SceneAccessorsService;
+  private renderContext: GenericSceneRenderContext = null;
+
 
   constructor(
     private sceneRenderService: GenericSceneRenderService,
@@ -23,11 +26,12 @@ export class GenericSceneComponent implements AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     const canvas = this.canvasRef.nativeElement as HTMLCanvasElement;
-    const renderContext = this.sceneRenderService.createRenderContext(canvas);
-    renderContext.setRenderer(new GenericSceneRenderer(this.sceneAccessorsService));
+    this.renderContext = this.sceneRenderService.createRenderContext(canvas);
+    this.renderContext.setRenderer(new GenericSceneRenderer(this.sceneAccessorsService));
   }
 
   ngOnDestroy(): void {
+    this.sceneRenderService.destroyRenderContext(this.renderContext);
   }
 
 }

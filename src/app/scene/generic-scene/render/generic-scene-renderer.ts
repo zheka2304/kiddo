@@ -13,6 +13,7 @@ export class GenericSceneRenderer {
     width: 0,
     height: 0
   };
+  private lastSceneUid: string = null;
   private isBackgroundForcedDirty = false;
 
   constructor(
@@ -90,10 +91,14 @@ export class GenericSceneRenderer {
 
   isBackgroundDirty(viewport: Rect): boolean {
     const backgroundSize = this.getBackgroundSize(viewport);
+    const sceneUid = this.getSceneModel()?.sceneUid;
     if (this.isBackgroundForcedDirty ||
       backgroundSize.width !== this.lastBackgroundSize.width ||
-      backgroundSize.height !== this.lastBackgroundSize.height) {
+      backgroundSize.height !== this.lastBackgroundSize.height ||
+      sceneUid !== this.lastSceneUid
+    ) {
       this.lastBackgroundSize = backgroundSize;
+      this.lastSceneUid = sceneUid;
       this.isBackgroundForcedDirty = false;
       return true;
     } else {

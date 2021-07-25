@@ -8,6 +8,7 @@ import {SceneModelService} from '../../scene-model.service';
 import {GenericGridCell} from '../entities/generic-grid-field';
 import {GenericGameObject} from '../entities/generic-game-object';
 import {DefaultTags} from '../entities/default-tags.enum';
+import {GenericPlayer} from "../common/player";
 
 
 @Singleton
@@ -28,7 +29,11 @@ export class GenericReaderService implements SceneReader {
   }
 
   getGameFailMessage(): string {
-    return null;
+    const playerFail = this.sceneModel.player.getFailReason();
+    if (playerFail) {
+      return playerFail;
+    }
+    return this.sceneModel.checkingLogic(this);
   }
 
   getGameStatistics(): GameStatistics {
@@ -53,6 +58,10 @@ export class GenericReaderService implements SceneReader {
     return false;
   }
 
+
+  getPlayer(): GenericPlayer {
+    return this.sceneModel.player;
+  }
 
   isPositionOnField(x: number, y: number): boolean {
     const field = this.sceneModel.field;
