@@ -82,6 +82,11 @@ export class GenericPlayer extends GameObjectBase {
 
   onLightMapUpdate(writer: GenericWriterService, interpolatedPosition: Coords): void {
     this.lightingHelper.lightAround(writer.getReader(), this.position, interpolatedPosition, { radius: 3, brightness: 1 });
+    /* this.lightingHelper.lightAround(writer.getReader(), this.position, interpolatedPosition, { radius: 1, brightness: 1 });
+    this.lightingHelper.lightAround(writer.getReader(), this.position, interpolatedPosition, {
+      radius: 1, brightness: 1,
+      offset: this.navigationHelper.offset({x: 0, y: 0}, this.direction)
+    }); */
   }
 
 

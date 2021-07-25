@@ -6,9 +6,11 @@ import {GenericReaderService} from '../readers/generic-reader.service';
 export interface LightSourceParams {
   radius: number;
   brightness: number;
+  shadows?: boolean;
+
+  offset?: Coords;
   startingAngle?: number;
   endingAngle?: number;
-  shadows?: boolean;
 }
 
 @Singleton
@@ -19,10 +21,21 @@ export class LightingHelperService {
     interpolatedPos: Coords,
     params: LightSourceParams
   ): void {
+    const offset = params.offset || { x: 0, y: 0 };
     if (params.shadows) {
-      this.lightAroundWithShadows(reader, position, interpolatedPos, params);
+      this.lightAroundWithShadows(
+        reader,
+        { x: position.x + offset.x, y: position.y + offset.y },
+        { x: interpolatedPos.x + offset.x, y: interpolatedPos.y + offset.y },
+        params
+      );
     } else {
-      this.lightAroundNoShadows(reader, position, interpolatedPos, params);
+      this.lightAroundNoShadows(
+        reader,
+        { x: position.x + offset.x, y: position.y + offset.y },
+        { x: interpolatedPos.x + offset.x, y: interpolatedPos.y + offset.y },
+        params
+      );
     }
   }
 
@@ -33,7 +46,10 @@ export class LightingHelperService {
     params: LightSourceParams
   ): void {
     const { radius, brightness } = params;
-    const interpolationDelta = { x: position.x - interpolatedPos.x, y: position.y - interpolatedPos.y };
+    const interpolationDelta = {
+      x: position.x - interpolatedPos.x,
+      y: position.y - interpolatedPos.y
+    };
     const r2 = radius * radius;
 
     for (let x = -radius; x <= radius; x++) {
