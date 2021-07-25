@@ -9,6 +9,7 @@ import {GameFailError} from '../common/errors';
 import {GenericPlayer, PlayerActionType} from './common/player';
 import {Direction} from '../common/entities';
 import {TerminalService} from '../../../app/code-editor/terminal/terminal.service';
+import {GameCompletionInterruptError} from "../common/errors/game-completion-interrupt-error";
 
 
 @Singleton
@@ -48,44 +49,44 @@ export class GenericSkulptService implements SceneSkulptService {
 
     injector.addModule('player', {
       wait: async (turns: number) => {
-        this.throwErrorIfScriptIsStopped();
+        this.checkRunFailedCompletedOrAborted();
         for (let i = 0; i < turns; i++) {
           await this.writer.awaitNextStep();
-          this.throwErrorIfScriptIsStopped();
+          this.checkRunFailedCompletedOrAborted();
         }
       },
 
       go: async (turns: number = 1) => {
-        this.throwErrorIfScriptIsStopped();
+        this.checkRunFailedCompletedOrAborted();
         for (let i = 0; i < turns; i++) {
           await this.writer.awaitNextStep();
-          this.throwErrorIfScriptIsStopped();
+          this.checkRunFailedCompletedOrAborted();
           this.getPlayer().go(this.reader);
         }
       },
 
       right: async (turns: number = 1) => {
-        this.throwErrorIfScriptIsStopped();
+        this.checkRunFailedCompletedOrAborted();
         for (let i = 0; i < turns; i++) {
           await this.writer.awaitNextStep();
-          this.throwErrorIfScriptIsStopped();
+          this.checkRunFailedCompletedOrAborted();
           this.getPlayer().turn(this.reader, Direction.RIGHT);
         }
       },
 
       left: async (turns: number = 1) => {
-        this.throwErrorIfScriptIsStopped();
+        this.checkRunFailedCompletedOrAborted();
         for (let i = 0; i < turns; i++) {
           await this.writer.awaitNextStep();
-          this.throwErrorIfScriptIsStopped();
+          this.checkRunFailedCompletedOrAborted();
           this.getPlayer().turn(this.reader, Direction.LEFT);
         }
       },
 
       look: async (x: number, y: number) => {
-        this.throwErrorIfScriptIsStopped();
+        this.checkRunFailedCompletedOrAborted();
         await this.writer.awaitNextStep();
-        this.throwErrorIfScriptIsStopped();
+        this.checkRunFailedCompletedOrAborted();
         const player = this.getPlayer();
         return [ ...player.getAllTagsRelativeToPlayer(this.reader, { x, y }, [player]) ];
       }
@@ -110,7 +111,14 @@ export class GenericSkulptService implements SceneSkulptService {
     this.tickingIsStopped.next();
   }
 
-  private throwErrorIfScriptIsStopped(): void {
+  private checkRunFailedCompletedOrAborted(): void {
+    const player = this.getPlayer();
+    if (this.reader.checkLevelCompletedSuccessfully()) {
+      throw new GameCompletionInterruptError();
+    }
+    if (player && player.getFailReason()) {
+      throw new GameFailError(player.getFailReason());
+    }
     if (this.executionWasAborted) {
       throw new GameFailError('SCRIPT_STOPPED');
     }

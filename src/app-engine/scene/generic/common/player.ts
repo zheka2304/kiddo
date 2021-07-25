@@ -15,6 +15,7 @@ export enum PlayerActionType {
 
 export class GenericPlayer extends GameObjectBase {
   direction: Direction = Direction.RIGHT;
+  private failReason: string = null;
   private thisTurnActions: ({ position: Coords, action: PlayerActionType })[] = [];
 
   private idleTexture: DrawableCollection;
@@ -101,6 +102,10 @@ export class GenericPlayer extends GameObjectBase {
     }
   }
 
+
+  getFailReason(): string {
+    return this.failReason;
+  }
 
   getMinVisibleLightLevel(reader: GenericReaderService): number {
     return 0.1;

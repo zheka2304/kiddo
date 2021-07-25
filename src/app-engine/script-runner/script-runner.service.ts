@@ -13,6 +13,7 @@ import { SceneAccessorsService } from '../scene/scene-accessors.service';
 import { SceneInitService } from '../scene/scene-init.service';
 import { GoogleAnalyticsService } from 'src/app/shared/services';
 import { environment } from 'src/environments/environment';
+import {GameCompletionInterruptError} from "../scene/common/errors/game-completion-interrupt-error";
 
 @Injectable({
   providedIn: 'root',
@@ -148,6 +149,11 @@ export class ScriptRunnerService {
   }
 
   private processScriptFail(err: SkulptError): void {
+    if (err.nativeError instanceof GameCompletionInterruptError) {
+      this.processScriptCompletion();
+      return;
+    }
+
     console.log('processScriptFail', err);
     this.googleAnalyticsService.emitEvent(environment.googleAnalytics.events.info, 'script-runner: script_execution_fail');
 

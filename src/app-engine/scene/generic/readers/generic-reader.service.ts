@@ -49,6 +49,11 @@ export class GenericReaderService implements SceneReader {
   }
 
 
+  checkLevelCompletedSuccessfully(): boolean {
+    return false;
+  }
+
+
   isPositionOnField(x: number, y: number): boolean {
     const field = this.sceneModel.field;
     return x >= 0 && x < field.width && y >= 0 && y < field.height;
