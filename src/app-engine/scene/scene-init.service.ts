@@ -26,6 +26,8 @@ import {GenericReaderService} from './generic/readers/generic-reader.service';
 import {GenericWriterService} from './generic/writers/generic-writer.service';
 import {GenericSkulptService} from './generic/generic-skulpt.service';
 import {GenericBuilderService} from './generic/generic-builder.service';
+import {TerminalService} from '../../app/code-editor/terminal/terminal.service';
+
 
 interface BuildersMap {
   [sceneType: string]: () => SceneBuilder;
@@ -69,7 +71,7 @@ export class SceneInitService {
     [SceneType.GENERIC]: () => {
       const reader = new GenericReaderService(this.sceneModelService);
       const writer = new GenericWriterService(this.sceneModelService, reader);
-      const api = new GenericSkulptService(this.skulptService, reader, writer);
+      const api = new GenericSkulptService(this.skulptService, this.terminalService, reader, writer);
       return new GenericBuilderService(reader, writer, api);
     }
   };
@@ -78,7 +80,9 @@ export class SceneInitService {
 
   constructor(private sceneModelService: SceneModelService,
               private sceneAccessorsService: SceneAccessorsService,
-              private skulptService: SkulptService) {
+              private skulptService: SkulptService,
+              private terminalService: TerminalService
+  ) {
   }
 
   init(sceneConfig: SceneConfig): void {

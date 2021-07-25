@@ -8,6 +8,7 @@ import {takeUntil, tap} from 'rxjs/operators';
 import {GameFailError} from '../common/errors';
 import {GenericPlayer} from './common/player';
 import {Direction} from '../common/entities';
+import {TerminalService} from '../../../app/code-editor/terminal/terminal.service';
 
 
 @Singleton
@@ -17,6 +18,7 @@ export class GenericSkulptService implements SceneSkulptService {
 
   constructor(
     private skulptService: SkulptService,
+    private terminalService: TerminalService,
     private reader: GenericReaderService,
     private writer: GenericWriterService
   ) {
@@ -29,6 +31,20 @@ export class GenericSkulptService implements SceneSkulptService {
   addApiToSkulpt(): void {
     const injector = this.skulptService.getModuleInjector();
     injector.removeAllInjectedModules();
+
+    injector.addModule('debug', {
+      output: (...args: any) => {
+        const output: string[] = [];
+        for (const arg of args) {
+          if (typeof arg === 'object') {
+            output.push(JSON.stringify(arg));
+          } else {
+            output.push('' + arg);
+          }
+        }
+        this.terminalService.print(output.join(' '));
+      }
+    });
 
     injector.addModule('player', {
       wait: async (turns: number) => {
