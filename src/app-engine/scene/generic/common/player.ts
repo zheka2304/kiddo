@@ -13,6 +13,11 @@ export class GenericPlayer extends GameObjectBase {
   private idleTexture: DrawableCollection;
   private walkingTexture: DrawableCollection;
 
+  constructor(position: Coords) {
+    super(position);
+    this.addImmutableTag('player');
+  }
+
   async onGraphicsInit(context: GenericSceneRenderContext): Promise<void> {
     this.idleTexture = await context.getTextureLoader().getTextureCollectionFromAtlas(
       {src: 'assets:/sample-player-atlas.png', width: 10, height: 8},
@@ -22,7 +27,7 @@ export class GenericPlayer extends GameObjectBase {
         [Direction.LEFT]: [[0, 1]],
         [Direction.RIGHT]: [[0, 3]],
       },
-      5
+      1
     );
 
     this.walkingTexture = await context.getTextureLoader().getTextureCollectionFromAtlas(
@@ -50,26 +55,25 @@ export class GenericPlayer extends GameObjectBase {
   }
 
   onTick(writer: GenericWriterService): void {
-    this.lastPosition = { ...this.position };
+    super.onTick(writer);
   }
 
   onLightMapUpdate(writer: GenericWriterService, interpolatedPosition: Coords): void {
     // update light map
+    const reader = writer.getReader();
     const r = 3;
     const r2 = r + 2;
     const field = writer.sceneModel.field;
     const lightFlicker = 1;
 
     for (let x = -r2; x <= r2; x++) {
-      if (x + this.position.x >= 0 && x + this.position.x < field.width) {
-        for (let y = -r2; y <= r2; y++) {
-          if (y + this.position.y >= 0 && y + this.position.y < field.height) {
+      for (let y = -r2; y <= r2; y++) {
+        if (y + this.position.y >= 0 && y + this.position.y < field.height) {
+          const cell = reader.getCellAt(this.position.x + x, this.position.y + y);
+          if (cell) {
             const dx = interpolatedPosition.x - (this.position.x + x);
             const dy = interpolatedPosition.y - (this.position.y + y);
-
-            field.grid[
-            (x + this.position.x) * field.height + (y + this.position.y)
-              ].lightLevel = Math.max(0, 1 - Math.sqrt(dx * dx + dy * dy) / r) * lightFlicker;
+            cell.lightLevel = Math.max(0, 1 - Math.sqrt(dx * dx + dy * dy) / r) * lightFlicker;
           }
         }
       }

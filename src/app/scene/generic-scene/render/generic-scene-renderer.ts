@@ -108,7 +108,7 @@ export class GenericSceneRenderer {
     canvas.imageSmoothingEnabled = false;
     for (let x = 0; x < sceneModel.field.width; x++) {
       for (let y = 0; y < sceneModel.field.height; y++) {
-        for (const tile of sceneModel.field.grid[x * sceneModel.field.height + y].tiles) {
+        for (const tile of sceneModel.field.grid[x + y * sceneModel.field.width].tiles) {
           if (this.checkGraphicsLoaded(context, tile)) {
             tile.getTileGraphics(reader).draw(canvas, {x: x * cellSize, y: y * cellSize, width: cellSize, height: cellSize});
           } else {
@@ -148,7 +148,7 @@ export class GenericSceneRenderer {
     canvas.clearRect(0, 0, size.width, size.height);
     for (let x = 0; x < sceneModel.field.width; x++) {
       for (let y = 0; y < sceneModel.field.height; y++) {
-        const cell = sceneModel.field.grid[x * sceneModel.field.height + y];
+        const cell = sceneModel.field.grid[x + y * sceneModel.field.width];
         canvas.fillStyle = cell.lightColor + floatComponentToHex(1 - cell.lightLevel);
         canvas.fillRect(x, y, 1, 1);
       }

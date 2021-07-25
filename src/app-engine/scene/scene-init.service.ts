@@ -68,7 +68,7 @@ export class SceneInitService {
     },
     [SceneType.GENERIC]: () => {
       const reader = new GenericReaderService(this.sceneModelService);
-      const writer = new GenericWriterService(this.sceneModelService);
+      const writer = new GenericWriterService(this.sceneModelService, reader);
       const api = new GenericSkulptService(this.skulptService, reader, writer);
       return new GenericBuilderService(reader, writer, api);
     }

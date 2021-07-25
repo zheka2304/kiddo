@@ -61,8 +61,8 @@ export class GenericBuilderService implements SceneBuilder {
       height: 20
     };
 
-    for (let x = 0; x < field.width; x++) {
-      for (let y = 0; y < field.height; y++) {
+    for (let y = 0; y < field.height; y++) {
+      for (let x = 0; x < field.width; x++) {
         field.grid.push({
           tiles: [new TestGridTile('assets:/sample-atlas.png', (x + y) % 2, Math.floor(x / 2 + y / 2) % 2, 2, 2)],
           lightLevel: 0,

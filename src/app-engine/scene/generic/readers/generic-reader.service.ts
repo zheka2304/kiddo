@@ -5,6 +5,7 @@ import {SceneType} from '../../common/models/scene-type.enum';
 import {Singleton} from '../../../singleton.decorator';
 import {GenericSceneModel} from '../models/generic-scene-model';
 import {SceneModelService} from '../../scene-model.service';
+import {GenericGridCell} from '../entities/generic-grid-field';
 
 
 @Singleton
@@ -43,5 +44,15 @@ export class GenericReaderService implements SceneReader {
 
   sceneIsPlaybackable(): boolean {
     return false;
+  }
+
+
+  getCellAt(x: number, y: number): GenericGridCell {
+    const field = this.sceneModel.field;
+    if (x >= 0 && x < field.width && y >= 0 && y < field.height) {
+      return field.grid[Math.floor(x) + Math.floor(y) * field.width];
+    } else {
+      return null;
+    }
   }
 }

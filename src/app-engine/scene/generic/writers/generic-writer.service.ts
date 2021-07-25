@@ -2,8 +2,8 @@ import {SceneWriter} from '../../common/writers/scene.writer';
 import {Singleton} from '../../../singleton.decorator';
 import {SceneModelService} from '../../scene-model.service';
 import {GenericSceneModel} from '../models/generic-scene-model';
-import {GenericPlayer} from '../common/player';
-import {GenericSceneRenderContext} from "../../../../app/scene/generic-scene/render/generic-scene-render-context";
+import {GenericSceneRenderContext} from '../../../../app/scene/generic-scene/render/generic-scene-render-context';
+import {GenericReaderService} from '../readers/generic-reader.service';
 
 
 @Singleton
@@ -15,7 +15,8 @@ export class GenericWriterService implements SceneWriter {
   private lastFrameTime = 0;
 
   constructor(
-    private sceneModelService: SceneModelService
+    private sceneModelService: SceneModelService,
+    private reader: GenericReaderService
   ) {
   }
 
@@ -66,6 +67,11 @@ export class GenericWriterService implements SceneWriter {
 
   doPlaybackStep(): void {
     this.doGameStep();
+  }
+
+
+  getReader(): GenericReaderService {
+    return this.reader;
   }
 
   getRenderInterpolationValue(): number {
