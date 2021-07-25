@@ -65,6 +65,15 @@ export class GenericSkulptService implements SceneSkulptService {
           this.getPlayer().turn(Direction.LEFT);
         }
       },
+
+      look: async (x: number, y: number) => {
+        this.throwErrorIfScriptIsStopped();
+        await this.writer.awaitNextStep();
+        this.throwErrorIfScriptIsStopped();
+
+        const player = this.getPlayer();
+        return [ ...this.reader.getAllTagsAt(x + player.position.x, y + player.position.y, [player]) ];
+      }
     });
   }
 

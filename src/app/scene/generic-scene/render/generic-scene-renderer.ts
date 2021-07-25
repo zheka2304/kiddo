@@ -48,6 +48,10 @@ export class GenericSceneRenderer {
           await this.loadGraphics(context, tile);
         }
       }
+
+      for (const gameObject of sceneModel.gameObjects) {
+        await this.loadGraphics(context, gameObject);
+      }
     }
   }
 

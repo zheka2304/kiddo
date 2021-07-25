@@ -6,6 +6,8 @@ import {Singleton} from '../../../singleton.decorator';
 import {GenericSceneModel} from '../models/generic-scene-model';
 import {SceneModelService} from '../../scene-model.service';
 import {GenericGridCell} from '../entities/generic-grid-field';
+import {GenericGameObject} from '../entities/generic-game-object';
+import {DefaultTags} from '../entities/default-tags.enum';
 
 
 @Singleton
@@ -54,5 +56,46 @@ export class GenericReaderService implements SceneReader {
     } else {
       return null;
     }
+  }
+
+  getGameObjectsAt(x: number, y: number, exclude?: GenericGameObject[]): GenericGameObject[] {
+    x = Math.floor(x);
+    y = Math.floor(y);
+    const gameObjects: GenericGameObject[] = [];
+    for (const gameObject of this.sceneModel.gameObjects) {
+      if (
+        gameObject.position.x === x && gameObject.position.y === y &&
+        (!exclude || exclude.indexOf(gameObject) === -1) &&
+        !gameObject.getTags().has(DefaultTags.DESTROYED)
+      ) {
+        gameObjects.push(gameObject);
+      }
+    }
+    return gameObjects;
+  }
+
+  getTileTagsAt(x: number, y: number): Set<string> {
+    const tags = new Set<string>();
+    const cell = this.getCellAt(x, y);
+    if (cell) {
+      for (const tile of cell.tiles) {
+        tile.getTags().forEach(tag => tags.add(tag));
+      }
+    }
+    return tags;
+  }
+
+  getGameObjectTagsAt(x: number, y: number, exclude?: GenericGameObject[]): Set<string> {
+    const tags = new Set<string>();
+    for (const gameObject of this.getGameObjectsAt(x, y, exclude)) {
+      gameObject.getTags().forEach(tag => tags.add(tag));
+    }
+    return tags;
+  }
+
+    getAllTagsAt(x: number, y: number, exclude?: GenericGameObject[]): Set<string> {
+    const tags = this.getTileTagsAt(x, y);
+    this.getGameObjectTagsAt(x, y, exclude).forEach(tag => tags.add(tag));
+    return tags;
   }
 }
