@@ -35,10 +35,10 @@ export class NavigationHelperService {
         return { x: position.x - offset.x, y: position.y + offset.y };
       }
       case Direction.LEFT: {
-        return { x: position.x - offset.y, y: position.y + offset.x };
+        return { x: position.x - offset.y, y: position.y - offset.x };
       }
       case Direction.RIGHT: {
-        return { x: position.x + offset.y, y: position.y - offset.x };
+        return { x: position.x + offset.y, y: position.y + offset.x };
       }
     }
     return position;
