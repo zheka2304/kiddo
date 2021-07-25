@@ -8,7 +8,7 @@ import {SceneModelService} from '../../scene-model.service';
 import {GenericGridCell} from '../entities/generic-grid-field';
 import {GenericGameObject} from '../entities/generic-game-object';
 import {DefaultTags} from '../entities/default-tags.enum';
-import {GenericPlayer} from "../common/player";
+import {GenericPlayer} from '../common/player';
 
 
 @Singleton

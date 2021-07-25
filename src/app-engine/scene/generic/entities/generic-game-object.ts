@@ -20,4 +20,5 @@ export interface GenericGameObject extends LoadableGraphics, Taggable {
   onTick(writer: GenericWriterService): void;
   onPostTick(writer: GenericWriterService): void;
   onLightMapUpdate?(writer: GenericWriterService, interpolatedPosition: Coords): void;
+  onGameEnd?(reader: GenericReaderService): void;
 }

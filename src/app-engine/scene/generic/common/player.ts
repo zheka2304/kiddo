@@ -6,11 +6,18 @@ import {DrawableCollection} from '../../../../app/scene/generic-scene/graphics/d
 import {GenericReaderService} from '../readers/generic-reader.service';
 import {GameObjectBase} from './game-object-base';
 import {DefaultTags} from '../entities/default-tags.enum';
+import {LightSourceParams} from '../helpers/lighting-helper.service';
+import {CharacterSkin, CharacterSkinRegistryService} from '../services/character-skin-registry.service';
 
 
 export enum PlayerActionType {
   READ = 'read',
   INTERACT = 'interact',
+}
+
+export interface GenericPlayerParameters {
+  skin?: string | CharacterSkin;
+  defaultLightSources?: LightSourceParams[];
 }
 
 export class GenericPlayer extends GameObjectBase {
@@ -22,32 +29,24 @@ export class GenericPlayer extends GameObjectBase {
   private walkingTexture: DrawableCollection;
   private actionTexture: DrawableCollection;
 
-  constructor(position: Coords) {
+  private readonly skinRegistryService: CharacterSkinRegistryService = new CharacterSkinRegistryService();
+
+  constructor(
+    position: Coords,
+    private parameters: GenericPlayerParameters
+  ) {
     super(position);
-    this.addImmutableTag('player');
+    this.addImmutableTag(DefaultTags.PLAYER);
   }
 
   async onGraphicsInit(context: GenericSceneRenderContext): Promise<void> {
-    this.idleTexture = await context.getTextureLoader().getTextureCollectionFromAtlas({
-      atlas: {src: 'assets:/sample-player-atlas.png', width: 10, height: 8},
-      items: {
-        [Direction.DOWN]: [[0, 0]],
-        [Direction.UP]: [[0, 2]],
-        [Direction.LEFT]: [[0, 1]],
-        [Direction.RIGHT]: [[0, 3]],
-      }
-    });
-
-    this.walkingTexture = await context.getTextureLoader().getTextureCollectionFromAtlas({
-      atlas: {src: 'assets:/sample-player-atlas.png', width: 10, height: 8},
-      items: {
-        [Direction.DOWN]: [[0, 9, 4, 4]],
-        [Direction.UP]: [[0, 9, 6, 6]],
-        [Direction.LEFT]: [[0, 9, 5, 5]],
-        [Direction.RIGHT]: [[0, 9, 7, 7]],
-      },
-      fps: 12
-    });
+    const skin = this.skinRegistryService.getCharacterSkin(this.parameters?.skin);
+    this.idleTexture = await context.getTextureLoader().getTextureCollectionFromAtlas(
+      this.skinRegistryService.getIdleTextureDescription(skin)
+    );
+    this.walkingTexture = await context.getTextureLoader().getTextureCollectionFromAtlas(
+      this.skinRegistryService.getWalkingTextureDescription(skin)
+    );
 
     this.actionTexture = await context.getTextureLoader().getTextureCollectionFromAtlas({
       atlas: {src: 'assets:/player-action-atlas.png', width: 4, height: 4},
@@ -98,12 +97,15 @@ export class GenericPlayer extends GameObjectBase {
   }
 
   onLightMapUpdate(writer: GenericWriterService, interpolatedPosition: Coords): void {
-    this.lightingHelper.lightAround(writer.getReader(), this.position, interpolatedPosition, { radius: 3, brightness: 1 });
-    /* this.lightingHelper.lightAround(writer.getReader(), this.position, interpolatedPosition, { radius: 1, brightness: 1 });
-    this.lightingHelper.lightAround(writer.getReader(), this.position, interpolatedPosition, {
-      radius: 1, brightness: 1,
-      offset: this.navigationHelper.offset({x: 0, y: 0}, this.direction)
-    }); */
+    for (let lightSource of this.getLightSources()) {
+      if (lightSource.offset) {
+        lightSource = {
+          ...lightSource,
+          offset: this.navigationHelper.offset({ x: 0, y: 0 }, this.direction, lightSource.offset)
+        };
+      }
+      this.lightingHelper.lightAround(writer.getReader(), this.position, interpolatedPosition, lightSource);
+    }
   }
 
 
@@ -113,6 +115,10 @@ export class GenericPlayer extends GameObjectBase {
 
   getMinVisibleLightLevel(reader: GenericReaderService): number {
     return 0.1;
+  }
+
+  getLightSources(): LightSourceParams[] {
+    return this.parameters?.defaultLightSources || [];
   }
 
 

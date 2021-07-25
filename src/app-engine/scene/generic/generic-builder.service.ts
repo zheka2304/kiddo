@@ -10,7 +10,7 @@ import {GenericSceneModel} from './models/generic-scene-model';
 import {GenericGridCell, GenericGridField} from './entities/generic-grid-field';
 import {GenericGridTile} from './entities/generic-grid-tile';
 import {GenericPlayer} from './common/player';
-import {CommonTileRegistryService} from './common-tile-registry.service';
+import {CommonTileRegistryService} from './services/common-tile-registry.service';
 import {GridTileBase} from './common/grid-tile-base';
 import {GameObjectBase} from './common/game-object-base';
 import {TaggableBase} from './common/taggable-base';

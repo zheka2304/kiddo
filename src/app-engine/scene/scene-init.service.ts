@@ -27,7 +27,7 @@ import {GenericWriterService} from './generic/writers/generic-writer.service';
 import {GenericSkulptService} from './generic/generic-skulpt.service';
 import {GenericBuilderService} from './generic/generic-builder.service';
 import {TerminalService} from '../../app/code-editor/terminal/terminal.service';
-import {CommonTileRegistryService} from "./generic/common-tile-registry.service";
+import {CommonTileRegistryService} from "./generic/services/common-tile-registry.service";
 
 
 interface BuildersMap {

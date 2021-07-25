@@ -1,9 +1,9 @@
-import {Singleton} from '../../singleton.decorator';
-import {Coords} from '../common/entities';
-import {GenericGridTile} from './entities/generic-grid-tile';
-import {SimpleGridTile, SimpleGridTileDefinition} from './common/simple-grid-tile';
-import {DefaultTileStates} from './entities/default-tile-states.enum';
-import {DefaultTags} from './entities/default-tags.enum';
+import {Singleton} from '../../../singleton.decorator';
+import {Coords} from '../../common/entities';
+import {GenericGridTile} from '../entities/generic-grid-tile';
+import {SimpleGridTile, SimpleGridTileDefinition} from '../common/simple-grid-tile';
+import {DefaultTileStates} from '../entities/default-tile-states.enum';
+import {DefaultTags} from '../entities/default-tags.enum';
 
 
 declare type GenericGridTileFactory = (position: Coords, parameters: any) => GenericGridTile;
