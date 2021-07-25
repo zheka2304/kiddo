@@ -100,7 +100,13 @@ export class GenericReaderService implements SceneReader {
     return tags;
   }
 
-  getAllTagsAt(x: number, y: number, exclude?: GenericGameObject[]): Set<string> {
+  getAllTagsAt(x: number, y: number, exclude?: GenericGameObject[], minLightLevel?: number): Set<string> {
+    if (minLightLevel) {
+      const cell = this.getCellAt(x, y);
+      if (cell && cell.lightLevel < minLightLevel) {
+        return new Set<string>([DefaultTags.DARKNESS]);
+      }
+    }
     const tags = this.getTileTagsAt(x, y);
     this.getGameObjectTagsAt(x, y, exclude).forEach(tag => tags.add(tag));
     return tags;

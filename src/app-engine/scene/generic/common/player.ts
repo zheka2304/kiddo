@@ -102,6 +102,11 @@ export class GenericPlayer extends GameObjectBase {
   }
 
 
+  getMinVisibleLightLevel(reader: GenericReaderService): number {
+    return 0.1;
+  }
+
+
   go(reader: GenericReaderService): boolean {
     const position = this.navigationHelper.offset(this.position, this.direction, { x: 0, y: 1 });
     if (
@@ -122,7 +127,7 @@ export class GenericPlayer extends GameObjectBase {
   getAllTagsRelativeToPlayer(reader: GenericReaderService, offset: Coords, exclude?: GenericGameObject[]): Set<string> {
     const position = this.navigationHelper.offset(this.position, this.direction, offset);
     this.addAction(position, PlayerActionType.READ);
-    return reader.getAllTagsAt(position.x, position.y, exclude);
+    return reader.getAllTagsAt(position.x, position.y, exclude, this.getMinVisibleLightLevel(reader));
   }
 
   addAction(position: Coords, action: PlayerActionType): void {

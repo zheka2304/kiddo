@@ -1,9 +1,12 @@
 export enum DefaultTags {
-  // game object is marked destroyed and should not be processed
-  DESTROYED = 'destroyed',
-
   // must not be added to any objects, returned, when accessing tiles outside of the field
   OUTSIDES = 'outsides',
+
+  // must not be added to any objects, returned, when accessing tiles with low light level, that could not be visible
+  DARKNESS = 'darkness',
+
+  // game object is marked destroyed and should not be processed
+  DESTROYED = 'destroyed',
 
   // should be assigned to level goal, when player is
   GOAL = 'goal',
