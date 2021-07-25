@@ -80,6 +80,23 @@ export class GenericPlayer extends GameObjectBase {
     this.thisTurnActions = [];
   }
 
+  onPostTick(writer: GenericWriterService): void {
+    super.onPostTick(writer);
+    this.checkForHazards(writer.getReader());
+  }
+
+  protected checkForHazards(reader: GenericReaderService): void {
+    const tags = reader.getAllTagsAt(this.position.x, this.position.y, [ this ]);
+    if (tags.has(DefaultTags.DEADLY)) {
+      this.failReason = 'DESTROYED';
+      if (tags.has(DefaultTags.MONSTER)) {
+        this.failReason = 'CAUGHT_BY_MONSTER';
+      }
+    } else if (tags.has(DefaultTags.OBSTACLE)) {
+      this.failReason = 'IN_OBSTACLE';
+    }
+  }
+
   onLightMapUpdate(writer: GenericWriterService, interpolatedPosition: Coords): void {
     this.lightingHelper.lightAround(writer.getReader(), this.position, interpolatedPosition, { radius: 3, brightness: 1 });
     /* this.lightingHelper.lightAround(writer.getReader(), this.position, interpolatedPosition, { radius: 1, brightness: 1 });

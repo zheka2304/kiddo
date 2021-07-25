@@ -4,6 +4,7 @@ import {SceneModelService} from '../../scene-model.service';
 import {GenericSceneModel} from '../models/generic-scene-model';
 import {GenericSceneRenderContext} from '../../../../app/scene/generic-scene/render/generic-scene-render-context';
 import {GenericReaderService} from '../readers/generic-reader.service';
+import {GenericGameObject} from '../entities/generic-game-object';
 
 
 @Singleton
@@ -89,4 +90,16 @@ export class GenericWriterService implements SceneWriter {
     return Math.min(1, (Date.now() - this.lastFrameTime) / this.timePerFrame);
   }
 
+
+  addGameObject(obj: GenericGameObject): void {
+    if (obj) {
+      this.sceneModel.gameObjects = [ ...this.sceneModel.gameObjects, obj ];
+    }
+  }
+
+  removeGameObject(obj: GenericGameObject): void {
+    if (obj) {
+      this.sceneModel.gameObjects = this.sceneModel.gameObjects.filter(o => o !== obj);
+    }
+  }
 }
