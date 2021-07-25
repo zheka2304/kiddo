@@ -34,7 +34,7 @@ export class CommonTileRegistryService {
   }
 
   parseTile(description: string, position: Coords): GenericGridTile {
-    const regex = /^([A-Za-z0-9]+)(:([^;]+))?$/;
+    const regex = /^([A-Za-z0-9\-_]+)(:([^;]+))?$/;
     const data = regex.exec(description.trim());
     if (data) {
       try {
@@ -63,7 +63,7 @@ export class CommonTileRegistryService {
   registerBuiltInTileTypes(): void {
     this.addBasicTile('stone', {
       texture: {
-        atlas: { src: 'assets:/sample-atlas.png', width: 2, height: 2 },
+        atlas: { src: 'assets:/tile-atlas.png', width: 4, height: 4 },
         items: {
           [DefaultTileStates.MAIN]: [[0, 0]]
         }
@@ -73,12 +73,22 @@ export class CommonTileRegistryService {
 
     this.addBasicTile('grass', {
       texture: {
-        atlas: { src: 'assets:/sample-atlas.png', width: 2, height: 2 },
+        atlas: { src: 'assets:/tile-atlas.png', width: 4, height: 4 },
         items: {
           [DefaultTileStates.MAIN]: [[1, 0]]
         }
       },
       immutableTags: []
+    });
+
+    this.addBasicTile('goal-flag', {
+      texture: {
+        atlas: { src: 'assets:/tile-atlas.png', width: 4, height: 4 },
+        items: {
+          [DefaultTileStates.MAIN]: [[2, 0]]
+        }
+      },
+      immutableTags: [DefaultTags.GOAL]
     });
   }
 }
