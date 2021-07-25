@@ -33,10 +33,6 @@ export class GenericSceneRenderContext {
     this.staticCanvasElement = document.createElement('canvas');
     this.staticCanvasElement.style['image-rendering']  = 'pixelated';
     this.lightMapCanvasElement = document.createElement('canvas');
-
-    this.lightMapCanvasElement.style.width = '500px';
-    this.lightMapCanvasElement.style.height = '500px';
-    document.body.append(this.lightMapCanvasElement);
   }
 
   setRenderer(renderer: GenericSceneRenderer): void {
