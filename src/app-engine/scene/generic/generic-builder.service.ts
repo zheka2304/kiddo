@@ -15,6 +15,14 @@ import {CommonTileRegistryService} from './common-tile-registry.service';
 
 declare type TileOrDescription = string | GenericGridTile;
 
+export interface GenericSceneAdditionalParameters {
+  lightMap?: {
+    enabled?: boolean,
+    ambient?: number
+  };
+}
+
+
 @Singleton
 export class GenericBuilderService implements SceneBuilder {
   constructor(
@@ -25,19 +33,27 @@ export class GenericBuilderService implements SceneBuilder {
   ) {
   }
 
-  private parseFieldFromArray(data: (TileOrDescription|TileOrDescription[])[][]): GenericGridField {
+  private parseFieldFromArray(
+    data: (TileOrDescription|TileOrDescription[])[][],
+    params: GenericSceneAdditionalParameters
+  ): GenericGridField {
     const field: GenericGridField = {
       grid: [],
       width: data[0].length,
       height: data.length,
     };
 
+    const ambientLight = params?.lightMap?.ambient || 0;
+
     for (let y = 0; y < field.height; y++) {
       for (let x = 0; x < field.width; x++) {
         const cell: GenericGridCell = {
           tiles: [],
-          lightLevel: 0,
-          lightColor: '#000000'
+          light: {
+            level: 0,
+            ambient: ambientLight,
+            color: '#000000'
+          }
         };
         field.grid.push(cell);
 
@@ -78,7 +94,12 @@ export class GenericBuilderService implements SceneBuilder {
       ['stone', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'stone'],
       ['stone', 'grass', 'grass', 'grass', 'grass', 'stone', 'grass', 'grass', 'grass', 'grass', 'stone'],
       ['stone', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'stone'],
-    ]);
+    ], {
+      lightMap: {
+        enabled: true,
+        ambient: 0.09
+      }
+    });
 
     const sceneModel: GenericSceneModel = {
       sceneType: SceneType.GENERIC,
@@ -87,6 +108,8 @@ export class GenericBuilderService implements SceneBuilder {
       field,
       gameObjects: [],
       player: null,
+
+      lightMapEnabled: true,
       inverseZoom: 8
     };
 

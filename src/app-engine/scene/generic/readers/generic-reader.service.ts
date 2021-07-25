@@ -68,6 +68,16 @@ export class GenericReaderService implements SceneReader {
     }
   }
 
+  getLightLevelAt(x: number, y: number): number {
+    if (this.sceneModel.lightMapEnabled) {
+      const cell = this.getCellAt(x, y);
+      if (cell) {
+        return cell.light.level;
+      }
+    }
+    return 1;
+  }
+
   getGameObjectsAt(x: number, y: number, exclude?: GenericGameObject[]): GenericGameObject[] {
     x = Math.floor(x);
     y = Math.floor(y);
@@ -106,11 +116,8 @@ export class GenericReaderService implements SceneReader {
   }
 
   getAllTagsAt(x: number, y: number, exclude?: GenericGameObject[], minLightLevel?: number): Set<string> {
-    if (minLightLevel) {
-      const cell = this.getCellAt(x, y);
-      if (cell && cell.lightLevel < minLightLevel) {
-        return new Set<string>([DefaultTags.DARKNESS]);
-      }
+    if (minLightLevel && this.getLightLevelAt(x, y) < minLightLevel) {
+      return new Set<string>([DefaultTags.DARKNESS]);
     }
     const tags = this.getTileTagsAt(x, y);
     this.getGameObjectTagsAt(x, y, exclude).forEach(tag => tags.add(tag));

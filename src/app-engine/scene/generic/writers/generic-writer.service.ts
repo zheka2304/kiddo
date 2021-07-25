@@ -30,13 +30,24 @@ export class GenericWriterService implements SceneWriter {
   }
 
   doLightMapUpdates(context: GenericSceneRenderContext, interpolation: number): void {
+    // reset light
+    for (const cell of this.sceneModel.field.grid) {
+      cell.light.level = cell.light.ambient;
+    }
+
+    // do update
     for (const gameObject of this.sceneModel.gameObjects) {
-      gameObject.onLightMapUpdate(this, context.getInterpolatedPosition(gameObject.lastPosition, gameObject.position, interpolation));
+      gameObject.onLightMapUpdate(
+        this, context ? context.getInterpolatedPosition(gameObject.lastPosition, gameObject.position, interpolation) : gameObject.position
+      );
     }
   }
 
   doGameStep(): void {
     this.lastFrameTime = Date.now();
+
+    // run ligh map update, separated from renderer
+    this.doLightMapUpdates(null, 0);
 
     // pre tick stage
     for (const gameObject of this.sceneModel.gameObjects) {

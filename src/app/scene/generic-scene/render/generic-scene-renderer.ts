@@ -126,7 +126,7 @@ export class GenericSceneRenderer {
 
 
   isLightMapEnabled(): boolean {
-    return true;
+    return this.getSceneModel().lightMapEnabled;
   }
 
   getLightMapSize(viewport: Rect): { width: number, height: number } {
@@ -153,7 +153,7 @@ export class GenericSceneRenderer {
     for (let x = 0; x < sceneModel.field.width; x++) {
       for (let y = 0; y < sceneModel.field.height; y++) {
         const cell = sceneModel.field.grid[x + y * sceneModel.field.width];
-        canvas.fillStyle = cell.lightColor + floatComponentToHex(1 - cell.lightLevel);
+        canvas.fillStyle = cell.light.color + floatComponentToHex(1 - cell.light.level);
         canvas.fillRect(x, y, 1, 1);
       }
     }

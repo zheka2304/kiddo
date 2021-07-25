@@ -9,6 +9,7 @@ export interface GenericSceneModel extends SceneModel {
   gameObjects: GenericGameObject[];
   player: GenericPlayer;
 
+  lightMapEnabled: boolean;
   // amount of cells per lowest window dimension
   inverseZoom: number;
 }

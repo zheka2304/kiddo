@@ -81,25 +81,7 @@ export class GenericPlayer extends GameObjectBase {
   }
 
   onLightMapUpdate(writer: GenericWriterService, interpolatedPosition: Coords): void {
-    // update light map
-    const reader = writer.getReader();
-    const r = 3;
-    const r2 = r + 2;
-    const field = writer.sceneModel.field;
-    const lightFlicker = 1;
-
-    for (let x = -r2; x <= r2; x++) {
-      for (let y = -r2; y <= r2; y++) {
-        if (y + this.position.y >= 0 && y + this.position.y < field.height) {
-          const cell = reader.getCellAt(this.position.x + x, this.position.y + y);
-          if (cell) {
-            const dx = interpolatedPosition.x - (this.position.x + x);
-            const dy = interpolatedPosition.y - (this.position.y + y);
-            cell.lightLevel = Math.max(0, 1 - Math.sqrt(dx * dx + dy * dy) / r) * lightFlicker;
-          }
-        }
-      }
-    }
+    this.lightingHelper.lightAround(writer.getReader(), this.position, interpolatedPosition, { radius: 3, brightness: 1 });
   }
 
 

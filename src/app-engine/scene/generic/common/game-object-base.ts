@@ -5,6 +5,7 @@ import {GenericSceneRenderContext} from '../../../../app/scene/generic-scene/ren
 import {GenericWriterService} from '../writers/generic-writer.service';
 import {TaggableBase} from './taggable-base';
 import {NavigationHelperService} from '../helpers/navigation-helper.service';
+import {LightingHelperService} from '../helpers/lighting-helper.service';
 
 
 export class GameObjectBase extends TaggableBase implements GenericGameObject {
@@ -13,6 +14,7 @@ export class GameObjectBase extends TaggableBase implements GenericGameObject {
   position: Coords;
 
   protected readonly navigationHelper = new NavigationHelperService();
+  protected readonly lightingHelper = new LightingHelperService();
 
   draw(
     reader: GenericReaderService,
