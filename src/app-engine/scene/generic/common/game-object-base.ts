@@ -4,12 +4,15 @@ import {GenericReaderService} from '../readers/generic-reader.service';
 import {GenericSceneRenderContext} from '../../../../app/scene/generic-scene/render/generic-scene-render-context';
 import {GenericWriterService} from '../writers/generic-writer.service';
 import {TaggableBase} from './taggable-base';
+import {NavigationHelperService} from '../helpers/navigation-helper.service';
 
 
 export class GameObjectBase extends TaggableBase implements GenericGameObject {
   isGraphicsInitialized: boolean;
   lastPosition: Coords;
   position: Coords;
+
+  protected readonly navigationHelper = new NavigationHelperService();
 
   draw(
     reader: GenericReaderService,

@@ -60,7 +60,7 @@ export class GenericSkulptService implements SceneSkulptService {
         for (let i = 0; i < turns; i++) {
           await this.writer.awaitNextStep();
           this.throwErrorIfScriptIsStopped();
-          this.getPlayer().go();
+          this.getPlayer().go(this.reader);
         }
       },
 
@@ -69,7 +69,7 @@ export class GenericSkulptService implements SceneSkulptService {
         for (let i = 0; i < turns; i++) {
           await this.writer.awaitNextStep();
           this.throwErrorIfScriptIsStopped();
-          this.getPlayer().turn(Direction.RIGHT);
+          this.getPlayer().turn(this.reader, Direction.RIGHT);
         }
       },
 
@@ -78,7 +78,7 @@ export class GenericSkulptService implements SceneSkulptService {
         for (let i = 0; i < turns; i++) {
           await this.writer.awaitNextStep();
           this.throwErrorIfScriptIsStopped();
-          this.getPlayer().turn(Direction.LEFT);
+          this.getPlayer().turn(this.reader, Direction.LEFT);
         }
       },
 

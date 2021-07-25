@@ -2,6 +2,9 @@ export enum DefaultTags {
   // game object is marked destroyed and should not be processed
   DESTROYED = 'destroyed',
 
+  // must not be added to any objects, returned, when accessing tiles outside of the field
+  OUTSIDES = 'outsides',
+
   // only player must have this tag
   PLAYER = 'player',
 

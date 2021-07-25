@@ -90,7 +90,7 @@ export class GenericBuilderService implements SceneBuilder {
       inverseZoom: 8
     };
 
-    const player = new GenericPlayer({x: 1, y: 0});
+    const player = new GenericPlayer({x: 1, y: 1});
     sceneModel.gameObjects.push(player);
     sceneModel.player = player;
 

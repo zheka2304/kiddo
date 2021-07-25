@@ -5,6 +5,7 @@ import {GenericWriterService} from '../writers/generic-writer.service';
 import {DrawableCollection} from '../../../../app/scene/generic-scene/graphics/drawable-collection';
 import {GenericReaderService} from '../readers/generic-reader.service';
 import {GameObjectBase} from './game-object-base';
+import {DefaultTags} from "../entities/default-tags.enum";
 
 
 export class GenericPlayer extends GameObjectBase {
@@ -80,42 +81,20 @@ export class GenericPlayer extends GameObjectBase {
   }
 
 
-  go(): void {
-    switch (this.direction) {
-      case Direction.UP: {
-        this.position.y--;
-        break;
-      }
-      case Direction.DOWN: {
-        this.position.y++;
-        break;
-      }
-      case Direction.LEFT: {
-        this.position.x--;
-        break;
-      }
-      case Direction.RIGHT: {
-        this.position.x++;
-        break;
-      }
+  go(reader: GenericReaderService): boolean {
+    const position = this.navigationHelper.offset(this.position, this.direction, 1);
+    if (
+      reader.isPositionOnField(position.x, position.y) &&
+      !reader.getAllTagsAt(position.x, position.y, [this]).has(DefaultTags.OBSTACLE)
+    ) {
+      this.position = position;
+      return true;
+    } else {
+      return false;
     }
   }
 
-  turn(direction: Direction): void {
-    const turns = {
-      [Direction.RIGHT]: {
-        [Direction.DOWN]: Direction.LEFT,
-        [Direction.LEFT]: Direction.UP,
-        [Direction.UP]: Direction.RIGHT,
-        [Direction.RIGHT]: Direction.DOWN,
-      },
-      [Direction.LEFT]: {
-        [Direction.DOWN]: Direction.RIGHT,
-        [Direction.RIGHT]: Direction.UP,
-        [Direction.UP]: Direction.LEFT,
-        [Direction.LEFT]: Direction.DOWN,
-      },
-    };
-    this.direction = turns[direction][this.direction];
+  turn(reader: GenericReaderService, rotate: Direction): void {
+    this.direction = this.navigationHelper.rotate(this.direction, rotate);
   }
 }

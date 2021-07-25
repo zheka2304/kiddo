@@ -49,6 +49,11 @@ export class GenericReaderService implements SceneReader {
   }
 
 
+  isPositionOnField(x: number, y: number): boolean {
+    const field = this.sceneModel.field;
+    return x >= 0 && x < field.width && y >= 0 && y < field.height;
+  }
+
   getCellAt(x: number, y: number): GenericGridCell {
     const field = this.sceneModel.field;
     if (x >= 0 && x < field.width && y >= 0 && y < field.height) {
@@ -81,6 +86,8 @@ export class GenericReaderService implements SceneReader {
       for (const tile of cell.tiles) {
         tile.getTags().forEach(tag => tags.add(tag));
       }
+    } else {
+      tags.add(DefaultTags.OUTSIDES);
     }
     return tags;
   }
@@ -93,7 +100,7 @@ export class GenericReaderService implements SceneReader {
     return tags;
   }
 
-    getAllTagsAt(x: number, y: number, exclude?: GenericGameObject[]): Set<string> {
+  getAllTagsAt(x: number, y: number, exclude?: GenericGameObject[]): Set<string> {
     const tags = this.getTileTagsAt(x, y);
     this.getGameObjectTagsAt(x, y, exclude).forEach(tag => tags.add(tag));
     return tags;
