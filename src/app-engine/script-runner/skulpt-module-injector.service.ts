@@ -29,9 +29,11 @@ export class SkulptModuleInjectorService {
                 };
                 pyModule[functionName] = new Sk.builtin.func((...args) => {
                     const result = func(...args.map(c => Sk.ffi.remapToJs(c)));
-                    return Sk.ffi.remapToPy(
-                        result instanceof Promise ? Sk.misceval.promiseToSuspension(result) : result
-                    );
+                    if (result instanceof Promise) {
+                        return Sk.misceval.promiseToSuspension(result.then(value => Sk.ffi.remapToPy(value)));
+                    } else {
+                        return Sk.ffi.remapToPy(result);
+                    }
                 });
             };
 
