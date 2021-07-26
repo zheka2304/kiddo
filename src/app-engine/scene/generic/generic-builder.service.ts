@@ -21,6 +21,7 @@ import {DefaultTags} from './entities/default-tags.enum';
 import {DefaultTileStates} from './entities/default-tile-states.enum';
 import {InGameConsoleService} from './services/in-game-console.service';
 import {CharacterSkinRegistryService} from './services/character-skin-registry.service';
+import {ConsoleTerminalGameObject} from './common/console-terminal-game-object';
 
 
 declare type TileOrDescription = string | GenericGridTile;
@@ -88,6 +89,7 @@ export class GenericBuilderService implements SceneBuilder {
       GridTileBase,
       GameObjectBase,
       GenericPlayer,
+      ConsoleTerminalGameObject,
 
       // helpful defaults
       DefaultTags,

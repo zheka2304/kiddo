@@ -25,4 +25,10 @@ export enum DefaultTags {
 
   // game objects marked with this tag should be able to be picked by player
   ITEM = 'item',
+
+  // interactive game objects
+  INTERACTIVE = 'interactive',
+
+  // interactive game objects, that can open console
+  CONSOLE = 'console',
 }
