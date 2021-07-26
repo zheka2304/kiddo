@@ -17,8 +17,10 @@ import {TaggableBase} from './common/taggable-base';
 import {CheckingLogic, Coords} from '../common/entities';
 import {GenericGameObject} from './entities/generic-game-object';
 import {SceneConfigError} from '../common/errors/game-fail-error';
-import {DefaultTags} from "./entities/default-tags.enum";
-import {DefaultTileStates} from "./entities/default-tile-states.enum";
+import {DefaultTags} from './entities/default-tags.enum';
+import {DefaultTileStates} from './entities/default-tile-states.enum';
+import {InGameConsoleService} from './services/in-game-console.service';
+import {CharacterSkinRegistryService} from './services/character-skin-registry.service';
 
 
 declare type TileOrDescription = string | GenericGridTile;
@@ -39,11 +41,13 @@ export interface GenericSceneAdditionalParameters {
 
 @Singleton
 export class GenericBuilderService implements SceneBuilder {
+  private commonTileRegistryService = new CommonTileRegistryService();
+  private characterSkinRegistryService = new CharacterSkinRegistryService();
+  private inGameConsoleService = new InGameConsoleService();
 
   constructor(
     private reader: GenericReaderService,
     private writer: GenericWriterService,
-    private commonTileRegistryService: CommonTileRegistryService,
     private skulptService: GenericSkulptService,
   ) {
   }
@@ -76,6 +80,8 @@ export class GenericBuilderService implements SceneBuilder {
 
       // services
       TileRegistry: this.commonTileRegistryService,
+      CharacterSkinRegistry: this.characterSkinRegistryService,
+      InGameConsole: this.inGameConsoleService,
 
       // classes
       TaggableBase,

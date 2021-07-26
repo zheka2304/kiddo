@@ -41,9 +41,11 @@ export class GenericWriterService implements SceneWriter {
 
     // do update
     for (const gameObject of this.sceneModel.gameObjects) {
-      gameObject.onLightMapUpdate(
-        this, context ? context.getInterpolatedPosition(gameObject.lastPosition, gameObject.position, interpolation) : gameObject.position
-      );
+      if (gameObject.onLightMapUpdate) {
+        gameObject.onLightMapUpdate(
+          this, context ? context.getInterpolatedPosition(gameObject.lastPosition, gameObject.position, interpolation) : gameObject.position
+        );
+      }
     }
   }
 
@@ -119,5 +121,15 @@ export class GenericWriterService implements SceneWriter {
     if (obj) {
       this.sceneModel.gameObjects = this.sceneModel.gameObjects.filter(o => o !== obj);
     }
+  }
+
+  interact(x: number, y: number, interactingObject: GenericGameObject, exclude?: GenericGameObject[]): GenericGameObject {
+    const all = this.reader.getGameObjectsAt(x, y, exclude);
+    for (const obj of all) {
+      if (obj.onInteract && obj.onInteract(this, interactingObject)) {
+        return obj;
+      }
+    }
+    return null;
   }
 }

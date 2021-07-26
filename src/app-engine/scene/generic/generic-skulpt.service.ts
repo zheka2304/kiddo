@@ -100,28 +100,56 @@ export class GenericSkulptService implements SceneSkulptService {
         return [ ...player.getAllTagsRelativeToPlayer(this.reader, { x, y }, [player], true) ];
       },
 
-      open: () => {
-        const model = {
-          requireInput: () => 1,
-          consumeOutput: (value: any) => {
-            model.lines.push('consumed: ' + value);
-            return true;
-          },
-
-          inputs: [],
-          outputs: [],
-          lines: ['aaa', 'bbb'],
-
-          title: 'TEST CONSOLE',
-          allowInputPreview: true
-        };
-        for (let i = 0; i < 16; i++) {
-          model.outputs.push({ value: i, valid: i % 2 === 0 });
+      interact: async (x: number, y: number) => {
+        this.checkRunFailedCompletedOrAborted();
+        await this.writer.awaitNextStep();
+        this.checkRunFailedCompletedOrAborted();
+        const player = this.getPlayer();
+        if (!player.validateInteractOffset({ x, y })) {
+          throw new GameFailError('INVALID_PLAYER_INTERACT_OFFSET');
         }
-        this.inGameConsoleService.open(model);
+        return player.interact(this.writer, { x, y }, [player], true) != null;
+      }
+    });
+
+    injector.addModule('console', {
+      output: async (value: any) => {
+        this.checkRunFailedCompletedOrAborted();
+        await this.writer.awaitNextStep();
+        this.checkRunFailedCompletedOrAborted();
+        const model = this.inGameConsoleService.getCurrentModel();
+        if (!model) {
+          throw new GameFailError('CONSOLE_NOT_OPEN');
+        }
+        this.inGameConsoleService.getWriter().printToConsole(model, value + '');
       },
 
-      close: () => {
+      read: async () => {
+        this.checkRunFailedCompletedOrAborted();
+        await this.writer.awaitNextStep();
+        this.checkRunFailedCompletedOrAborted();
+        const model = this.inGameConsoleService.getCurrentModel();
+        if (!model) {
+          throw new GameFailError('CONSOLE_NOT_OPEN');
+        }
+        return this.inGameConsoleService.getWriter().readNextInput(model);
+      },
+
+      write: async (value: any) => {
+        this.checkRunFailedCompletedOrAborted();
+        await this.writer.awaitNextStep();
+        this.checkRunFailedCompletedOrAborted();
+        const model = this.inGameConsoleService.getCurrentModel();
+        if (!model) {
+          throw new GameFailError('CONSOLE_NOT_OPEN');
+        }
+        this.inGameConsoleService.getWriter().addNextOutput(model, value);
+      },
+
+      close: async () => {
+        this.checkRunFailedCompletedOrAborted();
+        await this.writer.awaitNextStep();
+        this.checkRunFailedCompletedOrAborted();
         this.inGameConsoleService.close();
       }
     });

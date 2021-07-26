@@ -14,6 +14,17 @@ export class InGameConsoleWriterService {
     }
   }
 
+  printToConsole(model: InGameConsoleModel, line: string): void {
+    model.lines.push(line);
+  }
+
+  readNextInput(model: InGameConsoleModel): any {
+    if (model.inputs.length > 0) {
+      return model.inputs.shift();
+    }
+    return model.requireInput();
+  }
+
   addNextOutput(model: InGameConsoleModel, value: any): boolean {
     const valid = model.consumeOutput(value);
     model.outputs.push({ valid, value });

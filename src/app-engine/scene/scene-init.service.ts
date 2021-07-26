@@ -73,8 +73,7 @@ export class SceneInitService {
       const reader = new GenericReaderService(this.sceneModelService);
       const writer = new GenericWriterService(this.sceneModelService, reader);
       const api = new GenericSkulptService(this.skulptService, this.terminalService, reader, writer);
-      const tileRegistry = new CommonTileRegistryService();
-      return new GenericBuilderService(reader, writer, tileRegistry, api);
+      return new GenericBuilderService(reader, writer, api);
     }
   };
 

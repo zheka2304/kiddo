@@ -122,6 +122,10 @@ export class GenericPlayer extends GameObjectBase {
     return true;
   }
 
+  validateInteractOffset(offset: Coords): boolean {
+    return true;
+  }
+
   getLightSources(): LightSourceParams[] {
     return this.parameters?.defaultLightSources || [];
   }
@@ -155,6 +159,23 @@ export class GenericPlayer extends GameObjectBase {
       this.addAction(position, PlayerActionType.READ);
     }
     return reader.getAllTagsAt(position.x, position.y, exclude, this.getMinVisibleLightLevel(reader));
+  }
+
+  interact(
+    writer: GenericWriterService,
+    offset: Coords,
+    exclude?: GenericGameObject[],
+    showAction?: boolean
+  ): GenericGameObject {
+    const reader = writer.getReader();
+    const position = this.navigationHelper.offset(this.position, this.direction, offset);
+    if (showAction) {
+      this.addAction(position, PlayerActionType.INTERACT);
+    }
+    if (reader.getLightLevelAt(position.x, position.y) >= this.getMinVisibleLightLevel(reader)) {
+      return writer.interact(position.x, position.y, this, exclude);
+    }
+    return null;
   }
 
   addAction(position: Coords, action: PlayerActionType): void {
