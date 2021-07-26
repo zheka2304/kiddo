@@ -89,6 +89,9 @@ export class GenericSkulptService implements SceneSkulptService {
         await this.writer.awaitNextStep();
         this.checkRunFailedCompletedOrAborted();
         const player = this.getPlayer();
+        if (!player.validateLookOffset({ x, y })) {
+          throw new GameFailError('INVALID_PLAYER_LOOK_OFFSET');
+        }
         return [ ...player.getAllTagsRelativeToPlayer(this.reader, { x, y }, [player]) ];
       }
     });
@@ -108,6 +111,8 @@ export class GenericSkulptService implements SceneSkulptService {
           this.executionWasAborted = true;
           this.tickExecutionError = err;
           console.error('error in generic scene runtime', err);
+
+          // this will safely run all queued actions (turn awaits) to stop the script, otherwise it will wait forever
           this.writer.runAllActionsSafely();
         }
         if (this.executionWasAborted) {

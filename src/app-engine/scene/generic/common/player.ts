@@ -18,6 +18,7 @@ export enum PlayerActionType {
 export interface GenericPlayerParameters {
   skin?: string | CharacterSkin;
   defaultLightSources?: LightSourceParams[];
+  minVisibleLightLevel?: number;
 }
 
 export class GenericPlayer extends GameObjectBase {
@@ -114,7 +115,11 @@ export class GenericPlayer extends GameObjectBase {
   }
 
   getMinVisibleLightLevel(reader: GenericReaderService): number {
-    return 0.1;
+    return this.parameters?.minVisibleLightLevel || 0;
+  }
+
+  validateLookOffset(offset: Coords): boolean {
+    return true;
   }
 
   getLightSources(): LightSourceParams[] {
