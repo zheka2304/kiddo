@@ -182,7 +182,7 @@ export class GenericPlayer extends GameObjectBase {
       for (let y = -range; y <= range; y++) {
         const tags = reader.getAllTagsAt(this.position.x + x, this.position.y + y, [], this.getMinVisibleLightLevel(reader));
         if (tags.has(tag)) {
-          result.push({ x, y });
+          result.push(this.navigationHelper.offset({ x: 0, y: 0 }, this.direction, { x, y }));
           if (showAction) {
             this.addAction({ x: this.position.x + x, y: this.position.y + y }, PlayerActionType.READ);
           }
