@@ -134,6 +134,9 @@ export class GenericSceneRenderContext {
             0, 0, this.canvasSize.width, this.canvasSize.height
           );
         }
+
+        // draw ui
+        this.renderer.onDrawUi(this, canvas, viewport);
       };
 
       if (window.requestAnimationFrame) {

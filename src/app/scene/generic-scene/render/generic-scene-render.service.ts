@@ -1,8 +1,8 @@
 import {Injectable} from '@angular/core';
 import {GenericSceneRenderContext} from './generic-scene-render-context';
 import {BehaviorSubject, interval} from 'rxjs';
-import {switchMap, takeWhile, tap} from 'rxjs/operators';
-import {SceneTextureLoaderService} from "../graphics/scene-texture-loader.service";
+import {tap} from 'rxjs/operators';
+import {SceneTextureLoaderService} from '../graphics/scene-texture-loader.service';
 
 
 @Injectable({

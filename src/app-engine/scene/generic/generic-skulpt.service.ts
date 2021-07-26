@@ -10,6 +10,8 @@ import {GenericPlayer, PlayerActionType} from './common/player';
 import {Direction} from '../common/entities';
 import {TerminalService} from '../../../app/code-editor/terminal/terminal.service';
 import {GameCompletionInterruptError} from '../common/errors/game-completion-interrupt-error';
+import {InGameConsoleService} from './services/in-game-console.service';
+import {InGameWindowService} from './services/in-game-window-service';
 
 
 @Singleton
@@ -17,6 +19,9 @@ export class GenericSkulptService implements SceneSkulptService {
   executionWasAborted = false;
   private tickExecutionError: Error = null;
   private tickingIsStopped = new Subject<any>();
+
+  private inGameWindowService: InGameWindowService = new InGameWindowService();
+  private inGameConsoleService: InGameConsoleService = new InGameConsoleService();
 
   constructor(
     private skulptService: SkulptService,
@@ -92,14 +97,40 @@ export class GenericSkulptService implements SceneSkulptService {
         if (!player.validateLookOffset({ x, y })) {
           throw new GameFailError('INVALID_PLAYER_LOOK_OFFSET');
         }
-        return [ ...player.getAllTagsRelativeToPlayer(this.reader, { x, y }, [player]) ];
+        return [ ...player.getAllTagsRelativeToPlayer(this.reader, { x, y }, [player], true) ];
+      },
+
+      open: () => {
+        const model = {
+          requireInput: () => 1,
+          consumeOutput: (value: any) => {
+            model.lines.push('consumed: ' + value);
+            return true;
+          },
+
+          inputs: [],
+          outputs: [],
+          lines: ['aaa', 'bbb'],
+
+          title: 'TEST CONSOLE',
+          allowInputPreview: true
+        };
+        for (let i = 0; i < 16; i++) {
+          model.outputs.push({ value: i, valid: i % 2 === 0 });
+        }
+        this.inGameConsoleService.open(model);
+      },
+
+      close: () => {
+        this.inGameConsoleService.close();
       }
     });
   }
 
   onExecutionStarted(): void {
-    const timePerFrame = 250;
+    const timePerFrame = 500;
     this.writer.reset(timePerFrame);
+    this.inGameWindowService.closeAllWindows();
     this.tickExecutionError = null;
 
     interval(timePerFrame).pipe(
@@ -124,6 +155,7 @@ export class GenericSkulptService implements SceneSkulptService {
 
   onExecutionFinished(): void {
     this.tickingIsStopped.next();
+    this.inGameWindowService.closeAllWindows();
   }
 
   private checkRunFailedCompletedOrAborted(): void {

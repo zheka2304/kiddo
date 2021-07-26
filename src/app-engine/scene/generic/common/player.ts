@@ -144,9 +144,16 @@ export class GenericPlayer extends GameObjectBase {
     this.direction = this.navigationHelper.rotate(this.direction, rotate);
   }
 
-  getAllTagsRelativeToPlayer(reader: GenericReaderService, offset: Coords, exclude?: GenericGameObject[]): Set<string> {
+  getAllTagsRelativeToPlayer(
+    reader: GenericReaderService,
+    offset: Coords,
+    exclude?: GenericGameObject[],
+    showAction?: boolean
+  ): Set<string> {
     const position = this.navigationHelper.offset(this.position, this.direction, offset);
-    this.addAction(position, PlayerActionType.READ);
+    if (showAction) {
+      this.addAction(position, PlayerActionType.READ);
+    }
     return reader.getAllTagsAt(position.x, position.y, exclude, this.getMinVisibleLightLevel(reader));
   }
 

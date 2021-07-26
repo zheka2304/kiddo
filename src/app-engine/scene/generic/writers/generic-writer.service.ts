@@ -5,6 +5,7 @@ import {GenericSceneModel} from '../models/generic-scene-model';
 import {GenericSceneRenderContext} from '../../../../app/scene/generic-scene/render/generic-scene-render-context';
 import {GenericReaderService} from '../readers/generic-reader.service';
 import {GenericGameObject} from '../entities/generic-game-object';
+import {InGameWindowService} from '../services/in-game-window-service';
 
 
 @Singleton
@@ -14,6 +15,8 @@ export class GenericWriterService implements SceneWriter {
 
   private timePerFrame = 500;
   private lastFrameTime = 0;
+
+  private readonly inGameWindowService = new InGameWindowService();
 
   constructor(
     private sceneModelService: SceneModelService,
@@ -49,6 +52,9 @@ export class GenericWriterService implements SceneWriter {
 
     // run ligh map update, separated from renderer
     this.doLightMapUpdates(null, 0);
+
+    // tick in-game windows first, so opening them will not instantly trigger tick and swap states
+    this.inGameWindowService.onTick(this);
 
     // pre tick stage
     for (const gameObject of this.sceneModel.gameObjects) {

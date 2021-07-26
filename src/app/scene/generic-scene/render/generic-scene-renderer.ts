@@ -6,6 +6,7 @@ import {GenericGridField} from '../../../../app-engine/scene/generic/entities/ge
 import {LoadableGraphics} from '../graphics/loadable-graphics';
 import {GenericWriterService} from '../../../../app-engine/scene/generic/writers/generic-writer.service';
 import {GenericReaderService} from '../../../../app-engine/scene/generic/readers/generic-reader.service';
+import {InGameWindowService} from '../../../../app-engine/scene/generic/services/in-game-window-service';
 
 
 export class GenericSceneRenderer {
@@ -15,6 +16,8 @@ export class GenericSceneRenderer {
   };
   private lastSceneUid: string = null;
   private isBackgroundForcedDirty = false;
+
+  private inGameWindowService = new InGameWindowService();
 
   constructor(
     private sceneAccessorsService: SceneAccessorsService
@@ -165,7 +168,7 @@ export class GenericSceneRenderer {
   }
 
 
-  onForegroundDraw(context: GenericSceneRenderContext, ctx: CanvasRenderingContext2D, viewport: Rect): void {
+  onForegroundDraw(context: GenericSceneRenderContext, canvas: CanvasRenderingContext2D, viewport: Rect): void {
     const sceneModel = this.getSceneModel();
     const reader = this.getReader();
     const renderData = {
@@ -175,11 +178,10 @@ export class GenericSceneRenderer {
       interpolation: this.getRenderInterpolationValue()
     };
 
-    ctx.imageSmoothingEnabled = false;
-
+    canvas.imageSmoothingEnabled = false;
     for (const gameObject of sceneModel.gameObjects) {
       if (this.checkGraphicsLoaded(context, gameObject)) {
-        gameObject.draw(reader, context, ctx, renderData);
+        gameObject.draw(reader, context, canvas, renderData);
       }
     }
   }
@@ -204,6 +206,15 @@ export class GenericSceneRenderer {
 
   onOutputResize(context: GenericSceneRenderContext, width: number, height: number): void {
 
+  }
+
+
+  onDrawUi(context: GenericSceneRenderContext, canvas: CanvasRenderingContext2D, viewport: Rect): void {
+    this.inGameWindowService.drawWindows(
+      context,
+      canvas,
+      { width: viewport.width, height: viewport.height, interpolation: this.getRenderInterpolationValue() }
+    );
   }
 
 }
