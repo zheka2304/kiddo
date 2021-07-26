@@ -233,11 +233,15 @@ export class GenericBuilderService implements SceneBuilder {
     }
   }
 
-  setTile(x: number, y: number, description: TileOrDescription | TileOrDescription[]): void {
+  setTile(x: number, y: number, description: TileOrDescription | TileOrDescription[], addTiles?: boolean): void {
     const tiles = this.parseTileArray({ x, y }, description, true);
     const cell = this.getCell(x, y);
     if (cell) {
-      cell.tiles = tiles;
+      if (addTiles) {
+        cell.tiles = [ ...cell.tiles, ...tiles];
+      } else {
+        cell.tiles = tiles;
+      }
     }
   }
 
