@@ -238,7 +238,7 @@ export class GenericBuilderService implements SceneBuilder {
     const cell = this.getCell(x, y);
     if (cell) {
       if (addTiles) {
-        cell.tiles = [ ...cell.tiles, ...tiles];
+        cell.tiles = [ ...cell.tiles, ...tiles ];
       } else {
         cell.tiles = tiles;
       }

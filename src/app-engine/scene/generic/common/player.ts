@@ -18,7 +18,10 @@ export enum PlayerActionType {
 export interface GenericPlayerParameters {
   skin?: string | CharacterSkin;
   defaultLightSources?: LightSourceParams[];
+
   minVisibleLightLevel?: number;
+  interactRange?: number;
+  lookRange?: number;
 }
 
 export class GenericPlayer extends GameObjectBase {
@@ -118,12 +121,19 @@ export class GenericPlayer extends GameObjectBase {
     return this.parameters?.minVisibleLightLevel || 0;
   }
 
-  validateLookOffset(offset: Coords): boolean {
-    return true;
+  validateInspectOffset(offset: Coords): boolean {
+    const range = this.parameters?.lookRange;
+    return range ? (Math.abs(offset.x) <= range && Math.abs(offset.y) <= range) : true;
   }
 
   validateInteractOffset(offset: Coords): boolean {
-    return true;
+    const range = this.parameters?.interactRange || 1;
+    return (Math.abs(offset.x) <= range && Math.abs(offset.y) <= range);
+  }
+
+  validateLookRange(range: number): boolean {
+    const lookRange = this.parameters?.lookRange;
+    return lookRange ? range <= lookRange : true;
   }
 
   getLightSources(): LightSourceParams[] {
@@ -159,6 +169,27 @@ export class GenericPlayer extends GameObjectBase {
       this.addAction(position, PlayerActionType.READ);
     }
     return reader.getAllTagsAt(position.x, position.y, exclude, this.getMinVisibleLightLevel(reader));
+  }
+
+  lookForCellsWithTag(
+    reader: GenericReaderService,
+    tag: string,
+    range: number,
+    showAction?: boolean
+  ): Coords[] {
+    const result: Coords[] = [];
+    for (let x = -range; x <= range; x++) {
+      for (let y = -range; y <= range; y++) {
+        const tags = reader.getAllTagsAt(this.position.x + x, this.position.y + y, [], this.getMinVisibleLightLevel(reader));
+        if (tags.has(tag)) {
+          result.push({ x, y });
+          if (showAction) {
+            this.addAction({ x: this.position.x + x, y: this.position.y + y }, PlayerActionType.READ);
+          }
+        }
+      }
+    }
+    return result;
   }
 
   interact(

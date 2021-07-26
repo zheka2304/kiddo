@@ -89,15 +89,26 @@ export class GenericSkulptService implements SceneSkulptService {
         }
       },
 
-      look: async (x: number, y: number) => {
+      inspect: async (x: number, y: number) => {
         this.checkRunFailedCompletedOrAborted();
         await this.writer.awaitNextStep();
         this.checkRunFailedCompletedOrAborted();
         const player = this.getPlayer();
-        if (!player.validateLookOffset({ x, y })) {
-          throw new GameFailError('INVALID_PLAYER_LOOK_OFFSET');
+        if (!player.validateInspectOffset({ x, y })) {
+          throw new GameFailError('INVALID_PLAYER_INSPECT_OFFSET');
         }
         return [ ...player.getAllTagsRelativeToPlayer(this.reader, { x, y }, [player], true) ];
+      },
+
+      look: async (tag: string, range: number) => {
+        this.checkRunFailedCompletedOrAborted();
+        await this.writer.awaitNextStep();
+        this.checkRunFailedCompletedOrAborted();
+        const player = this.getPlayer();
+        if (!player.validateLookRange(range)) {
+          throw new GameFailError('INVALID_PLAYER_LOOK_RANGE');
+        }
+        return player.lookForCellsWithTag(this.reader, tag, range, true).map(coords => [ coords.x, coords.y ]);
       },
 
       interact: async (x: number, y: number) => {
