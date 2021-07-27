@@ -14,6 +14,9 @@ export enum DefaultTags {
   // only player must have this tag
   PLAYER = 'player',
 
+  // any character should have this tag
+  CHARACTER = 'character',
+
   // being in one cell with tile or game object with this tag will result in player destroyed & level failed
   DEADLY = 'deadly',
 

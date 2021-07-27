@@ -6,7 +6,7 @@ import {GenericWriterService} from './writers/generic-writer.service';
 import {interval, Subject} from 'rxjs';
 import {takeUntil, tap} from 'rxjs/operators';
 import {GameFailError} from '../common/errors';
-import {GenericPlayer, PlayerActionType} from './common/player';
+import {GenericPlayer} from './common/player';
 import {Direction} from '../common/entities';
 import {TerminalService} from '../../../app/code-editor/terminal/terminal.service';
 import {GameCompletionInterruptError} from '../common/errors/game-completion-interrupt-error';

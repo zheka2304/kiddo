@@ -1,19 +1,12 @@
 import {GenericGameObject} from '../entities/generic-game-object';
 import {Coords, Direction} from '../../common/entities';
-import {GenericSceneRenderContext} from '../../../../app/scene/generic-scene/render/generic-scene-render-context';
 import {GenericWriterService} from '../writers/generic-writer.service';
-import {DrawableCollection} from '../../../../app/scene/generic-scene/graphics/drawable-collection';
 import {GenericReaderService} from '../readers/generic-reader.service';
-import {GameObjectBase} from './game-object-base';
 import {DefaultTags} from '../entities/default-tags.enum';
 import {LightSourceParams} from '../helpers/lighting-helper.service';
-import {CharacterSkin, CharacterSkinRegistryService} from '../services/character-skin-registry.service';
+import {CharacterSkin} from '../services/character-skin-registry.service';
+import {CharacterActionType, CharacterBase} from './character-base';
 
-
-export enum PlayerActionType {
-  READ = 'read',
-  INTERACT = 'interact',
-}
 
 export interface GenericPlayerParameters {
   skin?: string | CharacterSkin;
@@ -25,64 +18,19 @@ export interface GenericPlayerParameters {
   initialRotation?: Direction;
 }
 
-export class GenericPlayer extends GameObjectBase {
-  direction: Direction = Direction.RIGHT;
+export class GenericPlayer extends CharacterBase {
   private failReason: string = null;
-  private thisTurnActions: ({ position: Coords, action: PlayerActionType })[] = [];
-
-  private idleTexture: DrawableCollection;
-  private walkingTexture: DrawableCollection;
-  private actionTexture: DrawableCollection;
-
-  private readonly skinRegistryService: CharacterSkinRegistryService = new CharacterSkinRegistryService();
 
   constructor(
     position: Coords,
     private parameters: GenericPlayerParameters
   ) {
-    super(position);
+    super(position, parameters?.initialRotation || Direction.RIGHT, parameters?.skin);
     this.addImmutableTag(DefaultTags.PLAYER);
-    this.direction = this.parameters?.initialRotation || Direction.RIGHT;
-  }
-
-  async onGraphicsInit(context: GenericSceneRenderContext): Promise<void> {
-    const skin = this.skinRegistryService.getCharacterSkin(this.parameters?.skin);
-    this.idleTexture = await context.getTextureLoader().getTextureCollectionFromAtlas(
-      this.skinRegistryService.getIdleTextureDescription(skin)
-    );
-    this.walkingTexture = await context.getTextureLoader().getTextureCollectionFromAtlas(
-      this.skinRegistryService.getWalkingTextureDescription(skin)
-    );
-
-    this.actionTexture = await context.getTextureLoader().getTextureCollectionFromAtlas({
-      atlas: {src: 'assets:/player-action-atlas.png', width: 4, height: 4},
-      items: {
-        [PlayerActionType.READ]: [[0, 0]],
-        [PlayerActionType.INTERACT]: [[1, 0]],
-      }
-    });
-  }
-
-  draw(
-    reader: GenericReaderService,
-    context: GenericSceneRenderContext,
-    canvas: CanvasRenderingContext2D,
-    renderData: { x: number; y: number; scale: number, interpolation: number }
-  ): void {
-    const targetRect = context.renderDataAndPositionToRect(this.lastPosition, this.position, renderData);
-    const texture = (this.lastPosition.x === this.position.x && this.lastPosition.y === this.position.y ?
-                        this.idleTexture : this.walkingTexture);
-    texture.draw(canvas, this.direction, targetRect);
-
-    for (const action of this.thisTurnActions) {
-      const rect = context.renderDataAndPositionToRect(action.position, action.position, renderData);
-      this.actionTexture.draw(canvas, action.action, rect);
-    }
   }
 
   onTick(writer: GenericWriterService): void {
     super.onTick(writer);
-    this.thisTurnActions = [];
   }
 
   onPostTick(writer: GenericWriterService): void {
@@ -99,18 +47,6 @@ export class GenericPlayer extends GameObjectBase {
       }
     } else if (tags.has(DefaultTags.OBSTACLE)) {
       this.failReason = 'IN_OBSTACLE';
-    }
-  }
-
-  onLightMapUpdate(writer: GenericWriterService, interpolatedPosition: Coords): void {
-    for (let lightSource of this.getLightSources()) {
-      if (lightSource.offset) {
-        lightSource = {
-          ...lightSource,
-          offset: this.navigationHelper.offset({ x: 0, y: 0 }, this.direction, lightSource.offset)
-        };
-      }
-      this.lightingHelper.lightAround(writer.getReader(), this.position, interpolatedPosition, lightSource);
     }
   }
 
@@ -168,7 +104,7 @@ export class GenericPlayer extends GameObjectBase {
   ): Set<string> {
     const position = this.navigationHelper.offset(this.position, this.direction, offset);
     if (showAction) {
-      this.addAction(position, PlayerActionType.READ);
+      this.addAction(position, CharacterActionType.READ);
     }
     return reader.getAllTagsAt(position.x, position.y, exclude, this.getMinVisibleLightLevel(reader));
   }
@@ -186,7 +122,7 @@ export class GenericPlayer extends GameObjectBase {
         if (tags.has(tag)) {
           result.push(this.navigationHelper.offset({ x: 0, y: 0 }, this.direction, { x, y }));
           if (showAction) {
-            this.addAction({ x: this.position.x + x, y: this.position.y + y }, PlayerActionType.READ);
+            this.addAction({ x: this.position.x + x, y: this.position.y + y }, CharacterActionType.READ);
           }
         }
       }
@@ -203,20 +139,11 @@ export class GenericPlayer extends GameObjectBase {
     const reader = writer.getReader();
     const position = this.navigationHelper.offset(this.position, this.direction, offset);
     if (showAction) {
-      this.addAction(position, PlayerActionType.INTERACT);
+      this.addAction(position, CharacterActionType.INTERACT);
     }
     if (reader.getLightLevelAt(position.x, position.y) >= this.getMinVisibleLightLevel(reader)) {
       return writer.interact(position.x, position.y, this, exclude);
     }
     return null;
-  }
-
-  addAction(position: Coords, action: PlayerActionType): void {
-    this.thisTurnActions.push({ position, action });
-  }
-
-  addActionRelative(offset: Coords, action: PlayerActionType): void {
-    const position = this.navigationHelper.offset(this.position, this.direction, offset);
-    this.addAction(position, action);
   }
 }

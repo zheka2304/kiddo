@@ -24,6 +24,7 @@ import {CharacterSkinRegistryService} from './services/character-skin-registry.s
 import {ConsoleTerminalGameObject} from './common/console-terminal-game-object';
 import {SimpleGameObject} from './common/simple-game-object';
 import {SimpleGridTile} from './common/simple-grid-tile';
+import {CharacterBase} from './common/character-base';
 
 
 declare type TileOrDescription = string | GenericGridTile;
@@ -94,6 +95,7 @@ export class GenericBuilderService implements SceneBuilder {
       ConsoleTerminalGameObject,
       SimpleGridTile,
       SimpleGameObject,
+      CharacterBase,
 
       // helpful defaults
       DefaultTags,
