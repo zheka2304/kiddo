@@ -3,6 +3,7 @@ import {InGameConsoleModel} from '../models/in-game-console-model';
 import {InGameConsoleWindow} from '../common/in-game-console-window';
 import {InGameWindowService} from './in-game-window-service';
 import {InGameConsoleWriterService} from '../writers/in-game-console-writer.service';
+import {InGameWindowState} from "../entities/in-game-window";
 
 
 @Singleton
@@ -18,6 +19,10 @@ export class InGameConsoleService {
   }
 
   getCurrentModel(): InGameConsoleModel {
+    if (!this.currentConsoleWindow || this.currentConsoleWindow.state === InGameWindowState.CLOSED) {
+      this.currentConsoleModel = null;
+      this.currentConsoleWindow = null;
+    }
     return this.currentConsoleModel;
   }
 

@@ -54,6 +54,10 @@ export class GenericSkulptService implements SceneSkulptService {
     });
 
     injector.addModule('player', {
+      direction: () => {
+        return this.getPlayer().direction.toLowerCase();
+      },
+
       wait: async (turns: number) => {
         this.checkRunFailedCompletedOrAborted();
         for (let i = 0; i < turns; i++) {
@@ -63,12 +67,21 @@ export class GenericSkulptService implements SceneSkulptService {
       },
 
       go: async (turns: number = 1) => {
+        let steps = 0;
         this.checkRunFailedCompletedOrAborted();
         for (let i = 0; i < turns; i++) {
           await this.writer.awaitNextStep();
           this.checkRunFailedCompletedOrAborted();
-          this.getPlayer().go(this.reader);
+          if (this.inGameConsoleService.getCurrentModel()) {
+            throw new GameFailError('PLAYER_MOVE_WITH_OPEN_CONSOLE');
+          }
+          if (this.getPlayer().go(this.reader, { x: 0, y: 1 })) {
+            steps++;
+          } else {
+            break;
+          }
         }
+        return steps;
       },
 
       right: async (turns: number = 1) => {
@@ -76,6 +89,9 @@ export class GenericSkulptService implements SceneSkulptService {
         for (let i = 0; i < turns; i++) {
           await this.writer.awaitNextStep();
           this.checkRunFailedCompletedOrAborted();
+          if (this.inGameConsoleService.getCurrentModel()) {
+            throw new GameFailError('PLAYER_MOVE_WITH_OPEN_CONSOLE');
+          }
           this.getPlayer().turn(this.reader, Direction.RIGHT);
         }
       },
@@ -85,6 +101,9 @@ export class GenericSkulptService implements SceneSkulptService {
         for (let i = 0; i < turns; i++) {
           await this.writer.awaitNextStep();
           this.checkRunFailedCompletedOrAborted();
+          if (this.inGameConsoleService.getCurrentModel()) {
+            throw new GameFailError('PLAYER_MOVE_WITH_OPEN_CONSOLE');
+          }
           this.getPlayer().turn(this.reader, Direction.LEFT);
         }
       },
@@ -125,8 +144,7 @@ export class GenericSkulptService implements SceneSkulptService {
 
     injector.addModule('console', {
       output: async (value: any) => {
-        this.checkRunFailedCompletedOrAborted();
-        await this.writer.awaitNextStep();
+        // do not wait for next step, because it is just print and has no impact on a game
         this.checkRunFailedCompletedOrAborted();
         const model = this.inGameConsoleService.getCurrentModel();
         if (!model) {

@@ -22,6 +22,7 @@ export interface GenericPlayerParameters {
   minVisibleLightLevel?: number;
   interactRange?: number;
   lookRange?: number;
+  initialRotation?: Direction;
 }
 
 export class GenericPlayer extends GameObjectBase {
@@ -41,6 +42,7 @@ export class GenericPlayer extends GameObjectBase {
   ) {
     super(position);
     this.addImmutableTag(DefaultTags.PLAYER);
+    this.direction = this.parameters?.initialRotation || Direction.RIGHT;
   }
 
   async onGraphicsInit(context: GenericSceneRenderContext): Promise<void> {
@@ -141,8 +143,8 @@ export class GenericPlayer extends GameObjectBase {
   }
 
 
-  go(reader: GenericReaderService): boolean {
-    const position = this.navigationHelper.offset(this.position, this.direction, { x: 0, y: 1 });
+  go(reader: GenericReaderService, offset: Coords = { x: 0, y: 1 }): boolean {
+    const position = this.navigationHelper.offset(this.position, this.direction, offset);
     if (
       reader.isPositionOnField(position.x, position.y) &&
       !reader.getAllTagsAt(position.x, position.y, [this]).has(DefaultTags.OBSTACLE)
