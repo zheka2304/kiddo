@@ -1,5 +1,7 @@
 import {Singleton} from '../../../singleton.decorator';
+import {SimplexTaskTest} from '../tasks/simplex/task_test';
 import {SimplexTask1_1} from '../tasks/simplex/task1_1';
+import {SimplexTask1_2} from '../tasks/simplex/task1_2';
 
 
 @Singleton
@@ -7,7 +9,9 @@ export class TaskRegistryService {
   private registeredTaskMap = new Map<string, () => void>();
 
   constructor() {
+    this.registerTask('simplex_test', SimplexTaskTest);
     this.registerTask('simplex_task1_1', SimplexTask1_1);
+    this.registerTask('simplex_task1_2', SimplexTask1_2);
   }
 
   registerTask(name: string, initFunc: () => void): void {

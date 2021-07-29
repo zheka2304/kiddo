@@ -1,10 +1,11 @@
-import {ConsoleTerminalGameObject} from '../../common/console-terminal-game-object';
-import {GenericPlayer} from '../../common/player';
 import {GenericBuilderService} from '../../generic-builder.service';
 import {CommonTileRegistryService} from '../../services/common-tile-registry.service';
 import {CharacterSkinRegistryService} from '../../services/character-skin-registry.service';
 import {InGameConsoleService} from '../../services/in-game-console.service';
 import {CheckingLogic} from '../../../common/entities';
+import {GenericPlayer} from '../../common/player';
+import {DefaultTileStates} from '../../entities/default-tile-states.enum';
+import {DefaultTags} from '../../entities/default-tags.enum';
 
 // declarations for generic task init function
 declare const Builder: GenericBuilderService;
@@ -16,54 +17,52 @@ declare const DefaultCheckingLogic: { [key: string]: CheckingLogic };
 
 // tslint:disable-next-line
 export const SimplexTask1_1 = () => {
-  TileRegistry.addBasicTile('water', {
+  TileRegistry.addBasicTile('wood-tile', {
     texture: {
-      atlas: { src: 'assets:/tile-atlas.png', width: 4, height: 4 },
+      atlas: {src: 'assets:/tile-atlas.png', width: 4, height: 4},
       items: {
-        main: [[1, 1]]
+        [DefaultTileStates.MAIN]: [[1, 0]]
       }
     },
-    immutableTags: ['obstacle', 'liquid']
+    immutableTags: []
   });
 
-  Builder.setupGameField([
-    ['stone', 'grass', 'grass', 'grass', 'grass', 'stone', 'grass', 'grass', 'grass', 'grass', 'stone'],
-    ['stone', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'stone'],
-    ['stone', 'grass;goal-flag', 'water', 'grass', 'grass', 'stone', 'grass', 'grass', 'grass', 'grass', 'stone'],
-    ['stone', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'stone'],
-    ['stone', 'grass', 'grass', 'grass', 'grass', 'stone', 'grass', 'grass', 'grass', 'grass', 'stone'],
-    ['stone', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'stone'],
-    ['stone', 'grass', 'grass', 'grass', 'grass', 'stone', 'grass', 'grass', 'grass', 'grass', 'stone'],
-    ['stone', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'stone'],
-    ['stone', 'grass', 'grass', 'grass', 'grass', 'stone', 'grass', 'grass', 'grass', 'grass', 'stone'],
-    ['stone', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'stone'],
-    ['stone', 'grass', 'grass', 'grass', 'grass', 'stone', 'grass', 'grass', 'grass', 'grass', 'stone'],
-    ['stone', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'stone'],
-    ['stone', 'grass', 'grass', 'grass', 'grass', 'stone', 'grass', 'grass', 'grass', 'grass', 'stone'],
-    ['stone', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'grass', 'stone'],
-  ], {
+  TileRegistry.addBasicTile('goal-flag', {
+    texture: {
+      atlas: {src: 'assets:/tile-atlas.png', width: 4, height: 4},
+      items: {
+        [DefaultTileStates.MAIN]: [[2, 0]]
+      }
+    },
+    immutableTags: [DefaultTags.GOAL]
+  });
+
+
+  Builder.setupGameField({width: 8, height: 8}, {
     lightMap: {
-      enabled: true,
+      enabled: false,
       ambient: 0.09
-    }
+    },
+    tilesPerScreen: 8
   });
 
-  Builder.addGameObject(new ConsoleTerminalGameObject({x: 2, y: 2}, {
-    title: 'test',
-    requireInput: () => 1,
-    onApplied: () => console.log("apply"),
-    enableEcho: true
-  }));
+  for (let x = 0; x < 16; x++) {
+    for (let y = 0; y < 8; y++) {
+      Builder.setTile(x, y, 'wood-tile');
+    }
+  }
+  Builder.setTile(7, 5, ['wood-tile', 'goal-flag']);
 
-  Builder.setPlayer(new GenericPlayer({x: 1, y: 1}, {
-    skin: 'link',
-    defaultLightSources: [ { radius: 3, brightness: 1 } ],
+  Builder.setPlayer(new GenericPlayer({x: 1, y: 0}, {
+      skin: 'link',
+      defaultLightSources: [
+        {radius: 1, brightness: 1},
+      ],
 
-    minVisibleLightLevel: 0.1,
-    interactRange: 1,
-    lookRange: 3
-  }));
+      minVisibleLightLevel: 0.1,
+      interactRange: 1,
+    }
+  ));
 
   Builder.addCheckingLogic(DefaultCheckingLogic.GOAL_REACHED);
 };
-
