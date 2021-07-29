@@ -66,7 +66,7 @@ export class GenericSkulptService implements SceneSkulptService {
         }
       },
 
-      go: async (turns: number = 1) => {
+      move: async (turns: number = 1) => {
         let steps = 0;
         this.checkRunFailedCompletedOrAborted();
         for (let i = 0; i < turns; i++) {
@@ -75,7 +75,7 @@ export class GenericSkulptService implements SceneSkulptService {
           if (this.inGameConsoleService.getCurrentModel()) {
             throw new GameFailError('PLAYER_MOVE_WITH_OPEN_CONSOLE');
           }
-          if (this.getPlayer().go(this.reader, { x: 0, y: 1 })) {
+          if (this.getPlayer().move(this.reader, { x: 0, y: 1 })) {
             steps++;
           } else {
             break;
@@ -108,7 +108,7 @@ export class GenericSkulptService implements SceneSkulptService {
         }
       },
 
-      inspect: async (x: number, y: number) => {
+      inspect: async (x: number = 0, y: number = 1) => {
         this.checkRunFailedCompletedOrAborted();
         await this.writer.awaitNextStep();
         this.checkRunFailedCompletedOrAborted();

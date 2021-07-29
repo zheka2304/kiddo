@@ -79,7 +79,7 @@ export class GenericPlayer extends CharacterBase {
   }
 
 
-  go(reader: GenericReaderService, offset: Coords = { x: 0, y: 1 }): boolean {
+  move(reader: GenericReaderService, offset: Coords = { x: 0, y: 1 }): boolean {
     const position = this.navigationHelper.offset(this.position, this.direction, offset);
     if (
       reader.isPositionOnField(position.x, position.y) &&

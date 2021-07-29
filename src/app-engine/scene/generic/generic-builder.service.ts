@@ -25,6 +25,7 @@ import {ConsoleTerminalGameObject} from './common/console-terminal-game-object';
 import {SimpleGameObject} from './common/simple-game-object';
 import {SimpleGridTile} from './common/simple-grid-tile';
 import {CharacterBase} from './common/character-base';
+import {TaskRegistryService} from './services/task-registry.service';
 
 
 declare type TileOrDescription = string | GenericGridTile;
@@ -45,6 +46,7 @@ export interface GenericSceneAdditionalParameters {
 
 @Singleton
 export class GenericBuilderService implements SceneBuilder {
+  private taskRegistryService = new TaskRegistryService();
   private commonTileRegistryService = new CommonTileRegistryService();
   private characterSkinRegistryService = new CharacterSkinRegistryService();
   private inGameConsoleService = new InGameConsoleService();
@@ -78,7 +80,7 @@ export class GenericBuilderService implements SceneBuilder {
       return evaluator.apply(null, [...Object.values(context), expr]);
     };
 
-    evaluateInScope({
+    const initializerFunc = this.taskRegistryService.parseTaskInitializerFunc(config.generatingFunc, {
       // scene builder
       Builder: this,
 
@@ -108,7 +110,8 @@ export class GenericBuilderService implements SceneBuilder {
           return 'FINISH_NOT_REACHED';
         }
       }
-    }, config.generatingFunc);
+    });
+    initializerFunc();
 
     this.validateSceneModel();
     return {
