@@ -104,7 +104,7 @@ export class GenericBuilderService implements SceneBuilder {
       DefaultTileStates,
       DefaultCheckingLogic: {
         GOAL_REACHED: (reader: GenericReaderService) => {
-          if (reader.getPlayer().getAllTagsRelativeToPlayer(reader, { x: 0, y: 0 }).has('goal')) {
+          if (reader.getPlayer().getAllTagsRelativeToPlayer(reader, { x: 0, y: 0 }).has(DefaultTags.GOAL)) {
             return null;
           }
           return 'FINISH_NOT_REACHED';
