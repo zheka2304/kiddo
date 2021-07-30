@@ -37,7 +37,7 @@ export const SimplexTask1_2 = () => {
         [DefaultTileStates.MAIN]: [[0, 0]]
       }
     },
-    immutableTags: []
+    immutableTags: [DefaultTags.OBSTACLE]
   });
 
   TileRegistry.addBasicTile('toilet', {
@@ -47,7 +47,6 @@ export const SimplexTask1_2 = () => {
         [DefaultTileStates.MAIN]: [[2, 1]]
       }
     },
-    immutableTags: [DefaultTags.GOAL]
   });
 
   // --------- tile generation -------------
