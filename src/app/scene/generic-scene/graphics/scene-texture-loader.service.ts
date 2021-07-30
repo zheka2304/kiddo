@@ -5,6 +5,7 @@ import {Injectable} from '@angular/core';
 import {environment} from '../../../../environments/environment';
 import {DrawableCollection} from './drawable-collection';
 import {Drawable} from './drawable';
+import {ConnectedTextureFormatType, ConnectedTextureRegion} from './connected-texture-region';
 
 
 export interface TextureAtlasSource {
@@ -13,9 +14,14 @@ export interface TextureAtlasSource {
   height: number;
 }
 
+export interface ConnectedTextureDescription {
+  ctType: ConnectedTextureFormatType;
+  offset: number[][];
+}
+
 export interface TextureAtlasItemCollection {
   atlas: TextureAtlasSource;
-  items: {[key: string]: number[][]};
+  items: {[key: string]: number[][] | ConnectedTextureDescription};
   fps?: number;
 }
 
@@ -79,13 +85,46 @@ export class SceneTextureLoaderService {
     return new AnimatedCanvasTextureRegion(frames, fps);
   }
 
+  async getConnectedTextureItem(
+    atlas: TextureAtlasSource,
+    description: ConnectedTextureDescription,
+    fps: number = 1
+  ): Promise<ConnectedTextureRegion> {
+    return new ConnectedTextureRegion(
+      description.ctType,
+      new AnimatedCanvasTextureRegion(await Promise.all(description.offset.map(offset => this.getTextureRegion(atlas.src, {
+        x: offset[0] / atlas.width,
+        y: offset[1] / atlas.height,
+        width: 2 / atlas.width,
+        height: 2 / atlas.height
+      }))), fps),
+      new AnimatedCanvasTextureRegion(await Promise.all(description.offset.map(offset => this.getTextureRegion(atlas.src, {
+        x: (offset[0] + 2) / atlas.width,
+        y: offset[1] / atlas.height,
+        width: 2 / atlas.width,
+        height: 2 / atlas.height
+      }))), fps),
+      new AnimatedCanvasTextureRegion(await Promise.all(description.offset.map(offset => this.getTextureRegion(atlas.src, {
+        x: (offset[0] + 4) / atlas.width,
+        y: offset[1] / atlas.height,
+        width: 2 / atlas.width,
+        height: 2 / atlas.height
+      }))), fps),
+    );
+  }
+
   async getTextureCollectionFromAtlas(
     data: TextureAtlasItemCollection
   ): Promise<DrawableCollection> {
     const drawableMap = new Map<string, Drawable>();
     for (const name in data.items) {
       if (data.items.hasOwnProperty(name)) {
-        drawableMap.set(name, await this.getAnimatedTextureItem(data.atlas, data.items[name], data.fps || 1));
+        const item = data.items[name];
+        if (Array.isArray(item)) {
+          drawableMap.set(name, await this.getAnimatedTextureItem(data.atlas, item as number[][], data.fps || 1));
+        } else {
+          drawableMap.set(name, await this.getConnectedTextureItem(data.atlas, item as ConnectedTextureDescription, data.fps || 1));
+        }
       }
     }
     return new DrawableCollection(drawableMap);

@@ -41,6 +41,8 @@ export interface GenericSceneAdditionalParameters {
 
   // more readable inverse zoom alias
   tilesPerScreen?: number;
+
+  pixelPerfect?: number;
 }
 
 
@@ -102,12 +104,29 @@ export class GenericBuilderService implements SceneBuilder {
       // helpful defaults
       DefaultTags,
       DefaultTileStates,
+
+      // inline defaults
       DefaultCheckingLogic: {
         GOAL_REACHED: (reader: GenericReaderService) => {
           if (reader.getPlayer().getAllTagsRelativeToPlayer(reader, { x: 0, y: 0 }).has(DefaultTags.GOAL)) {
             return null;
           }
           return 'FINISH_NOT_REACHED';
+        }
+      },
+
+      DefaultCTLogic: {
+        HAS_TAGS: (tags: string[], connectOutsides: boolean = true) => {
+          return (cell: GenericGridCell) => {
+            if (!cell) {
+              return connectOutsides;
+            }
+            const allTags = new Set<string>();
+            for (const tile of cell.tiles) {
+              tile.getTags().forEach(tag => allTags.add(tag));
+            }
+            return tags.reduce((prev, tag) => prev && allTags.has(tag), true);
+          };
         }
       }
     });
@@ -229,6 +248,9 @@ export class GenericBuilderService implements SceneBuilder {
 
     if (params?.tilesPerScreen) {
       this.sceneModel.inverseZoom = params.tilesPerScreen;
+    }
+    if (params?.pixelPerfect) {
+      this.sceneModel.pixelPerfect = params.pixelPerfect;
     }
     this.sceneModel.lightMapEnabled = params?.lightMap?.enabled || false;
   }

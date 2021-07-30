@@ -23,10 +23,11 @@ export class GenericSceneRenderService {
 
   private activeContexts: Set<GenericSceneRenderContext> = new Set<GenericSceneRenderContext>();
 
-  createRenderContext(canvasElement: HTMLCanvasElement): GenericSceneRenderContext {
+  createRenderContext(canvasElement: HTMLCanvasElement, targetElement: HTMLElement): GenericSceneRenderContext {
     const context = new GenericSceneRenderContext(
       this.textureLoaderService,
-      canvasElement
+      canvasElement,
+      targetElement
     );
     this.activeContexts.add(context);
     return context;

@@ -12,10 +12,10 @@ export class DrawableCollection {
     return this.drawables.get(name);
   }
 
-  draw(canvas: CanvasRenderingContext2D, name: string, rect: Rect): void {
+  draw(canvas: CanvasRenderingContext2D, name: string, rect: Rect, extra?: { [p: string]: any }): void {
     const drawable = this.drawables.get(name);
     if (drawable) {
-      drawable.draw(canvas, rect);
+      drawable.draw(canvas, rect, extra);
     }
   }
 }

@@ -77,8 +77,10 @@ export class GenericSceneRenderer {
   }
 
   private getCellSizeInPixels(viewport: Rect): number {
-    const inverseZoom = this.getSceneModel().inverseZoom;
-    return Math.max(viewport.width, viewport.height) / inverseZoom;
+    const sceneModel = this.getSceneModel();
+    const inverseZoom = sceneModel.inverseZoom;
+    const cellSize = Math.max(viewport.width, viewport.height) / inverseZoom;
+    return sceneModel.pixelPerfect > 0 ? Math.ceil(cellSize / sceneModel.pixelPerfect) * sceneModel.pixelPerfect : cellSize;
   }
 
   private getField(): GenericGridField {
@@ -194,8 +196,8 @@ export class GenericSceneRenderer {
       const backgroundSize = this.getBackgroundSize(defaultViewport);
       const cellSize = this.getCellSizeInPixels(defaultViewport);
       return {
-        x: Math.max(0, Math.min(backgroundSize.width - canvasWidth, position.x * cellSize - canvasWidth / 2)),
-        y: Math.max(0, Math.min(backgroundSize.height - canvasHeight, position.y * cellSize - canvasHeight / 2)),
+        x: Math.round(Math.max(0, Math.min(backgroundSize.width - canvasWidth, position.x * cellSize - canvasWidth / 2))),
+        y: Math.round(Math.max(0, Math.min(backgroundSize.height - canvasHeight, position.y * cellSize - canvasHeight / 2))),
         width: canvasWidth,
         height: canvasHeight
       };

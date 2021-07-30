@@ -6,10 +6,13 @@ import {DefaultTileStates} from '../entities/default-tile-states.enum';
 import {GenericSceneRenderContext} from '../../../../app/scene/generic-scene/render/generic-scene-render-context';
 import {GenericReaderService} from '../readers/generic-reader.service';
 import {Rect} from '../../../../app/shared/interfaces/rect';
+import {GenericGridCell} from '../entities/generic-grid-field';
 
 
 export interface SimpleGridTileDefinition {
   texture: TextureAtlasItemCollection;
+  ctCheckConnected?: (cell: GenericGridCell) => boolean;
+
   initialState?: string;
   mutableTags?: string[];
   immutableTags?: string[];
@@ -72,7 +75,16 @@ export class SimpleGridTile extends GridTileBase {
     targetRect: Rect
   ): void {
     if (this.texture != null) {
-      this.texture.draw(canvas, this.state, targetRect);
+      this.texture.draw(canvas, this.state, targetRect, {
+        reader,
+        checkConnected: (cell: GenericGridCell) => {
+          if (this.definition.ctCheckConnected) {
+            return this.definition.ctCheckConnected(cell);
+          }
+          return false;
+        },
+        position: this.position,
+      });
     }
   }
 }

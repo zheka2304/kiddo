@@ -15,7 +15,8 @@ export class GenericSceneRenderContext {
 
   constructor(
     private textureLoaderService: SceneTextureLoaderService,
-    private outputCanvasElement: HTMLCanvasElement
+    private outputCanvasElement: HTMLCanvasElement,
+    private outputWrapperElement: HTMLElement
   ) {
     this.canvasSize = this.outputCanvasElement.getBoundingClientRect();
     this.outputCanvasElement.width = this.canvasSize.width;
@@ -78,7 +79,13 @@ export class GenericSceneRenderContext {
     }
 
     // check for the size change
-    const {width, height} = this.outputCanvasElement.getBoundingClientRect();
+    let { x, y, width, height } = this.outputWrapperElement.getBoundingClientRect();
+    this.outputCanvasElement.style.left = Math.floor(x) + 'px';
+    this.outputCanvasElement.style.top = Math.floor(y) + 'px';
+    this.outputCanvasElement.style.width = width + 'px';
+    this.outputCanvasElement.style.height = height + 'px';
+    width *= devicePixelRatio;
+    height *= devicePixelRatio;
     if (width !== this.canvasSize.width || height !== this.canvasSize.height) {
       this.canvasSize = {width, height};
       this.outputCanvasElement.width = width;
@@ -117,7 +124,7 @@ export class GenericSceneRenderContext {
         canvas.drawImage(
           this.staticCanvasElement,
           viewport.x, viewport.y, viewport.width, viewport.height,
-          0, 0, this.canvasSize.width, this.canvasSize.height
+          0, 0, width, height
         );
 
         // draw foreground

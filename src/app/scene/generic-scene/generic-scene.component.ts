@@ -13,6 +13,7 @@ import {GenericSceneRenderContext} from './render/generic-scene-render-context';
 export class GenericSceneComponent implements AfterViewInit, OnDestroy {
   @Input() isStatic: boolean;
   @ViewChild('genericSceneCanvas') canvasRef: ElementRef;
+  @ViewChild('genericSceneCanvasTarget') targetRef: ElementRef;
 
   private sceneAccessorsService: SceneAccessorsService;
   private renderContext: GenericSceneRenderContext = null;
@@ -26,7 +27,7 @@ export class GenericSceneComponent implements AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     const canvas = this.canvasRef.nativeElement as HTMLCanvasElement;
-    this.renderContext = this.sceneRenderService.createRenderContext(canvas);
+    this.renderContext = this.sceneRenderService.createRenderContext(canvas, this.targetRef.nativeElement);
     this.renderContext.setRenderer(new GenericSceneRenderer(this.sceneAccessorsService));
   }
 

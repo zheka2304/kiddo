@@ -13,6 +13,10 @@ export interface GenericSceneModel extends SceneModel {
   player: GenericPlayer;
 
   lightMapEnabled: boolean;
+
   // amount of cells per lowest window dimension
   inverseZoom: number;
+
+  // optional - resolution of tile texture for pixel-perfect render
+  pixelPerfect?: number;
 }
