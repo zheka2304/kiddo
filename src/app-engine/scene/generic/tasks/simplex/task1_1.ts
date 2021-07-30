@@ -37,23 +37,39 @@ export const SimplexTask1_1 = () => {
     immutableTags: [DefaultTags.GOAL]
   });
 
+  TileRegistry.addBasicTile('wall', {
+    texture: {
+      atlas: {src: 'assets:/tile-atlas.png', width: 4, height: 4},
+      items: {
+        [DefaultTileStates.MAIN]: [[0, 0]]
+      }
+    },
+    immutableTags: []
+  });
 
-  Builder.setupGameField({width: 8, height: 8}, {
+
+  Builder.setupGameField({width: 9, height: 9}, {
     lightMap: {
       enabled: false,
       ambient: 0.09
     },
-    tilesPerScreen: 8
   });
 
-  for (let x = 0; x < 16; x++) {
-    for (let y = 0; y < 8; y++) {
+  for (let x = 0; x < 9; x++) {
+    for (let y = 0; y < 9; y++) {
       Builder.setTile(x, y, 'wood-tile');
+      if (y === 0 || y === 8) {
+        Builder.setTile(x, y, 'wall');
+      }
+      if (x === 0 || x === 8) {
+        Builder.setTile(x, y, 'wall');
+      }
     }
   }
+
   Builder.setTile(7, 5, ['wood-tile', 'goal-flag']);
 
-  Builder.setPlayer(new GenericPlayer({x: 1, y: 0}, {
+  Builder.setPlayer(new GenericPlayer({x: 2, y: 1}, {
       skin: 'link',
       defaultLightSources: [
         {radius: 1, brightness: 1},
