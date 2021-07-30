@@ -44,7 +44,7 @@ export const SimplexTask1_1 = () => {
         [DefaultTileStates.MAIN]: [[0, 0]]
       }
     },
-    immutableTags: []
+    immutableTags: [DefaultTags.OBSTACLE]
   });
 
 
