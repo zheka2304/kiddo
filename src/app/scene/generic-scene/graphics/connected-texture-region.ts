@@ -1,14 +1,21 @@
 /* tslint:disable:no-bitwise */
 import {Drawable} from './drawable';
 import {Rect} from '../../../shared/interfaces/rect';
-import {Coords, Direction} from '../../../../app-engine/scene/common/entities';
-import {GenericReaderService} from "../../../../app-engine/scene/generic/readers/generic-reader.service";
-import {GenericGridTile} from "../../../../app-engine/scene/generic/entities/generic-grid-tile";
-import {GenericGridCell} from "../../../../app-engine/scene/generic/entities/generic-grid-field";
+import {Coords} from '../../../../app-engine/scene/common/entities';
+import {GenericReaderService} from '../../../../app-engine/scene/generic/readers/generic-reader.service';
+import {GenericGridCell} from '../../../../app-engine/scene/generic/entities/generic-grid-field';
 
 
 export enum ConnectedTextureFormatType {
+  // default CT layout: 2x2 outer edges, 2x2 inner edges, 2x2 randomized full tiles,
+  // full tiles are only used, when all neighbours are present
   DEFAULT = 'default',
+
+  // same as default, but uses randomized full tile textures, even as fragments of non-full tiles
+  RANDOMIZED = 'randomized',
+
+  // ignores 2x2 texture, uses outer edges center as a full tile one
+  LIGHTWEIGHT = 'lightweight'
 }
 
 export class ConnectedTextureRegion implements Drawable {
@@ -28,11 +35,20 @@ export class ConnectedTextureRegion implements Drawable {
     return ((t ^ t >>> 14) >>> 0) / 4294967296;
   }
 
+  private getFullTileOffset(position: Coords): Coords {
+    const x = Math.floor(this.mulberry32rng(position.x + position.y * 123 + 1171) * 1.5) * 0.5;
+    const y = Math.floor(this.mulberry32rng(position.x + position.y * 456 + 2017) * 1.5) * 0.5;
+    return { x, y };
+  }
+
   private drawFullTile(canvas: CanvasRenderingContext2D, targetRect: Rect, position: Coords): void {
-    const dstRegion = { x: 0, y: 0, width: 1, height: 1 };
-    const tileX = Math.floor(this.mulberry32rng(position.x + position.y * 123 + 1171) * 1.5) * 0.5;
-    const tileY = Math.floor(this.mulberry32rng(position.x + position.y * 456 + 2017) * 1.5) * 0.5;
-    this.fullTile.draw(canvas, targetRect, { subRegion: { x: tileX, y: tileY, width: 0.5, height: 0.5 }, dstRegion });
+    const dstRegion = {x: 0, y: 0, width: 1, height: 1};
+    if (this.type === ConnectedTextureFormatType.LIGHTWEIGHT) {
+      this.outsideEdges.draw(canvas, targetRect, {subRegion: {x: 0.25, y: 0.25, width: 0.5, height: 0.5}, dstRegion});
+    } else {
+      const tile = this.getFullTileOffset(position);
+      this.fullTile.draw(canvas, targetRect, {subRegion: {x: tile.x, y: tile.y, width: 0.5, height: 0.5}, dstRegion});
+    }
   }
 
   private drawTopLeft(canvas: CanvasRenderingContext2D, targetRect: Rect, neighbors: number, position: Coords): void {
@@ -41,7 +57,12 @@ export class ConnectedTextureRegion implements Drawable {
     if (neighbors === 0 || neighbors === 0x80) { // no neighbors, or only diagonal one, draw outer corner
       this.outsideEdges.draw(canvas, targetRect, { subRegion: { x: 0, y: 0, width: 0.25, height: 0.25 }, dstRegion });
     } else if (neighbors === 0xC1) { // all neighbors, draw full tile fragment
-      this.outsideEdges.draw(canvas, targetRect, { subRegion: { x: 0.5, y: 0.5, width: 0.25, height: 0.25 }, dstRegion });
+      if (this.type === ConnectedTextureFormatType.RANDOMIZED) {
+        const tile = this.getFullTileOffset(position);
+        this.fullTile.draw(canvas, targetRect, {subRegion: {x: tile.x, y: tile.y, width: 0.25, height: 0.25}, dstRegion});
+      } else {
+        this.outsideEdges.draw(canvas, targetRect, {subRegion: {x: 0.5, y: 0.5, width: 0.25, height: 0.25}, dstRegion});
+      }
     } else if (neighbors === 0x41) { // all neighbours, except diagonal one, draw inner corner
       this.insideEdges.draw(canvas, targetRect, { subRegion: { x: 0.5, y: 0.5, width: 0.25, height: 0.25 }, dstRegion });
     } else if ((neighbors & 1) === 0) { // top is empty
@@ -57,7 +78,12 @@ export class ConnectedTextureRegion implements Drawable {
     if (neighbors === 0 || neighbors === 0x02) { // no neighbors, or only diagonal one, draw outer corner
       this.outsideEdges.draw(canvas, targetRect, { subRegion: { x: 0.75, y: 0, width: 0.25, height: 0.25 }, dstRegion });
     } else if (neighbors === 0x07) { // all neighbors, draw full tile fragment
-      this.outsideEdges.draw(canvas, targetRect, { subRegion: { x: 0.25, y: 0.5, width: 0.25, height: 0.25 }, dstRegion });
+      if (this.type === ConnectedTextureFormatType.RANDOMIZED) {
+        const tile = this.getFullTileOffset(position);
+        this.fullTile.draw(canvas, targetRect, {subRegion: {x: tile.x + .25, y: tile.y, width: 0.25, height: 0.25}, dstRegion});
+      } else {
+        this.outsideEdges.draw(canvas, targetRect, {subRegion: {x: 0.25, y: 0.5, width: 0.25, height: 0.25}, dstRegion});
+      }
     } else if (neighbors === 0x05) { // all neighbours, except diagonal one, draw inner corner
       this.insideEdges.draw(canvas, targetRect, { subRegion: { x: 0.25, y: 0.5, width: 0.25, height: 0.25 }, dstRegion });
     } else if ((neighbors & 1) === 0) { // top is empty
@@ -73,7 +99,12 @@ export class ConnectedTextureRegion implements Drawable {
     if (neighbors === 0 || neighbors === 0x08) { // no neighbors, or only diagonal one, draw outer corner
       this.outsideEdges.draw(canvas, targetRect, { subRegion: { x: 0.75, y: 0.75, width: 0.25, height: 0.25 }, dstRegion });
     } else if (neighbors === 0x1C) { // all neighbors, draw full tile fragment
-      this.outsideEdges.draw(canvas, targetRect, { subRegion: { x: 0.25, y: 0.25, width: 0.25, height: 0.25 }, dstRegion });
+      if (this.type === ConnectedTextureFormatType.RANDOMIZED) {
+        const tile = this.getFullTileOffset(position);
+        this.fullTile.draw(canvas, targetRect, {subRegion: {x: tile.x + .25, y: tile.y + .25, width: 0.25, height: 0.25}, dstRegion});
+      } else {
+        this.outsideEdges.draw(canvas, targetRect, { subRegion: { x: 0.25, y: 0.25, width: 0.25, height: 0.25 }, dstRegion });
+      }
     } else if (neighbors === 0x14) { // all neighbours, except diagonal one, draw inner corner
       this.insideEdges.draw(canvas, targetRect, { subRegion: { x: 0.25, y: 0.25, width: 0.25, height: 0.25 }, dstRegion });
     } else if ((neighbors & 16) === 0) { // bottom is empty
@@ -89,7 +120,12 @@ export class ConnectedTextureRegion implements Drawable {
     if (neighbors === 0 || neighbors === 0x20) { // no neighbors, or only diagonal one, draw outer corner
       this.outsideEdges.draw(canvas, targetRect, { subRegion: { x: 0, y: 0.75, width: 0.25, height: 0.25 }, dstRegion });
     } else if (neighbors === 0x70) { // all neighbors, draw full tile fragment
-      this.outsideEdges.draw(canvas, targetRect, { subRegion: { x: 0.5, y: 0.25, width: 0.25, height: 0.25 }, dstRegion });
+      if (this.type === ConnectedTextureFormatType.RANDOMIZED) {
+        const tile = this.getFullTileOffset(position);
+        this.fullTile.draw(canvas, targetRect, {subRegion: {x: tile.x + .25, y: tile.y + .25, width: 0.25, height: 0.25}, dstRegion});
+      } else {
+        this.outsideEdges.draw(canvas, targetRect, { subRegion: { x: 0.5, y: 0.25, width: 0.25, height: 0.25 }, dstRegion });
+      }
     } else if (neighbors === 0x50) { // all neighbours, except diagonal one, draw inner corner
       this.insideEdges.draw(canvas, targetRect, { subRegion: { x: 0.5, y: 0.25, width: 0.25, height: 0.25 }, dstRegion });
     } else if ((neighbors & 16) === 0) { // bottom is empty

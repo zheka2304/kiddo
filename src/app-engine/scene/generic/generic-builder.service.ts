@@ -127,6 +127,30 @@ export class GenericBuilderService implements SceneBuilder {
             }
             return tags.reduce((prev, tag) => prev && allTags.has(tag), true);
           };
+        },
+        NO_TAGS: (tags: string[], connectOutsides: boolean = true) => {
+          return (cell: GenericGridCell) => {
+            if (!cell) {
+              return connectOutsides;
+            }
+            const allTags = new Set<string>();
+            for (const tile of cell.tiles) {
+              tile.getTags().forEach(tag => allTags.add(tag));
+            }
+            return tags.reduce((prev, tag) => prev && !allTags.has(tag), true);
+          };
+        },
+        ANY_TAGS: (tags: string[], connectOutsides: boolean = true) => {
+          return (cell: GenericGridCell) => {
+            if (!cell) {
+              return connectOutsides;
+            }
+            const allTags = new Set<string>();
+            for (const tile of cell.tiles) {
+              tile.getTags().forEach(tag => allTags.add(tag));
+            }
+            return tags.reduce((prev, tag) => prev || allTags.has(tag), false);
+          };
         }
       }
     });
