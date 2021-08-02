@@ -18,7 +18,7 @@ declare const DefaultCheckingLogic: { [key: string]: CheckingLogic };
 
 
 // tslint:disable-next-line
-export const SimplexTask2 = () => {
+export const SimplexTask4_2 = () => {
   // --------- registration -------------
 
   TileRegistry.addBasicTile('wood-tile', {
@@ -62,7 +62,7 @@ export const SimplexTask2 = () => {
   }
 
   // ---------  player  -------------
-  Builder.setPlayer(new GenericPlayer({x: 1, y: 6}, {
+  Builder.setPlayer(new GenericPlayer({x: 1, y: 1}, {
       skin: 'link',
       defaultLightSources: [
         {radius: 1, brightness: 1},
@@ -75,65 +75,33 @@ export const SimplexTask2 = () => {
 
 
   // --------- object -------------
-  const monitor = new SimpleGameObject({x: 4, y: 4}, {
+  const monitor = new SimpleGameObject({x: 4, y: 1}, {
     texture: {
       atlas: {src: 'assets:/tile-atlas.png', width: 4, height: 4},
       items: {
         [DefaultTileStates.MAIN]: [[0, 2]],
       }
     },
-    mutableTags: [DefaultTags.OBSTACLE]
+    mutableTags: [DefaultTags.ITEM]
   });
   Builder.addGameObject(monitor);
 
-  const generateString = () => {
-    if (Math.random() < 0.2) {
-      return 'женщина';
-    }
-    if (Math.random() < 0.2) {
-      return 'мужчина';
-    }
-    const alphabet = Math.random() < 0.7 ? 'абвгдеёжзийклмнопрстуфхцчшщъыьэюя' : '1234567890';
-    const randomSize = Math.floor(Math.random() * 6) + 4;
-    let randomWord = '';
-    for (let i = 0; i < randomSize; i++) {
-      const randomIndex = Math.floor(Math.random() * alphabet.length);
-      randomWord += alphabet[randomIndex];
-    }
-    return (randomWord);
-  };
-
-  const arrayString = [];
-  const size = Math.floor(Math.random() * 3) + 4;
-  for (let i = 0; i < size; i++) {
-    arrayString.push(generateString());
-  }
-
-  const arrayStringAnswers = arrayString.map(c => {
-    if (c === 'женщина') {
-      return 'мужчина';
-    }
-    if (c === 'мужчина') {
-      return 'женщина';
-    }
-    return c;
-  });
+  const answers = [false, 2, 1, false];
 
   let levelPassed = false;
-  Builder.addGameObject(new ConsoleTerminalGameObject({x: 4, y: 4}, {
+  Builder.addGameObject(new ConsoleTerminalGameObject({x: 4, y: 1}, {
     enableEcho: true,
 
-    requireInput: (model) => arrayString.shift(),
-
     consumeOutput: (model, value: any) => {
-      return arrayStringAnswers.shift() === value;
+      return answers.shift() === value;
     },
 
     onApplied: (model, allValid) => {
-      if (allValid && arrayStringAnswers.length === 0) {
+      if (allValid && answers.length === 0) {
         levelPassed = true;
       }
     },
+
   }));
 
   Builder.addCheckingLogic(() => levelPassed ? null : 'INVALID_OUTPUT');

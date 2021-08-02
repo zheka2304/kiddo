@@ -90,7 +90,7 @@ export const SimplexTask3 = () => {
 
   let levelPassed = false;
   Builder.addGameObject(new ConsoleTerminalGameObject({x: 4, y: 5}, {
-    title: 'test',
+    title: 'DEBUGGER',
     enableEcho: true,
 
     consumeOutput: (model, value: any) => {

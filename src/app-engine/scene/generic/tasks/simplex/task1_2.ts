@@ -124,7 +124,6 @@ export const SimplexTask1_2 = () => {
   let answer = 0;
 
   Builder.addGameObject(new ConsoleTerminalGameObject({x: 4, y: 4}, {
-    title: 'test',
     enableEcho: true,
 
     requireInput: (model) => ab.shift(),
