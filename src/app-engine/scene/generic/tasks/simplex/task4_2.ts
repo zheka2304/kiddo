@@ -31,15 +31,6 @@ export const SimplexTask4_2 = () => {
     immutableTags: []
   });
 
-  TileRegistry.addBasicTile('wall', {
-    texture: {
-      atlas: {src: 'assets:/tile-atlas.png', width: 4, height: 4},
-      items: {
-        [DefaultTileStates.MAIN]: [[0, 0]]
-      }
-    },
-    immutableTags: []
-  });
 
   // --------- tile generation -------------
   Builder.setupGameField({width: 9, height: 9}, {
@@ -52,17 +43,11 @@ export const SimplexTask4_2 = () => {
   for (let x = 0; x < 9; x++) {
     for (let y = 0; y < 9; y++) {
       Builder.setTile(x, y, 'wood-tile');
-      if (y === 0 || y === 8) {
-        Builder.setTile(x, y, 'wall');
-      }
-      if (x === 0 || x === 8) {
-        Builder.setTile(x, y, 'wall');
-      }
     }
   }
 
   // ---------  player  -------------
-  Builder.setPlayer(new GenericPlayer({x: 1, y: 1}, {
+  Builder.setPlayer(new GenericPlayer({x: 4, y: 4}, {
       skin: 'link',
       defaultLightSources: [
         {radius: 1, brightness: 1},
@@ -73,36 +58,19 @@ export const SimplexTask4_2 = () => {
     }
   ));
 
-
   // --------- object -------------
-  const monitor = new SimpleGameObject({x: 4, y: 1}, {
+  const positionX = Math.floor(Math.random() * 5) + 2;
+  const positionY = Math.floor(Math.random() * 5) + 2;
+
+  const letter = new SimpleGameObject({x: positionX, y: positionY}, {
     texture: {
       atlas: {src: 'assets:/tile-atlas.png', width: 4, height: 4},
       items: {
         [DefaultTileStates.MAIN]: [[0, 2]],
       }
     },
-    mutableTags: [DefaultTags.ITEM]
+    immutableTags: [DefaultTags.ITEM, 'letter']
   });
-  Builder.addGameObject(monitor);
+  Builder.addGameObject(letter);
 
-  const answers = [false, 2, 1, false];
-
-  let levelPassed = false;
-  Builder.addGameObject(new ConsoleTerminalGameObject({x: 4, y: 1}, {
-    enableEcho: true,
-
-    consumeOutput: (model, value: any) => {
-      return answers.shift() === value;
-    },
-
-    onApplied: (model, allValid) => {
-      if (allValid && answers.length === 0) {
-        levelPassed = true;
-      }
-    },
-
-  }));
-
-  Builder.addCheckingLogic(() => levelPassed ? null : 'INVALID_OUTPUT');
 };
