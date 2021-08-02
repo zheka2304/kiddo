@@ -114,7 +114,7 @@ export const SimplexTask1_2 = () => {
       }
     },
     initialState: 'open',
-    mutableTags: [DefaultTags.GOAL]
+    immutableTags: [DefaultTags.GOAL]
   });
   Builder.addGameObject(finish);
 
