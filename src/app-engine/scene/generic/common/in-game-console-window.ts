@@ -29,6 +29,17 @@ export class InGameConsoleWindow extends InGameWindowBase {
     super();
   }
 
+  public static valueToString(value: any): string {
+    if (typeof(value) === 'string') {
+      return '"' + value + '"';
+    } else if (typeof(value) === 'object') {
+      return JSON.stringify(value);
+    } else {
+      return '' + value;
+    }
+  }
+
+
   draw(
     context: GenericSceneRenderContext,
     canvas: CanvasRenderingContext2D,
@@ -117,16 +128,6 @@ export class InGameConsoleWindow extends InGameWindowBase {
     return 3 + Math.max(windowParams.minLines, Math.ceil(lines.length / windowParams.incrementLines) * windowParams.incrementLines);
   }
 
-  private valueToString(value: any): string {
-    if (typeof(value) === 'string') {
-      return '"' + value + '"';
-    } else if (typeof(value) === 'object') {
-      return JSON.stringify(value);
-    } else {
-      return '' + value;
-    }
-  }
-
   private drawIOStack(
     canvas: CanvasRenderingContext2D,
     windowRect: Rect,
@@ -148,22 +149,28 @@ export class InGameConsoleWindow extends InGameWindowBase {
         break;
       }
       const value = this.model.inputs[index++];
-      const nextInputStr = inputsStr + ' ' + this.valueToString(value);
+      const nextInputStr = inputsStr + ' ' + InGameConsoleWindow.valueToString(value);
       if (canvas.measureText(nextInputStr).width < windowRect.width) {
         inputsStr = nextInputStr;
       } else {
+        inputsStr = nextInputStr;
+        while (canvas.measureText(inputsStr + '...').width > windowRect.width) {
+          inputsStr = inputsStr.substr(0, inputsStr.length - 1);
+        }
+        inputsStr += '...';
         break;
       }
     }
 
-    let outputsStr = ' OUT: ';
-    for (const output of this.model.outputs) {
-      const nextOutputStr = outputsStr + ' ' + this.valueToString(output.value);
-      if (canvas.measureText(nextOutputStr).width < windowRect.width) {
-        outputsStr = nextOutputStr;
-      } else {
-        break;
+    const outputsStrPrefix = ' OUT: ';
+    let outputsStr = this.model.outputs.map(v => InGameConsoleWindow.valueToString(v.value)).join(' ');
+    if (canvas.measureText(outputsStrPrefix + outputsStr).width > windowRect.width) {
+      while (canvas.measureText(outputsStrPrefix + '...' + outputsStr).width > windowRect.width) {
+        outputsStr = outputsStr.substr(1);
       }
+      outputsStr = outputsStrPrefix + '...' + outputsStr;
+    } else {
+      outputsStr = outputsStrPrefix + outputsStr;
     }
 
     canvas.fillText(inputsStr, windowRect.x, windowRect.y + lineHeight);
@@ -190,6 +197,12 @@ export class InGameConsoleWindow extends InGameWindowBase {
     // start with 4th line, first 3 are occupied by IO
     let lineIndex = 3;
     for (let line of lines) {
+      let color = 'white';
+      if (line.startsWith('!{')) {
+        const closingBrace = line.indexOf('}');
+        color = line.substr(2, closingBrace - 2);
+        line = line.substr(closingBrace + 1);
+      }
       line = ' ' + line;
       while (canvas.measureText(line).width > windowRect.width) {
         if (line.length >= 4) {
@@ -199,6 +212,8 @@ export class InGameConsoleWindow extends InGameWindowBase {
           break;
         }
       }
+
+      canvas.fillStyle = color;
       canvas.fillText(line, windowRect.x, windowRect.y + lineHeight * (lineIndex + 1));
       lineIndex++;
     }

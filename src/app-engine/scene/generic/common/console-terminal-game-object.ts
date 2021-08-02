@@ -5,14 +5,17 @@ import {GenericWriterService} from '../writers/generic-writer.service';
 import {GenericGameObject} from '../entities/generic-game-object';
 import {DefaultTags} from '../entities/default-tags.enum';
 import {InGameConsoleService} from '../services/in-game-console.service';
+import {InGameConsoleWindow} from './in-game-console-window';
 
 
 interface ConsoleGameObjectTerminalCallbacks {
   onOpen?: (model: InGameConsoleModel) => void;
   onClose?: (model: InGameConsoleModel) => void;
+  onInput?: (model: InGameConsoleModel, value: any) => void;
+  onOutput?: (model: InGameConsoleModel, value: any, valid: boolean) => void;
 
-  requireInput?: () => any;
-  consumeOutput?: (value: any) => boolean;
+  requireInput?: (model: InGameConsoleModel) => any;
+  consumeOutput?: (model: InGameConsoleModel, value: any) => boolean;
   onApplied?: (model: InGameConsoleModel, allValid: boolean) => void;
 
   title?: string;
@@ -52,19 +55,34 @@ export class ConsoleTerminalGameObject extends GameObjectBase {
         }
       },
 
+      onInput: (value: any) => {
+        if (this.callbacks?.onInput) {
+          this.callbacks.onInput(this.model, value);
+        }
+        if (this.callbacks?.enableEcho) {
+          this.model.lines.push('IN -> ' + InGameConsoleWindow.valueToString(value));
+        }
+      },
+
+      onOutput: (value: any, valid: boolean) => {
+        if (this.callbacks?.onOutput) {
+          this.callbacks.onOutput(this.model, value, valid);
+        }
+        if (this.callbacks?.enableEcho) {
+          this.model.lines.push('!{' + (valid ? 'white' : 'red') + '}OUT <- ' + InGameConsoleWindow.valueToString(value));
+        }
+      },
+
       requireInput: () => {
         if (this.callbacks?.requireInput) {
-          return this.callbacks.requireInput();
+          return this.callbacks.requireInput(this.model);
         }
         return null;
       },
 
       consumeOutput: (value: any) => {
-        if (this.callbacks?.enableEcho) {
-          this.model.lines.push('OUT <- ' + value);
-        }
         if (this.callbacks?.consumeOutput) {
-          return this.callbacks.consumeOutput(value);
+          return this.callbacks.consumeOutput(this.model, value);
         }
         return true;
       },

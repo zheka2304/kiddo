@@ -36,7 +36,8 @@ declare type FieldTilesDescriptionOrSize = FieldTilesDescription | { width: numb
 export interface GenericSceneAdditionalParameters {
   lightMap?: {
     enabled?: boolean,
-    ambient?: number
+    ambient?: number,
+    ambientColor?: number[]
   };
 
   // more readable inverse zoom alias
@@ -213,6 +214,7 @@ export class GenericBuilderService implements SceneBuilder {
     };
 
     const ambientLight = params?.lightMap?.ambient || 0;
+    const ambientLightColor = params?.lightMap?.ambientColor || [ 1, 1, 1 ];
     for (let y = 0; y < field.height; y++) {
       for (let x = 0; x < field.width; x++) {
         const cell: GenericGridCell = {
@@ -221,7 +223,8 @@ export class GenericBuilderService implements SceneBuilder {
           light: {
             level: ambientLight,
             ambient: ambientLight,
-            color: '#000000'
+            color: ambientLightColor,
+            ambientColor: ambientLightColor
           }
         };
         field.grid.push(cell);
@@ -243,6 +246,7 @@ export class GenericBuilderService implements SceneBuilder {
     };
 
     const ambientLight = params?.lightMap?.ambient || 0;
+    const ambientLightColor = params?.lightMap?.ambientColor || [1, 1, 1];
     for (let y = 0; y < field.height; y++) {
       for (let x = 0; x < field.width; x++) {
         field.grid.push({
@@ -251,7 +255,8 @@ export class GenericBuilderService implements SceneBuilder {
           light: {
             level: ambientLight,
             ambient: ambientLight,
-            color: '#000000'
+            color: ambientLightColor,
+            ambientColor: ambientLightColor
           }
         });
       }

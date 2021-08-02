@@ -135,11 +135,13 @@ export class GenericSceneRenderContext {
           canvas.imageSmoothingEnabled = true;
           const scaleX = this.lightMapCanvasElement.width / this.staticCanvasElement.width;
           const scaleY = this.lightMapCanvasElement.height / this.staticCanvasElement.height;
+          canvas.globalCompositeOperation = 'multiply';
           canvas.drawImage(
             this.lightMapCanvasElement,
             viewport.x * scaleX, viewport.y * scaleY, viewport.width * scaleX, viewport.height * scaleY,
             0, 0, this.canvasSize.width, this.canvasSize.height
           );
+          canvas.globalCompositeOperation = 'normal';
         }
 
         // draw ui

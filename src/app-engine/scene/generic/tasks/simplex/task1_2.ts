@@ -127,9 +127,9 @@ export const SimplexTask1_2 = () => {
     title: 'test',
     enableEcho: true,
 
-    requireInput: () => ab.shift(),
+    requireInput: (model) => ab.shift(),
 
-    consumeOutput: (value: any) => {
+    consumeOutput: (model, value: any) => {
       answer = value;
       return true;
     },

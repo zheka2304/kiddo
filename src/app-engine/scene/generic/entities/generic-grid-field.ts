@@ -13,7 +13,8 @@ export interface GenericGridCell {
   tiles: GenericGridTile[];
   light: {
     level: number,
+    color: number[],
     ambient: number,
-    color: string
+    ambientColor: number[]
   };
 }

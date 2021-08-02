@@ -37,6 +37,7 @@ export class GenericWriterService implements SceneWriter {
     // reset light
     for (const cell of this.sceneModel.field.grid) {
       cell.light.level = cell.light.ambient;
+      cell.light.color = [ ...cell.light.ambientColor ];
     }
 
     // do update

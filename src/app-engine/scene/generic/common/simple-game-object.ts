@@ -2,15 +2,16 @@ import {TextureAtlasItemCollection} from '../../../../app/scene/generic-scene/gr
 import {GameObjectBase} from './game-object-base';
 import {Coords} from '../../common/entities';
 import {DefaultTileStates} from '../entities/default-tile-states.enum';
-import {SimpleGridTileAdditionalParameters, SimpleGridTileDefinition} from './simple-grid-tile';
 import {DrawableCollection} from '../../../../app/scene/generic-scene/graphics/drawable-collection';
 import {GenericSceneRenderContext} from '../../../../app/scene/generic-scene/render/generic-scene-render-context';
 import {GenericReaderService} from '../readers/generic-reader.service';
-import {Rect} from '../../../../app/shared/interfaces/rect';
+import {LightSourceParams} from '../helpers/lighting-helper.service';
+import {GenericWriterService} from '../writers/generic-writer.service';
 
 
 export interface SimpleGameObjectDefinition {
   texture: TextureAtlasItemCollection;
+  lightSources?: LightSourceParams[];
   initialState?: string;
   mutableTags?: string[];
   immutableTags?: string[];
@@ -56,6 +57,14 @@ export class SimpleGameObject extends GameObjectBase {
   ): void {
     if (this.texture) {
       this.texture.draw(canvas, this.state, context.renderDataAndPositionToRect(this.lastPosition, this.position, renderData));
+    }
+  }
+
+  onLightMapUpdate(writer: GenericWriterService, interpolatedPosition: Coords): void {
+    if (this.definition.lightSources) {
+      for (const lightSource of this.definition.lightSources) {
+        this.lightingHelper.lightAround(writer.getReader(), this.position, interpolatedPosition, lightSource);
+      }
     }
   }
 }

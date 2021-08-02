@@ -153,6 +153,15 @@ export class GenericSkulptService implements SceneSkulptService {
         this.inGameConsoleService.getWriter().printToConsole(model, value + '');
       },
 
+      has_more: () => {
+        this.checkRunFailedCompletedOrAborted();
+        const model = this.inGameConsoleService.getCurrentModel();
+        if (!model) {
+          throw new GameFailError('CONSOLE_NOT_OPEN');
+        }
+        return this.inGameConsoleService.getWriter().addNextInput(model);
+      },
+
       read: async () => {
         this.checkRunFailedCompletedOrAborted();
         await this.writer.awaitNextStep();

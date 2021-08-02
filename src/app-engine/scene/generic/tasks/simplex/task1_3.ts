@@ -104,7 +104,7 @@ export const SimplexTask1_3 = () => {
   };
 
   const arrayString = [];
-  const size = Math.floor(Math.random() * 3) + 3;
+  const size = Math.floor(Math.random() * 10) + 5;
   for (let i = 0; i < size; i++) {
     arrayString.push(generateString());
   }
@@ -124,9 +124,9 @@ export const SimplexTask1_3 = () => {
     title: 'test',
     enableEcho: true,
 
-    requireInput: () => arrayString.shift(),
+    requireInput: (model) => arrayString.shift(),
 
-    consumeOutput: (value: any) => {
+    consumeOutput: (model, value: any) => {
       return arrayStringAnswers.shift() === value;
     },
 

@@ -157,13 +157,19 @@ export class GenericSceneRenderer {
       return hex.length === 1 ? '0' + hex : hex;
     };
 
+    const lightColorToHex = (color, level) => {
+      const [ r, g, b ] = color;
+      level /= Math.max(r, g, b);
+      return '#' + floatComponentToHex(r * level) + floatComponentToHex(g * level) + floatComponentToHex(b * level);
+    };
+
     (this.sceneAccessorsService.writer as GenericWriterService).doLightMapUpdates(context, this.getRenderInterpolationValue());
 
     canvas.clearRect(0, 0, size.width, size.height);
     for (let x = 0; x < sceneModel.field.width; x++) {
       for (let y = 0; y < sceneModel.field.height; y++) {
         const cell = sceneModel.field.grid[x + y * sceneModel.field.width];
-        canvas.fillStyle = cell.light.color + floatComponentToHex(1 - cell.light.level);
+        canvas.fillStyle = lightColorToHex(cell.light.color, cell.light.level);
         canvas.fillRect(x, y, 1, 1);
       }
     }

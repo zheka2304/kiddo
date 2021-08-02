@@ -19,15 +19,19 @@ export class InGameConsoleWriterService {
   }
 
   readNextInput(model: InGameConsoleModel): any {
-    if (model.inputs.length > 0) {
-      return model.inputs.shift();
+    const input = model.inputs.length > 0 ? model.inputs.shift() : model.requireInput();
+    if (input != null && model.onInput) {
+      model.onInput(input);
     }
-    return model.requireInput();
+    return input;
   }
 
   addNextOutput(model: InGameConsoleModel, value: any): boolean {
     const valid = model.consumeOutput(value);
     model.outputs.push({ valid, value });
+    if (model.onOutput) {
+      model.onOutput(value, valid);
+    }
     return valid;
   }
 }
