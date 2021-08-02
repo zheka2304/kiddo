@@ -154,10 +154,9 @@ export class InGameConsoleWindow extends InGameWindowBase {
         inputsStr = nextInputStr;
       } else {
         inputsStr = nextInputStr;
-        while (canvas.measureText(inputsStr + '...').width > windowRect.width) {
+        while (canvas.measureText(inputsStr).width > windowRect.width) {
           inputsStr = inputsStr.substr(0, inputsStr.length - 1);
         }
-        inputsStr += '...';
         break;
       }
     }
@@ -165,10 +164,10 @@ export class InGameConsoleWindow extends InGameWindowBase {
     const outputsStrPrefix = ' OUT: ';
     let outputsStr = this.model.outputs.map(v => InGameConsoleWindow.valueToString(v.value)).join(' ');
     if (canvas.measureText(outputsStrPrefix + outputsStr).width > windowRect.width) {
-      while (canvas.measureText(outputsStrPrefix + '...' + outputsStr).width > windowRect.width) {
+      while (canvas.measureText(outputsStrPrefix + outputsStr).width > windowRect.width) {
         outputsStr = outputsStr.substr(1);
       }
-      outputsStr = outputsStrPrefix + '...' + outputsStr;
+      outputsStr = outputsStrPrefix + outputsStr;
     } else {
       outputsStr = outputsStrPrefix + outputsStr;
     }

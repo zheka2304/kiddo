@@ -14,6 +14,11 @@ export class InGameConsoleWriterService {
     }
   }
 
+  hasMoreInputs(model: InGameConsoleModel): boolean {
+    this.addNextInput(model);
+    return model.inputs.length > 0;
+  }
+
   printToConsole(model: InGameConsoleModel, line: string): void {
     model.lines.push(line);
   }
