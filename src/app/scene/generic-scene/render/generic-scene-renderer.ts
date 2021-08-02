@@ -199,6 +199,8 @@ export class GenericSceneRenderer {
     const player = this.getSceneModel()?.player;
     if (player) {
       const position = context.getInterpolatedPosition(player.lastPosition, player.position, this.getRenderInterpolationValue());
+      position.x += 0.5;
+      position.y += 0.5;
       const backgroundSize = this.getBackgroundSize(defaultViewport);
       const cellSize = this.getCellSizeInPixels(defaultViewport);
       return {
