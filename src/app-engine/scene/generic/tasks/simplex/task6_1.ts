@@ -44,24 +44,19 @@ class GameWatcher extends GameObjectBase {
 
   onTick(writer: GenericWriterService): void {
     super.onTick(writer);
-    this.ticks++;
     if (this.ticks % 3 === 0) {
       for (let i = 0; i < 20; i++) {
-        if (Math.random() < 0.40) {
+        if (Math.random() < 0.45) {
           writer.addGameObject(new EvilTrash({x: 2 * i + 1, y: -1}));
         }
       }
     }
-
-
+    this.ticks++;
   }
 }
 
 // tslint:disable-next-line
 export const SimplexTask6_1 = () => {
-  // --------- skin registration ---------
-
-
   // --------- registration -------------
 
   TileRegistry.addBasicTile('wood-tile', {
