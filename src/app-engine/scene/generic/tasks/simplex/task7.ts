@@ -11,6 +11,7 @@ import {SimpleGameObject} from '../../common/simple-game-object';
 import {CharacterBase} from '../../common/character-base';
 import {GenericWriterService} from '../../writers/generic-writer.service';
 import {GameObjectBase} from '../../common/game-object-base';
+import {GenericReaderService} from '../../readers/generic-reader.service';
 
 // declarations for generic task init function
 declare const Builder: GenericBuilderService;
@@ -35,17 +36,16 @@ export const SimplexTask7 = () => {
   });
 
   // --------- tile generation -------------
-  Builder.setupGameField({width: 10, height: 10}, {
+  Builder.setupGameField({width: 9, height: 9}, {
     lightMap: {
-      enabled: false,
+      enabled: true,
       ambient: 0.09
     },
-    tilesPerScreen: 8,
-    pixelPerfect: 32
+    tilesPerScreen: 9
   });
 
-  for (let x = 0; x < 10; x++) {
-    for (let y = 0; y < 10; y++) {
+  for (let x = 0; x < 9; x++) {
+    for (let y = 0; y < 9; y++) {
       Builder.setTile(x, y, 'wood-tile');
     }
   }
@@ -54,7 +54,7 @@ export const SimplexTask7 = () => {
   const player = new GenericPlayer({x: 4, y: 4}, {
       skin: 'link',
       defaultLightSources: [
-        {radius: 1, brightness: 1},
+        {radius: 3, brightness: 1},
       ],
 
       minVisibleLightLevel: 0.1,
@@ -66,7 +66,48 @@ export const SimplexTask7 = () => {
 
 
   // --------- object -------------
+  const arrayFood = [];
+  const foodPositions = [];
+  for (let i = 0; i < 3; i++) {
+    let positionX = 0;
+    let positionY = 0;
+    let regenerate = true;
+    while (regenerate) {
+      positionX = Math.floor(Math.random() * 5 + 1);
+      positionY = Math.floor(Math.random() * 5);
+      regenerate = false;
+      for (const last of foodPositions) {
+        if (last[0] === positionX && last[1] === positionY) {
+          regenerate = true;
+          break;
+        }
+      }
+    }
+    foodPositions.push([positionX, positionY]);
+    arrayFood.push(new SimpleGameObject({x: positionX, y: positionY}, {
+      texture: {
+        atlas: {src: 'assets:/tile-atlas.png', width: 4, height: 4},
+        items: {
+          [DefaultTileStates.MAIN]: [[2, 2]],
+        }
+      },
+      immutableTags: [DefaultTags.ITEM, 'food']
+    }));
+  }
+
+  for (const food of arrayFood) {
+    Builder.addGameObject(food);
+  }
+
 
   // ---------- logic ---------------
 
+  Builder.addCheckingLogic((reader: GenericReaderService) => {
+    for (const food of foodPositions) {
+      if (reader.getAllTagsAt(food[0], food[1]).has('food')) {
+        return 'FOOD_REMAINING';
+      }
+    }
+    return null;
+  });
 };
