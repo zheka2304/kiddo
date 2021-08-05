@@ -28,9 +28,12 @@ export class GenericWriterService implements SceneWriter {
     this.sceneModel = this.sceneModelService.sceneModel as GenericSceneModel;
   }
 
-  reset(timePerFrame: number): void {
-    this.timePerFrame = timePerFrame;
+  reset(): void {
     this.queue = [];
+  }
+
+  setTickPerFrame(timePerFrame: number): void {
+    this.timePerFrame = timePerFrame;
   }
 
   doLightMapUpdates(context: GenericSceneRenderContext, interpolation: number): void {

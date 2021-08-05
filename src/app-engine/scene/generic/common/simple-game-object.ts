@@ -7,6 +7,9 @@ import {GenericSceneRenderContext} from '../../../../app/scene/generic-scene/ren
 import {GenericReaderService} from '../readers/generic-reader.service';
 import {LightSourceParams} from '../helpers/lighting-helper.service';
 import {GenericWriterService} from '../writers/generic-writer.service';
+import {DefaultTags} from '../entities/default-tags.enum';
+import {GenericItem} from '../entities/generic-item';
+import {GenericGameObject} from '../entities/generic-game-object';
 
 
 export interface SimpleGameObjectDefinition {
@@ -15,10 +18,15 @@ export interface SimpleGameObjectDefinition {
   initialState?: string;
   mutableTags?: string[];
   immutableTags?: string[];
+
+  item?: {
+    name?: string;
+    ignoreObstacle?: boolean;
+  };
 }
 
 
-export class SimpleGameObject extends GameObjectBase {
+export class SimpleGameObject extends GameObjectBase implements GenericItem {
   public state: string = null;
 
   private texture: DrawableCollection = null;
@@ -41,6 +49,10 @@ export class SimpleGameObject extends GameObjectBase {
       for (const tag of definition.mutableTags) {
         this.addTag(tag);
       }
+    }
+
+    if (definition.item) {
+      this.addImmutableTag(DefaultTags.ITEM);
     }
   }
 
@@ -66,5 +78,14 @@ export class SimpleGameObject extends GameObjectBase {
         this.lightingHelper.lightAround(writer.getReader(), this.position, interpolatedPosition, lightSource);
       }
     }
+  }
+
+
+  getItemName(): string {
+    return this.definition?.item?.name || 'item';
+  }
+
+  canBePlaced(reader: GenericReaderService, character: GenericGameObject, position: Coords): boolean {
+    return this.definition?.item?.ignoreObstacle || !reader.getAllTagsAt(position.x, position.y).has(DefaultTags.OBSTACLE);
   }
 }

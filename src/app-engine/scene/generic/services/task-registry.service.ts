@@ -8,7 +8,6 @@ import {SimplexTask4_2} from '../tasks/simplex/task4_2';
 import {SimplexTask4_1} from '../tasks/simplex/task4_1';
 import {SimplexTask5_1} from '../tasks/simplex/task5_1';
 import {SimplexTask5_2} from '../tasks/simplex/task5_2';
-import {SimplexTask6_1} from '../tasks/simplex/task6_1';
 
 
 @Singleton
@@ -25,7 +24,6 @@ export class TaskRegistryService {
     this.registerTask('simplex_task4_2', SimplexTask4_2);
     this.registerTask('simplex_task5_1', SimplexTask5_1);
     this.registerTask('simplex_task5_2', SimplexTask5_2);
-    this.registerTask('simplex_task6_1', SimplexTask6_1);
   }
 
   registerTask(name: string, initFunc: () => void): void {

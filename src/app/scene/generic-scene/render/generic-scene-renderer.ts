@@ -219,7 +219,62 @@ export class GenericSceneRenderer {
   }
 
 
+  private drawPlayerInventory(context: GenericSceneRenderContext, canvas: CanvasRenderingContext2D, viewport: Rect): void {
+    const padding = 5;
+    const scene = this.getSceneModel();
+    let unitSize = Math.min(108, Math.min(viewport.width, viewport.height) * 0.2) - padding * 2;
+    if (scene && scene.pixelPerfect) {
+      unitSize = Math.floor(unitSize / scene.pixelPerfect) * scene.pixelPerfect;
+    }
+    if (unitSize < 1) {
+      return;
+    }
+
+    const boundingRect = {
+      x: Math.round(unitSize * 0.1),
+      y: viewport.height - Math.round(unitSize * 0.1) - (unitSize + padding * 2),
+      width: viewport.width - Math.round(unitSize * 0.1) * 2,
+      height: unitSize + padding * 2
+    };
+    canvas.lineWidth = padding;
+    canvas.strokeStyle = 'white';
+    canvas.fillStyle = '#1e1e1e';
+    canvas.fillRect(boundingRect.x, boundingRect.y, boundingRect.width, boundingRect.height);
+    canvas.strokeRect(boundingRect.x, boundingRect.y, boundingRect.width, boundingRect.height);
+    canvas.fillStyle = 'white';
+    canvas.textAlign = 'start';
+    canvas.font = `${padding * 3}px generic-scene-font`;
+    canvas.fillText('Inventory:', boundingRect.x, boundingRect.y - padding * 1.5);
+
+    const inventoryRect = {
+      x: boundingRect.x + padding,
+      y: boundingRect.y + padding,
+      width: boundingRect.width - padding * 2,
+      height: boundingRect.height - padding * 2
+    };
+    const inventory = scene.player.inventory;
+    for (let i = 0; i < inventory.length; i++) {
+      const item = inventory[i];
+      if ((i + 1) * unitSize + padding * i > inventoryRect.width) {
+        break;
+      }
+      item.draw(this.getReader(), context, canvas, {
+        x: inventoryRect.x + i * (unitSize + padding),
+        y: inventoryRect.y,
+        scale: unitSize,
+        interpolation: 1
+      });
+    }
+  }
+
   onDrawUi(context: GenericSceneRenderContext, canvas: CanvasRenderingContext2D, viewport: Rect): void {
+    canvas.imageSmoothingEnabled = false;
+    // draw inventory
+    const player = this.getReader().getPlayer();
+    if (player && player.inventory.length > 0) {
+      this.drawPlayerInventory(context, canvas, viewport);
+    }
+    // draw in-game windows
     this.inGameWindowService.drawWindows(
       context,
       canvas,

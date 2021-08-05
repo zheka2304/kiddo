@@ -1,16 +1,26 @@
 <section class="toolbar">
-        <div class="toolbar-dummy"></div>
-        <div class="launch-button-wrapper">
-            <button class="button launch-button small"
-                    [ngClass]="getLaunchButtonColor() | async"
-                    (click)="onLaunchButtonClick()"
-                    [disabled]="playbackIsLaunched | async">
-                <span class="launch-button-content">
-                    <i class="icon-{{launchButtonState | async}}"></i>
-                    <span class="launch-button-text">
-                        {{ prefixButton + (launchButtonState | async) | uppercase | translate }}
-                    </span>
+    <div class="toolbar-dummy"></div>
+    <div class="launch-button-wrapper">
+        <button class="button launch-button small"
+                [ngClass]="getLaunchButtonColor() | async"
+                (click)="onLaunchButtonClick()"
+                [disabled]="playbackIsLaunched | async">
+            <span class="launch-button-content">
+                <i class="icon-{{launchButtonState | async}}"></i>
+                <span class="launch-button-text">
+                    {{ prefixButton + (launchButtonState | async) | uppercase | translate }}
                 </span>
+            </span>
+        </button>
+        &nbsp;
+        <button class="button small"
+                *ngIf="showDebugButton() | async"
+                [ngClass]="getLaunchButtonColor() | async"
+                (click)="onDebugButtonClick()"
+                [disabled]="playbackIsLaunched | async">
+            <span class="launch-button-content">
+                <i class="icon-debug"></i>
+            </span>
         </button>
     </div>
     <div class="toolbar-buttons-wrapper">

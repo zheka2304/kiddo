@@ -5,6 +5,7 @@ import {CommonTileRegistryService} from '../../services/common-tile-registry.ser
 import {CharacterSkinRegistryService} from '../../services/character-skin-registry.service';
 import {InGameConsoleService} from '../../services/in-game-console.service';
 import {CheckingLogic, Direction} from '../../../common/entities';
+import {SimpleGameObject} from "../../common/simple-game-object";
 
 // declarations for generic task init function
 declare const Builder: GenericBuilderService;
@@ -46,7 +47,20 @@ export const SimplexTaskTest = () => {
       enabled: true,
       ambient: 0.09
     },
+    pixelPerfect: 32
   });
+
+  Builder.addGameObject(new SimpleGameObject({x: 3, y: 1}, {
+    texture: {
+      atlas: { src: 'assets:/tile-atlas.png', width: 4, height: 4 },
+      items: {
+        main: [[2, 1]]
+      }
+    },
+    item: {
+      name: 'test item'
+    }
+  }));
 
   Builder.setPlayer(new GenericPlayer({x: 1, y: 1}, {
     skin: 'link',

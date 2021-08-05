@@ -12,14 +12,16 @@ import {TerminalService} from '../../../app/code-editor/terminal/terminal.servic
 import {GameCompletionInterruptError} from '../common/errors/game-completion-interrupt-error';
 import {InGameConsoleService} from './services/in-game-console.service';
 import {InGameWindowService} from './services/in-game-window-service';
+import {GenericSceneExecutor, GenericSceneExecutorService} from './generic-scene-executor.service';
 
 
 @Singleton
 export class GenericSkulptService implements SceneSkulptService {
   executionWasAborted = false;
-  private tickExecutionError: Error = null;
-  private tickingIsStopped = new Subject<any>();
+  private sceneRuntimeError: Error = null;
+  private executor: GenericSceneExecutor = null;
 
+  private sceneExecutorService: GenericSceneExecutorService = new GenericSceneExecutorService();
   private inGameWindowService: InGameWindowService = new InGameWindowService();
   private inGameConsoleService: InGameConsoleService = new InGameConsoleService();
 
@@ -54,7 +56,7 @@ export class GenericSkulptService implements SceneSkulptService {
     });
 
     injector.addModule('player', {
-      direction: () => {
+      get_direction: () => {
         return this.getPlayer().direction.toLowerCase();
       },
 
@@ -116,6 +118,9 @@ export class GenericSkulptService implements SceneSkulptService {
         if (!player.validateInspectOffset({ x, y })) {
           throw new GameFailError('INVALID_PLAYER_INSPECT_OFFSET');
         }
+        if (this.inGameConsoleService.getCurrentModel()) {
+          throw new GameFailError('PLAYER_MOVE_WITH_OPEN_CONSOLE');
+        }
         return [ ...player.getAllTagsRelativeToPlayer(this.reader, { x, y }, [player], true) ];
       },
 
@@ -126,6 +131,9 @@ export class GenericSkulptService implements SceneSkulptService {
         const player = this.getPlayer();
         if (!player.validateLookRange(range)) {
           throw new GameFailError('INVALID_PLAYER_LOOK_RANGE');
+        }
+        if (this.inGameConsoleService.getCurrentModel()) {
+          throw new GameFailError('PLAYER_MOVE_WITH_OPEN_CONSOLE');
         }
         return player.lookForCellsWithTag(this.reader, tag, range, true).map(coords => [ coords.x, coords.y ]);
       },
@@ -138,7 +146,51 @@ export class GenericSkulptService implements SceneSkulptService {
         if (!player.validateInteractOffset({ x, y })) {
           throw new GameFailError('INVALID_PLAYER_INTERACT_OFFSET');
         }
+        if (this.inGameConsoleService.getCurrentModel()) {
+          throw new GameFailError('PLAYER_MOVE_WITH_OPEN_CONSOLE');
+        }
         return player.interact(this.writer, { x, y }, [player], true) != null;
+      },
+
+      pickup: async (tags: string | string[], x: number, y: number) => {
+        if (!Array.isArray(tags)) {
+          tags = [ tags as string ];
+        }
+        this.checkRunFailedCompletedOrAborted();
+        await this.writer.awaitNextStep();
+        this.checkRunFailedCompletedOrAborted();
+        const player = this.getPlayer();
+        if (!player.validateInteractOffset({ x, y })) {
+          throw new GameFailError('INVALID_PLAYER_INTERACT_OFFSET');
+        }
+        if (this.inGameConsoleService.getCurrentModel()) {
+          throw new GameFailError('PLAYER_MOVE_WITH_OPEN_CONSOLE');
+        }
+        return !!player.pickItemRelative(this.writer, { x, y }, tags, true);
+      },
+
+      place: async (tags: string | string[], x: number, y: number) => {
+        if (!Array.isArray(tags)) {
+          tags = [ tags as string ];
+        }
+        this.checkRunFailedCompletedOrAborted();
+        await this.writer.awaitNextStep();
+        this.checkRunFailedCompletedOrAborted();
+        const player = this.getPlayer();
+        if (!player.validateInteractOffset({ x, y })) {
+          throw new GameFailError('INVALID_PLAYER_INTERACT_OFFSET');
+        }
+        if (this.inGameConsoleService.getCurrentModel()) {
+          throw new GameFailError('PLAYER_MOVE_WITH_OPEN_CONSOLE');
+        }
+        return player.placeItemRelative(this.writer, { x, y }, player.findItemsInInventory(tags)[0], true);
+      },
+
+      has_item: (tags: string | string[]) => {
+        if (!Array.isArray(tags)) {
+          tags = [ tags as string ];
+        }
+        return this.getPlayer().findItemsInInventory(tags).length > 0;
       }
     });
 
@@ -194,10 +246,15 @@ export class GenericSkulptService implements SceneSkulptService {
   }
 
   onExecutionStarted(): void {
+    this.writer.reset();
+    this.executor = this.sceneExecutorService.createExecutor(this.writer, this, () => this.executionWasAborted);
+    this.executor.runLoop(500).then();
+
+    /*
     const timePerFrame = 500;
     this.writer.reset(timePerFrame);
     this.inGameWindowService.closeAllWindows();
-    this.tickExecutionError = null;
+    this.sceneRuntimeError = null;
 
     interval(timePerFrame).pipe(
       takeUntil(this.tickingIsStopped),
@@ -206,7 +263,7 @@ export class GenericSkulptService implements SceneSkulptService {
           this.writer.doGameStep();
         } catch (err) {
           this.executionWasAborted = true;
-          this.tickExecutionError = err;
+          this.sceneRuntimeError = err;
           console.error('error in generic scene runtime', err);
 
           // this will safely run all queued actions (turn awaits) to stop the script, otherwise it will wait forever
@@ -216,17 +273,22 @@ export class GenericSkulptService implements SceneSkulptService {
           this.tickingIsStopped.next();
         }
       }),
-    ).subscribe();
+    ).subscribe(); */
   }
 
   onExecutionFinished(): void {
-    this.tickingIsStopped.next();
+    this.executor.stop().then();
     this.inGameWindowService.closeAllWindows();
   }
 
+  public handleSceneRuntimeError(err: Error): void {
+    console.error('error in generic scene runtime', err);
+    this.sceneRuntimeError = err;
+  }
+
   private checkRunFailedCompletedOrAborted(): void {
-    if (this.tickExecutionError) {
-      throw this.tickExecutionError;
+    if (this.sceneRuntimeError) {
+      throw this.sceneRuntimeError;
     }
     const player = this.getPlayer();
     if (this.reader.checkLevelCompletedSuccessfully()) {
