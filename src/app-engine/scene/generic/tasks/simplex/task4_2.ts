@@ -8,6 +8,7 @@ import {DefaultTileStates} from '../../entities/default-tile-states.enum';
 import {DefaultTags} from '../../entities/default-tags.enum';
 import {ConsoleTerminalGameObject} from '../../common/console-terminal-game-object';
 import {SimpleGameObject} from '../../common/simple-game-object';
+import {GenericReaderService} from '../../readers/generic-reader.service';
 
 // declarations for generic task init function
 declare const Builder: GenericBuilderService;
@@ -72,5 +73,13 @@ export const SimplexTask4_2 = () => {
     immutableTags: [DefaultTags.ITEM, 'letter']
   });
   Builder.addGameObject(letter);
+
+  // ---------- logic ---------------
+  Builder.addCheckingLogic((reader: GenericReaderService) => {
+    if (reader.getAllTagsAt(positionX, positionY).has('letter')) {
+      return 'GOAL_NOT_REACHED';
+    }
+    return null;
+  });
 
 };
