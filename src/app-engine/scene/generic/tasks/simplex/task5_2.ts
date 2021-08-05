@@ -6,8 +6,6 @@ import {CheckingLogic, Direction} from '../../../common/entities';
 import {GenericPlayer} from '../../common/player';
 import {DefaultTileStates} from '../../entities/default-tile-states.enum';
 import {DefaultTags} from '../../entities/default-tags.enum';
-import {ConsoleTerminalGameObject} from '../../common/console-terminal-game-object';
-import {SimpleGameObject} from '../../common/simple-game-object';
 import {CharacterBase} from '../../common/character-base';
 import {GenericWriterService} from '../../writers/generic-writer.service';
 import {GameObjectBase} from '../../common/game-object-base';
