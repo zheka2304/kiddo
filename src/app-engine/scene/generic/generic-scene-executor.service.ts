@@ -7,6 +7,7 @@ import {GenericSkulptService} from './generic-skulpt.service';
 @Singleton
 export class GenericSceneExecutorService {
   private executorBySceneUid = new Map<string, GenericSceneExecutor>();
+  private preferredTimePerTick = 500;
 
   public createExecutor(
     writer: GenericWriterService,
@@ -35,6 +36,14 @@ export class GenericSceneExecutorService {
       return null;
     }
     return this.executorBySceneUid.get(sceneModel.sceneUid);
+  }
+
+  public getPreferredTimePerTick(): number {
+    return this.preferredTimePerTick;
+  }
+
+  public setPreferredTimePerTick(timePerTick: number): void {
+    this.preferredTimePerTick = timePerTick;
   }
 }
 
@@ -77,9 +86,13 @@ export class GenericSceneExecutor {
   }
 
   public async stop(): Promise<void> {
+    const state = this.state;
     await this.interrupt();
     this.state = GenericSceneExecutorState.IDLE;
-    this.doGameStepSafely();
+
+    // finalize game execution, without doing an additional step
+    // if ran manually, make a timeout for animation
+    this.writer.finalizeExecution(state === GenericSceneExecutorState.RUNNING ? 0 : -1);
   }
 
   // do a manual step on a worker thread and await it
@@ -110,8 +123,8 @@ export class GenericSceneExecutor {
       this.state = GenericSceneExecutorState.IDLE;
       this.skulptService.handleSceneRuntimeError(err);
 
-      // this will safely run all queued actions (turn awaits) to stop the script, otherwise it will wait forever
-      this.writer.runAllActionsSafely();
+      // finalize game execution, without doing an additional step
+      this.writer.finalizeExecution();
     }
   }
 
@@ -154,7 +167,7 @@ export class GenericSceneExecutor {
     };
 
     this.state = GenericSceneExecutorState.RUNNING;
-    this.writer.setTickPerFrame(timePerFrame);
+    this.writer.setTimePerFrame(timePerFrame);
     scheduleNextTick(0);
   }
 }

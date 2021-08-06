@@ -52,8 +52,14 @@ i {
 .icon-play:before {
     content: "\e932";
 }
-.icon-debug:before {
-    content: "\e915";
+.icon-step:before {
+    content: "\e90c";
+}
+.icon-debug-expand:before {
+    content: "\e910";
+}
+.icon-debug-collapse:before {
+    content: "\e926";
 }
 .icon-replay:before {
     content: "\e920";

@@ -3,8 +3,6 @@ import {Singleton} from '../../singleton.decorator';
 import {SkulptService} from '../../script-runner/skulpt.service';
 import {GenericReaderService} from './readers/generic-reader.service';
 import {GenericWriterService} from './writers/generic-writer.service';
-import {interval, Subject} from 'rxjs';
-import {takeUntil, tap} from 'rxjs/operators';
 import {GameFailError} from '../common/errors';
 import {GenericPlayer} from './common/player';
 import {Direction} from '../common/entities';
@@ -72,14 +70,21 @@ export class GenericSkulptService implements SceneSkulptService {
         let steps = 0;
         this.checkRunFailedCompletedOrAborted();
         for (let i = 0; i < turns; i++) {
-          await this.writer.awaitNextStep();
-          this.checkRunFailedCompletedOrAborted();
-          if (this.inGameConsoleService.getCurrentModel()) {
-            throw new GameFailError('PLAYER_MOVE_WITH_OPEN_CONSOLE');
-          }
-          if (this.getPlayer().move(this.reader, { x: 0, y: 1 })) {
-            steps++;
-          } else {
+          // we use this instead of awaitNextStep, because move must execute synchronously during the game tick
+          // and await writer.awaitNextTurn() will run in async, so it will change player position after the tick is complete,
+          // messing up all calculations
+          if (!await this.writer.awaitPostAction(() => {
+            this.checkRunFailedCompletedOrAborted();
+            if (this.inGameConsoleService.getCurrentModel()) {
+              throw new GameFailError('PLAYER_MOVE_WITH_OPEN_CONSOLE');
+            }
+            if (this.getPlayer().move(this.reader, { x: 0, y: 1 })) {
+              steps++;
+              return true;
+            } else {
+              return false;
+            }
+          })) {
             break;
           }
         }
@@ -89,67 +94,72 @@ export class GenericSkulptService implements SceneSkulptService {
       right: async (turns: number = 1) => {
         this.checkRunFailedCompletedOrAborted();
         for (let i = 0; i < turns; i++) {
-          await this.writer.awaitNextStep();
-          this.checkRunFailedCompletedOrAborted();
-          if (this.inGameConsoleService.getCurrentModel()) {
-            throw new GameFailError('PLAYER_MOVE_WITH_OPEN_CONSOLE');
-          }
-          this.getPlayer().turn(this.reader, Direction.RIGHT);
+          await this.writer.awaitPostAction(() => {
+            this.checkRunFailedCompletedOrAborted();
+            if (this.inGameConsoleService.getCurrentModel()) {
+              throw new GameFailError('PLAYER_MOVE_WITH_OPEN_CONSOLE');
+            }
+            this.getPlayer().turn(this.reader, Direction.RIGHT);
+          });
         }
       },
 
       left: async (turns: number = 1) => {
         this.checkRunFailedCompletedOrAborted();
         for (let i = 0; i < turns; i++) {
-          await this.writer.awaitNextStep();
-          this.checkRunFailedCompletedOrAborted();
-          if (this.inGameConsoleService.getCurrentModel()) {
-            throw new GameFailError('PLAYER_MOVE_WITH_OPEN_CONSOLE');
-          }
-          this.getPlayer().turn(this.reader, Direction.LEFT);
+          await this.writer.awaitPostAction(() => {
+            this.checkRunFailedCompletedOrAborted();
+            if (this.inGameConsoleService.getCurrentModel()) {
+              throw new GameFailError('PLAYER_MOVE_WITH_OPEN_CONSOLE');
+            }
+            this.getPlayer().turn(this.reader, Direction.LEFT);
+          });
         }
       },
 
       inspect: async (x: number = 0, y: number = 1) => {
         this.checkRunFailedCompletedOrAborted();
-        await this.writer.awaitNextStep();
-        this.checkRunFailedCompletedOrAborted();
-        const player = this.getPlayer();
-        if (!player.validateInspectOffset({ x, y })) {
-          throw new GameFailError('INVALID_PLAYER_INSPECT_OFFSET');
-        }
-        if (this.inGameConsoleService.getCurrentModel()) {
-          throw new GameFailError('PLAYER_MOVE_WITH_OPEN_CONSOLE');
-        }
-        return [ ...player.getAllTagsRelativeToPlayer(this.reader, { x, y }, [player], true) ];
+        return await this.writer.awaitPostAction(() => {
+          this.checkRunFailedCompletedOrAborted();
+          const player = this.getPlayer();
+          if (!player.validateInspectOffset({x, y})) {
+            throw new GameFailError('INVALID_PLAYER_INSPECT_OFFSET');
+          }
+          if (this.inGameConsoleService.getCurrentModel()) {
+            throw new GameFailError('PLAYER_MOVE_WITH_OPEN_CONSOLE');
+          }
+          return [...player.getAllTagsRelativeToPlayer(this.reader, {x, y}, [player], true)];
+        });
       },
 
       look: async (tag: string, range: number) => {
         this.checkRunFailedCompletedOrAborted();
-        await this.writer.awaitNextStep();
-        this.checkRunFailedCompletedOrAborted();
-        const player = this.getPlayer();
-        if (!player.validateLookRange(range)) {
-          throw new GameFailError('INVALID_PLAYER_LOOK_RANGE');
-        }
-        if (this.inGameConsoleService.getCurrentModel()) {
-          throw new GameFailError('PLAYER_MOVE_WITH_OPEN_CONSOLE');
-        }
-        return player.lookForCellsWithTag(this.reader, tag, range, true).map(coords => [ coords.x, coords.y ]);
+        await this.writer.awaitPostAction(() => {
+          this.checkRunFailedCompletedOrAborted();
+          const player = this.getPlayer();
+          if (!player.validateLookRange(range)) {
+            throw new GameFailError('INVALID_PLAYER_LOOK_RANGE');
+          }
+          if (this.inGameConsoleService.getCurrentModel()) {
+            throw new GameFailError('PLAYER_MOVE_WITH_OPEN_CONSOLE');
+          }
+          return player.lookForCellsWithTag(this.reader, tag, range, true).map(coords => [coords.x, coords.y]);
+        });
       },
 
       interact: async (x: number, y: number) => {
         this.checkRunFailedCompletedOrAborted();
-        await this.writer.awaitNextStep();
-        this.checkRunFailedCompletedOrAborted();
-        const player = this.getPlayer();
-        if (!player.validateInteractOffset({ x, y })) {
-          throw new GameFailError('INVALID_PLAYER_INTERACT_OFFSET');
-        }
-        if (this.inGameConsoleService.getCurrentModel()) {
-          throw new GameFailError('PLAYER_MOVE_WITH_OPEN_CONSOLE');
-        }
-        return player.interact(this.writer, { x, y }, [player], true) != null;
+        return await this.writer.awaitPostAction(() => {
+          this.checkRunFailedCompletedOrAborted();
+          const player = this.getPlayer();
+          if (!player.validateInteractOffset({x, y})) {
+            throw new GameFailError('INVALID_PLAYER_INTERACT_OFFSET');
+          }
+          if (this.inGameConsoleService.getCurrentModel()) {
+            throw new GameFailError('PLAYER_MOVE_WITH_OPEN_CONSOLE');
+          }
+          return player.interact(this.writer, {x, y}, [player], true) != null;
+        });
       },
 
       pickup: async (tags: string | string[], x: number, y: number) => {
@@ -157,16 +167,17 @@ export class GenericSkulptService implements SceneSkulptService {
           tags = [ tags as string ];
         }
         this.checkRunFailedCompletedOrAborted();
-        await this.writer.awaitNextStep();
-        this.checkRunFailedCompletedOrAborted();
-        const player = this.getPlayer();
-        if (!player.validateInteractOffset({ x, y })) {
-          throw new GameFailError('INVALID_PLAYER_INTERACT_OFFSET');
-        }
-        if (this.inGameConsoleService.getCurrentModel()) {
-          throw new GameFailError('PLAYER_MOVE_WITH_OPEN_CONSOLE');
-        }
-        return !!player.pickItemRelative(this.writer, { x, y }, tags, true);
+        await this.writer.awaitPostAction(() => {
+          this.checkRunFailedCompletedOrAborted();
+          const player = this.getPlayer();
+          if (!player.validateInteractOffset({x, y})) {
+            throw new GameFailError('INVALID_PLAYER_INTERACT_OFFSET');
+          }
+          if (this.inGameConsoleService.getCurrentModel()) {
+            throw new GameFailError('PLAYER_MOVE_WITH_OPEN_CONSOLE');
+          }
+          return !!player.pickItemRelative(this.writer, {x, y}, tags as string[], true);
+        });
       },
 
       place: async (tags: string | string[], x: number, y: number) => {
@@ -174,23 +185,24 @@ export class GenericSkulptService implements SceneSkulptService {
           tags = [ tags as string ];
         }
         this.checkRunFailedCompletedOrAborted();
-        await this.writer.awaitNextStep();
-        this.checkRunFailedCompletedOrAborted();
-        const player = this.getPlayer();
-        if (!player.validateInteractOffset({ x, y })) {
-          throw new GameFailError('INVALID_PLAYER_INTERACT_OFFSET');
-        }
-        if (this.inGameConsoleService.getCurrentModel()) {
-          throw new GameFailError('PLAYER_MOVE_WITH_OPEN_CONSOLE');
-        }
-        return player.placeItemRelative(this.writer, { x, y }, player.findItemsInInventory(tags)[0], true);
+        await this.writer.awaitPostAction(() => {
+          this.checkRunFailedCompletedOrAborted();
+          const player = this.getPlayer();
+          if (!player.validateInteractOffset({x, y})) {
+            throw new GameFailError('INVALID_PLAYER_INTERACT_OFFSET');
+          }
+          if (this.inGameConsoleService.getCurrentModel()) {
+            throw new GameFailError('PLAYER_MOVE_WITH_OPEN_CONSOLE');
+          }
+          return player.placeItemRelative(this.writer, {x, y}, player.findItemsInInventory(tags as string[])[0], true);
+        });
       },
 
       has_item: (tags: string | string[]) => {
         if (!Array.isArray(tags)) {
           tags = [ tags as string ];
         }
-        return this.getPlayer().findItemsInInventory(tags).length > 0;
+        return this.getPlayer().findItemsInInventory(tags as string[]).length > 0;
       }
     });
 
@@ -248,32 +260,7 @@ export class GenericSkulptService implements SceneSkulptService {
   onExecutionStarted(): void {
     this.writer.reset();
     this.executor = this.sceneExecutorService.createExecutor(this.writer, this, () => this.executionWasAborted);
-    this.executor.runLoop(500).then();
-
-    /*
-    const timePerFrame = 500;
-    this.writer.reset(timePerFrame);
-    this.inGameWindowService.closeAllWindows();
-    this.sceneRuntimeError = null;
-
-    interval(timePerFrame).pipe(
-      takeUntil(this.tickingIsStopped),
-      tap(_ => {
-        try {
-          this.writer.doGameStep();
-        } catch (err) {
-          this.executionWasAborted = true;
-          this.sceneRuntimeError = err;
-          console.error('error in generic scene runtime', err);
-
-          // this will safely run all queued actions (turn awaits) to stop the script, otherwise it will wait forever
-          this.writer.runAllActionsSafely();
-        }
-        if (this.executionWasAborted) {
-          this.tickingIsStopped.next();
-        }
-      }),
-    ).subscribe(); */
+    this.executor.runLoop(this.sceneExecutorService.getPreferredTimePerTick()).then();
   }
 
   onExecutionFinished(): void {

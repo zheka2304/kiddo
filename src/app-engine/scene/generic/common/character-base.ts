@@ -122,7 +122,7 @@ export class CharacterBase extends GameObjectBase {
     // find game object on the field by position and tags
     const item = writer.getReader().getGameObjectsAt(position.x, position.y).find((object: GenericItemGameObject) => {
       const itemTags = object.getTags();
-      if (itemTags.has(DefaultTags.ITEM) && object.getItemName) {
+      if (itemTags.has(DefaultTags.ITEM)) {
         for (const tag of tags) {
           if (!itemTags.has(tag)) {
             return false;

@@ -49,6 +49,13 @@ export class CodeEditorToolbarComponent implements OnInit {
       })
     );
 
+  debugToolsExpanded = false;
+  preferredExecutionSpeedIndex = 0;
+
+  waitingForManualInterrupt = false;
+  waitingForResume = false;
+  waitingForSpeedChange = false;
+
   @ViewChild('initialCodeModal') initialCodeModal: ModalDirective;
   @ViewChild('saveCodeModal') saveCodeModal: ModalDirective;
   @ViewChild('saveSnackbar') saveSnackbar: SnackbarDirective;
@@ -112,6 +119,10 @@ export class CodeEditorToolbarComponent implements OnInit {
   }
 
 
+  showDebugTools(): boolean {
+    return this.sceneAccessorsService.sceneSkulptService instanceof GenericSkulptService;
+  }
+
   private getGenericSceneModel(): GenericSceneModel {
     const writer = this.sceneAccessorsService.writer;
     if (writer instanceof GenericWriterService) {
@@ -124,29 +135,75 @@ export class CodeEditorToolbarComponent implements OnInit {
     return this.genericExecutorService.getExecutorFor(this.getGenericSceneModel());
   }
 
-  showDebugButton(): Observable<boolean> {
+  private changeExecutionSpeed(): void {
+    const timePerTickBySpeed = [500, 250, 20, 1000];
+    const speedIndex = this.preferredExecutionSpeedIndex;
+    const timePerTick = timePerTickBySpeed[speedIndex];
+    if (this.waitingForSpeedChange) {
+      return;
+    }
+
+    this.waitingForSpeedChange = true;
+    this.genericExecutorService.setPreferredTimePerTick(timePerTick);
+    const executor = this.getGenericSceneExecutor();
+    if (executor) {
+      if (executor.getState() === GenericSceneExecutorState.RUNNING) {
+        executor.runLoop(timePerTick).then(() => {
+          this.waitingForSpeedChange = false;
+          if (speedIndex !== this.preferredExecutionSpeedIndex) {
+            this.changeExecutionSpeed();
+          }
+        });
+      } else if (executor.getState() === GenericSceneExecutorState.MANUAL) {
+        // in manual mode update animation duration
+        executor.writer.setTimePerFrame(timePerTick);
+        this.waitingForSpeedChange = false;
+      }
+    } else {
+      this.waitingForSpeedChange = false;
+    }
+  }
+
+  onChangeSpeedButtonClick(): void {
+    this.preferredExecutionSpeedIndex = (this.preferredExecutionSpeedIndex + 1) % 4;
+    this.changeExecutionSpeed();
+  }
+
+  getChangeSpeedButtonText(): string {
+    const textBySpeed = ['1X', '2X', '25X', '0.5X'];
+    return textBySpeed[this.preferredExecutionSpeedIndex];
+  }
+
+  disableDebugButton(): Observable<boolean> {
     return this.scriptRunnerService.executionState.pipe(
       map(state => {
         if (this.sceneAccessorsService.sceneSkulptService instanceof GenericSkulptService) {
-          return state === scriptExecutionState.READY || state === scriptExecutionState.RUNNING;
+          return state !== scriptExecutionState.READY && state !== scriptExecutionState.RUNNING;
         }
-        return false;
+        return true;
       })
     );
   }
 
   private playWithManualControl(): void {
+    if (this.waitingForManualInterrupt) {
+      return;
+    }
+    this.waitingForManualInterrupt = true;
     this.play();
     const executor = this.getGenericSceneExecutor();
     if (executor) {
-      setTimeout(() => executor.interrupt(), 0);
+      setTimeout(() => executor.interrupt().then(() => this.waitingForManualInterrupt = false), 0);
     }
   }
 
   onDebugButtonClick(): void {
     const executor = this.getGenericSceneExecutor();
     if (executor && executor.getState() !== GenericSceneExecutorState.IDLE) {
-      executor.manualStep().then();
+      if (!this.waitingForManualInterrupt) {
+        this.waitingForManualInterrupt = true;
+        executor.manualStep().then(() => this.waitingForManualInterrupt = false);
+      }
     } else {
       this.scriptRunnerService.executionState.pipe(
         take(1),
@@ -156,6 +213,19 @@ export class CodeEditorToolbarComponent implements OnInit {
           }
         })
       ).subscribe();
+    }
+  }
+
+  disableResumeButton(): boolean {
+    const executor = this.getGenericSceneExecutor();
+    return !executor || executor.getState() !== GenericSceneExecutorState.MANUAL;
+  }
+
+  onResumeButtonClick(): void {
+    const executor = this.getGenericSceneExecutor();
+    if (!this.waitingForResume && executor && executor.getState() === GenericSceneExecutorState.MANUAL) {
+      this.waitingForResume = true;
+      executor.runLoop(this.genericExecutorService.getPreferredTimePerTick()).then(() => this.waitingForResume = false);
     }
   }
 

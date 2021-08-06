@@ -32,7 +32,7 @@ export class GenericWriterService implements SceneWriter {
     this.queue = [];
   }
 
-  setTickPerFrame(timePerFrame: number): void {
+  setTimePerFrame(timePerFrame: number): void {
     this.timePerFrame = timePerFrame;
   }
 
@@ -56,7 +56,7 @@ export class GenericWriterService implements SceneWriter {
   doGameStep(): void {
     this.lastFrameTime = Date.now();
 
-    // run ligh map update, separated from renderer
+    // run light map update, separated from renderer
     this.doLightMapUpdates(null, 0);
 
     // tick in-game windows first, so opening them will not instantly trigger tick and swap states
@@ -69,7 +69,9 @@ export class GenericWriterService implements SceneWriter {
 
     // copy required to run only actions, that were added before this step,
     // actions, added in other actions will always run on next step
-    for (const action of [ ...this.queue ]) {
+    const queue = [ ...this.queue ];
+    this.queue = [];
+    for (const action of queue) {
       if (action) {
         action(this);
       }
@@ -82,7 +84,9 @@ export class GenericWriterService implements SceneWriter {
   }
 
   runAllActionsSafely(): void {
-    for (const action of [ ...this.queue ]) {
+    const queue = [ ...this.queue ];
+    this.queue = [];
+    for (const action of queue) {
       if (action) {
         try {
           action(this);
@@ -93,12 +97,36 @@ export class GenericWriterService implements SceneWriter {
     }
   }
 
+  finalizeExecution(animationTimeout?: number): void {
+    // this will safely run all queued actions to stop the script, otherwise it will wait forever
+    this.runAllActionsSafely();
+
+    // this will complete last animation and then stop, without this player will do walking animation indefinitely
+    setTimeout(() => {
+      for (const gameObject of this.sceneModel.gameObjects) {
+        gameObject.lastPosition = { ...gameObject.position };
+      }
+    }, animationTimeout >= 0 ? animationTimeout : this.timePerFrame);
+  }
+
   postAction(action: () => void): void {
     this.queue.push(action);
   }
 
   async awaitNextStep(): Promise<void> {
     return new Promise<void>(resolve => this.postAction(resolve));
+  }
+
+  async awaitPostAction<T>(action: () => T): Promise<T> {
+    return new Promise<T>((resolve, reject) => {
+      this.postAction(() => {
+        try {
+          resolve(action());
+        } catch (err) {
+          reject(err);
+        }
+      });
+    });
   }
 
   doPlaybackStep(): void {

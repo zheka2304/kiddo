@@ -4,7 +4,7 @@ import {GenericWriterService} from '../writers/generic-writer.service';
 import {GenericReaderService} from '../readers/generic-reader.service';
 
 export interface GenericItem {
-  getItemName(): string;
+  getItemName?(): string;
 
   onPicked?(writer: GenericWriterService, character: GenericGameObject, position: Coords): void;
   onPlaced?(writer: GenericWriterService, character: GenericGameObject, position: Coords): void;
