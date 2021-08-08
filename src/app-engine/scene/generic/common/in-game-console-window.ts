@@ -31,7 +31,8 @@ export class InGameConsoleWindow extends InGameWindowBase {
 
   public static valueToString(value: any): string {
     if (typeof(value) === 'string') {
-      return '"' + value + '"';
+      // @ts-ignore
+      return '"' + value.replaceAll('\n', '\\n') + '"';
     } else if (typeof(value) === 'object') {
       return JSON.stringify(value);
     } else {
