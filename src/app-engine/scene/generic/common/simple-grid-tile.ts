@@ -19,6 +19,7 @@ export interface SimpleGridTileDefinition {
 }
 
 export interface SimpleGridTileAdditionalParameters {
+  offset?: number[];
   addTags?: string[];
   removeTags?: string[];
 }
@@ -65,7 +66,11 @@ export class SimpleGridTile extends GridTileBase {
   }
 
   async onGraphicsInit(context: GenericSceneRenderContext): Promise<void> {
-    this.texture = await context.getTextureLoader().getTextureCollectionFromAtlas(this.definition.texture);
+    let texture = this.definition.texture;
+    if (this.params?.offset) {
+      texture = context.getTextureLoader().addOffsetToTextureItemCollection(texture, {x: this.params.offset[0], y: this.params.offset[1]});
+    }
+    this.texture = await context.getTextureLoader().getTextureCollectionFromAtlas(texture);
   }
 
   draw(

@@ -6,6 +6,7 @@ import {environment} from '../../../../environments/environment';
 import {DrawableCollection} from './drawable-collection';
 import {Drawable} from './drawable';
 import {ConnectedTextureFormatType, ConnectedTextureRegion} from './connected-texture-region';
+import {Coords} from '../../../../app-engine/scene/common/entities';
 
 
 export interface TextureAtlasSource {
@@ -128,5 +129,25 @@ export class SceneTextureLoaderService {
       }
     }
     return new DrawableCollection(drawableMap);
+  }
+
+  addOffsetToTextureItemCollection(data: TextureAtlasItemCollection, offset: Coords): TextureAtlasItemCollection {
+    const mapOffsets = (offsets: number[][]) => {
+      return offsets.map(coords => coords.map((value, index) => value + (index % 2 === 0 ? offset.x : offset.y)));
+    };
+
+    data = { ...data, items: { ...data.items } };
+    for (const name in data.items) {
+      if (data.items.hasOwnProperty(name)) {
+        const item = data.items[name];
+        if (Array.isArray(item)) {
+          data.items[name] = mapOffsets(item);
+        } else {
+          data.items[name] = {...item, offset: mapOffsets(item.offset)};
+        }
+      }
+    }
+
+    return data;
   }
 }

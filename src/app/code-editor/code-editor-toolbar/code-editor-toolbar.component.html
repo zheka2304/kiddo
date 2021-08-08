@@ -56,6 +56,7 @@
     <div class="toolbar-buttons-wrapper">
         <span class="tooltip-container">
             <button class="toolbar-button"
+                    [disabled]="disableResetButton() | async"
                     (click)="resetApp()">
                 <i class="icon-reset toolbar-button-content"></i>
             </button>

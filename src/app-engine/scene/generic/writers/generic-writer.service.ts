@@ -15,6 +15,7 @@ export class GenericWriterService implements SceneWriter {
 
   private timePerFrame = 500;
   private lastFrameTime = 0;
+  private lastUiFrameTime = 0;
 
   private readonly inGameWindowService = new InGameWindowService();
 
@@ -54,7 +55,7 @@ export class GenericWriterService implements SceneWriter {
   }
 
   doGameStep(): void {
-    this.lastFrameTime = Date.now();
+    this.lastFrameTime = this.lastUiFrameTime = Date.now();
 
     // run light map update, separated from renderer
     this.doLightMapUpdates(null, 0);
@@ -97,7 +98,7 @@ export class GenericWriterService implements SceneWriter {
     }
   }
 
-  finalizeExecution(animationTimeout?: number): void {
+  finalizeExecution(gameObjectAnimationTimeout?: number): void {
     // this will safely run all queued actions to stop the script, otherwise it will wait forever
     this.runAllActionsSafely();
 
@@ -106,7 +107,11 @@ export class GenericWriterService implements SceneWriter {
       for (const gameObject of this.sceneModel.gameObjects) {
         gameObject.lastPosition = { ...gameObject.position };
       }
-    }, animationTimeout >= 0 ? animationTimeout : this.timePerFrame);
+    }, gameObjectAnimationTimeout >= 0 ? gameObjectAnimationTimeout : this.timePerFrame);
+
+    // close all in-game windows with animation
+    this.lastUiFrameTime = Date.now();
+    this.inGameWindowService.closeAllWindowsWithAnimation(this.timePerFrame);
   }
 
   postAction(action: () => void): void {
@@ -140,6 +145,10 @@ export class GenericWriterService implements SceneWriter {
 
   getRenderInterpolationValue(): number {
     return Math.min(1, (Date.now() - this.lastFrameTime) / this.timePerFrame);
+  }
+
+  getUiInterpolationValue(): number {
+    return Math.min(1, (Date.now() - this.lastUiFrameTime) / this.timePerFrame);
   }
 
 

@@ -13,7 +13,7 @@ import {GenericGameObject} from '../entities/generic-game-object';
 
 
 export interface SimpleGameObjectDefinition {
-  texture: TextureAtlasItemCollection;
+  texture?: TextureAtlasItemCollection;
   lightSources?: LightSourceParams[];
   initialState?: string;
   mutableTags?: string[];
@@ -58,7 +58,9 @@ export class SimpleGameObject extends GameObjectBase implements GenericItem {
 
 
   async onGraphicsInit(context: GenericSceneRenderContext): Promise<void> {
-    this.texture = await context.getTextureLoader().getTextureCollectionFromAtlas(this.definition.texture);
+    if (this.definition.texture) {
+      this.texture = await context.getTextureLoader().getTextureCollectionFromAtlas(this.definition.texture);
+    }
   }
 
   draw(

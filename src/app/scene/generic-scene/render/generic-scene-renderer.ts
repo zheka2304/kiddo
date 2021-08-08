@@ -76,6 +76,10 @@ export class GenericSceneRenderer {
     return (this.sceneAccessorsService.writer as GenericWriterService).getRenderInterpolationValue();
   }
 
+  getUiInterpolationValue(): number {
+    return (this.sceneAccessorsService.writer as GenericWriterService).getUiInterpolationValue();
+  }
+
   private getCellSizeInPixels(viewport: Rect): number {
     const sceneModel = this.getSceneModel();
     const inverseZoom = sceneModel.inverseZoom;
@@ -278,7 +282,7 @@ export class GenericSceneRenderer {
     this.inGameWindowService.drawWindows(
       context,
       canvas,
-      { width: viewport.width, height: viewport.height, interpolation: this.getRenderInterpolationValue() }
+      { width: viewport.width, height: viewport.height, interpolation: this.getUiInterpolationValue() }
     );
   }
 

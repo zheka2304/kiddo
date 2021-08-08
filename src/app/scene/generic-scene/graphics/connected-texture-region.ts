@@ -15,7 +15,13 @@ export enum ConnectedTextureFormatType {
   RANDOMIZED = 'randomized',
 
   // ignores 2x2 texture, uses outer edges center as a full tile one
-  LIGHTWEIGHT = 'lightweight'
+  LIGHTWEIGHT = 'lightweight',
+
+  // uses only first 2x2 texture as full tile texture for randomization
+  FULL_ONLY = 'full_only',
+
+  // uses both first and second 2x2 texture as full tile texture for randomization
+  FULL_ONLY2 = 'full_only2',
 }
 
 export class ConnectedTextureRegion implements Drawable {
@@ -36,8 +42,8 @@ export class ConnectedTextureRegion implements Drawable {
   }
 
   private getFullTileOffset(position: Coords): Coords {
-    const x = Math.floor(this.mulberry32rng(position.x + position.y * 123 + 1171) * 1.5) * 0.5;
-    const y = Math.floor(this.mulberry32rng(position.x + position.y * 456 + 2017) * 1.5) * 0.5;
+    const x = Math.floor(this.mulberry32rng(position.x + position.y * 112323 + 1231171) * 1.5) * 0.5;
+    const y = Math.floor(this.mulberry32rng(position.x + position.y * 412356 + 221317) * 1.5) * 0.5;
     return { x, y };
   }
 
@@ -47,7 +53,14 @@ export class ConnectedTextureRegion implements Drawable {
       this.outsideEdges.draw(canvas, targetRect, {subRegion: {x: 0.25, y: 0.25, width: 0.5, height: 0.5}, dstRegion});
     } else {
       const tile = this.getFullTileOffset(position);
-      this.fullTile.draw(canvas, targetRect, {subRegion: {x: tile.x, y: tile.y, width: 0.5, height: 0.5}, dstRegion});
+      if (this.type === ConnectedTextureFormatType.FULL_ONLY) {
+        this.outsideEdges.draw(canvas, targetRect, {subRegion: {x: tile.x, y: tile.y, width: 0.5, height: 0.5}, dstRegion});
+      } else if (this.type === ConnectedTextureFormatType.FULL_ONLY2) {
+        const texture = this.mulberry32rng(position.x + position.y * 12131 + 21011) > 0.5 ? this.insideEdges : this.outsideEdges;
+        texture.draw(canvas, targetRect, {subRegion: {x: tile.x, y: tile.y, width: 0.5, height: 0.5}, dstRegion});
+      } else {
+        this.fullTile.draw(canvas, targetRect, {subRegion: {x: tile.x, y: tile.y, width: 0.5, height: 0.5}, dstRegion});
+      }
     }
   }
 
@@ -142,6 +155,12 @@ export class ConnectedTextureRegion implements Drawable {
     // 5 4 3
     let neighbors = extra?.neighbors as number;
     const position = (extra.position as Coords) || { x: 0, y: 0 };
+
+    if (this.type === ConnectedTextureFormatType.FULL_ONLY || this.type === ConnectedTextureFormatType.FULL_ONLY2) {
+      this.drawFullTile(canvas, targetRect, position);
+      return;
+    }
+
     if (neighbors === undefined) {
       const reader = extra?.reader as GenericReaderService;
       const checkConnected = extra?.checkConnected as (cell: GenericGridCell) => boolean;

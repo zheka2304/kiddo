@@ -56,6 +56,15 @@ export class InGameWindowService {
     }
   }
 
+  closeAllWindowsWithAnimation(timeout: number): void {
+    this.windows.forEach(window => {
+      window.lastState = window.state;
+      window.state = window.state  === InGameWindowState.CLOSING || window.state === InGameWindowState.CLOSED ?
+        InGameWindowState.CLOSED : InGameWindowState.CLOSING;
+    });
+    setTimeout(() => this.closeAllWindows(), timeout);
+  }
+
   closeAllWindows(): void {
     this.windows.forEach(window => {
       window.lastState = window.state;

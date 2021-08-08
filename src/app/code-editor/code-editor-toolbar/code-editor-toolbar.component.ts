@@ -154,7 +154,7 @@ export class CodeEditorToolbarComponent implements OnInit {
             this.changeExecutionSpeed();
           }
         });
-      } else if (executor.getState() === GenericSceneExecutorState.MANUAL) {
+      } else {
         // in manual mode update animation duration
         executor.writer.setTimePerFrame(timePerTick);
         this.waitingForSpeedChange = false;
@@ -202,7 +202,11 @@ export class CodeEditorToolbarComponent implements OnInit {
     if (executor && executor.getState() !== GenericSceneExecutorState.IDLE) {
       if (!this.waitingForManualInterrupt) {
         this.waitingForManualInterrupt = true;
-        executor.manualStep().then(() => this.waitingForManualInterrupt = false);
+        if (executor.getState() === GenericSceneExecutorState.MANUAL) {
+          executor.manualStep().then(() => this.waitingForManualInterrupt = false);
+        } else {
+          executor.interrupt().then(() => this.waitingForManualInterrupt = false);
+        }
       }
     } else {
       this.scriptRunnerService.executionState.pipe(
@@ -258,6 +262,14 @@ export class CodeEditorToolbarComponent implements OnInit {
   }
 
   stopping(): void {
+  }
+
+  disableResetButton(): Observable<boolean> {
+    return this.scriptRunnerService.executionState.pipe(
+      map((state) => {
+        return state === scriptExecutionState.RUNNING || state === scriptExecutionState.FINISHING;
+      })
+    );
   }
 
   resetApp(): void {

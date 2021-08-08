@@ -2,16 +2,14 @@ import {GenericBuilderService} from '../../generic-builder.service';
 import {CommonTileRegistryService} from '../../services/common-tile-registry.service';
 import {CharacterSkinRegistryService} from '../../services/character-skin-registry.service';
 import {InGameConsoleService} from '../../services/in-game-console.service';
-import {CheckingLogic, Coords, Direction} from '../../../common/entities';
+import {CheckingLogic} from '../../../common/entities';
 import {GenericPlayer} from '../../common/player';
 import {DefaultTileStates} from '../../entities/default-tile-states.enum';
 import {DefaultTags} from '../../entities/default-tags.enum';
-import {ConsoleTerminalGameObject} from '../../common/console-terminal-game-object';
 import {SimpleGameObject} from '../../common/simple-game-object';
-import {CharacterBase} from '../../common/character-base';
-import {GenericWriterService} from '../../writers/generic-writer.service';
-import {GameObjectBase} from '../../common/game-object-base';
 import {GenericReaderService} from '../../readers/generic-reader.service';
+import {ConnectedTextureFormatType} from "../../../../../app/scene/generic-scene/graphics/connected-texture-region";
+import {ConsoleTerminalGameObject} from "../../common/console-terminal-game-object";
 
 // declarations for generic task init function
 declare const Builder: GenericBuilderService;
@@ -27,9 +25,9 @@ export const SimplexTask7 = () => {
 
   TileRegistry.addBasicTile('wood-tile', {
     texture: {
-      atlas: {src: 'assets:/tile-atlas.png', width: 4, height: 4},
+      atlas: {src: 'assets:/connected-tile-atlas.png', width: 24, height: 16},
       items: {
-        [DefaultTileStates.MAIN]: [[1, 0]]
+        [DefaultTileStates.MAIN]: { ctType: ConnectedTextureFormatType.FULL_ONLY2, offset: [[0, 6]] }
       }
     },
     immutableTags: []
@@ -38,10 +36,10 @@ export const SimplexTask7 = () => {
   // --------- tile generation -------------
   Builder.setupGameField({width: 9, height: 9}, {
     lightMap: {
-      enabled: true,
+      enabled: false,
       ambient: 0.09
     },
-    tilesPerScreen: 9
+    tilesPerScreen: 6
   });
 
   for (let x = 0; x < 9; x++) {
@@ -54,7 +52,7 @@ export const SimplexTask7 = () => {
   const player = new GenericPlayer({x: 4, y: 4}, {
       skin: 'link',
       defaultLightSources: [
-        {radius: 3, brightness: 1},
+        {radius: 6, brightness: 1},
       ],
 
       minVisibleLightLevel: 0.1,
@@ -99,6 +97,9 @@ export const SimplexTask7 = () => {
     Builder.addGameObject(food);
   }
 
+  Builder.addGameObject(new ConsoleTerminalGameObject({x: 5, y: 4}, {
+    enableEcho: true,
+  }));
 
   // ---------- logic ---------------
 

@@ -6,6 +6,8 @@ import {CheckingLogic} from '../../../common/entities';
 import {GenericPlayer} from '../../common/player';
 import {DefaultTileStates} from '../../entities/default-tile-states.enum';
 import {DefaultTags} from '../../entities/default-tags.enum';
+import {ConnectedTextureFormatType} from '../../../../../app/scene/generic-scene/graphics/connected-texture-region';
+
 
 // declarations for generic task init function
 declare const Builder: GenericBuilderService;
@@ -13,15 +15,16 @@ declare const TileRegistry: CommonTileRegistryService;
 declare const CharacterSkinRegistry: CharacterSkinRegistryService;
 declare const InGameConsole: InGameConsoleService;
 declare const DefaultCheckingLogic: { [key: string]: CheckingLogic };
+declare const DefaultCTLogic: { [key: string]: any };
 
 
 // tslint:disable-next-line
 export const SimplexTask1_1 = () => {
   TileRegistry.addBasicTile('wood-tile', {
     texture: {
-      atlas: {src: 'assets:/tile-atlas.png', width: 4, height: 4},
+      atlas: {src: 'assets:/connected-tile-atlas.png', width: 24, height: 16},
       items: {
-        [DefaultTileStates.MAIN]: [[1, 0]]
+        [DefaultTileStates.MAIN]: { ctType: ConnectedTextureFormatType.FULL_ONLY, offset: [[0, 12]]}
       }
     },
     immutableTags: []
@@ -39,12 +42,13 @@ export const SimplexTask1_1 = () => {
 
   TileRegistry.addBasicTile('wall', {
     texture: {
-      atlas: {src: 'assets:/tile-atlas.png', width: 4, height: 4},
+      atlas: {src: 'assets:/connected-tile-atlas.png', width: 24, height: 16},
       items: {
-        [DefaultTileStates.MAIN]: [[0, 0]]
+        [DefaultTileStates.MAIN]: { ctType: ConnectedTextureFormatType.DEFAULT, offset: [[0, 10]]}
       }
     },
-    immutableTags: [DefaultTags.OBSTACLE]
+    immutableTags: [DefaultTags.OBSTACLE],
+    ctCheckConnected: DefaultCTLogic.HAS_TAGS([DefaultTags.OBSTACLE])
   });
 
 
@@ -53,6 +57,7 @@ export const SimplexTask1_1 = () => {
       enabled: false,
       ambient: 0.09
     },
+    pixelPerfect: 32
   });
 
   for (let x = 0; x < 9; x++) {

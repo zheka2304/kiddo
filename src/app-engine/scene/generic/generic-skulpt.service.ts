@@ -11,6 +11,8 @@ import {GameCompletionInterruptError} from '../common/errors/game-completion-int
 import {InGameConsoleService} from './services/in-game-console.service';
 import {InGameWindowService} from './services/in-game-window-service';
 import {GenericSceneExecutor, GenericSceneExecutorService} from './generic-scene-executor.service';
+import {GenericSceneInputValidatorService} from './generic-scene-input-validator.service';
+import {InGameConsoleWindow} from "./common/in-game-console-window";
 
 
 @Singleton
@@ -20,6 +22,7 @@ export class GenericSkulptService implements SceneSkulptService {
   private executor: GenericSceneExecutor = null;
 
   private sceneExecutorService: GenericSceneExecutorService = new GenericSceneExecutorService();
+  private validationService: GenericSceneInputValidatorService = new GenericSceneInputValidatorService();
   private inGameWindowService: InGameWindowService = new InGameWindowService();
   private inGameConsoleService: InGameConsoleService = new InGameConsoleService();
 
@@ -54,11 +57,14 @@ export class GenericSkulptService implements SceneSkulptService {
     });
 
     injector.addModule('player', {
-      get_direction: () => {
+      get_direction: (...others: any[]) => {
+        this.validationService.validateNoParams(others);
         return this.getPlayer().direction.toLowerCase();
       },
 
-      wait: async (turns: number) => {
+      wait: async (turns: number, ...others: any[]) => {
+        this.validationService.validateNonNegativeIntegers([turns]);
+        this.validationService.validateNoParams(others);
         this.checkRunFailedCompletedOrAborted();
         for (let i = 0; i < turns; i++) {
           await this.writer.awaitNextStep();
@@ -66,7 +72,9 @@ export class GenericSkulptService implements SceneSkulptService {
         }
       },
 
-      move: async (turns: number = 1) => {
+      move: async (turns: number = 1, ...others: any[]) => {
+        this.validationService.validateNonNegativeIntegers([turns]);
+        this.validationService.validateNoParams(others);
         let steps = 0;
         this.checkRunFailedCompletedOrAborted();
         for (let i = 0; i < turns; i++) {
@@ -91,7 +99,9 @@ export class GenericSkulptService implements SceneSkulptService {
         return steps;
       },
 
-      right: async (turns: number = 1) => {
+      right: async (turns: number = 1, ...others: any[]) => {
+        this.validationService.validateNonNegativeIntegers([turns]);
+        this.validationService.validateNoParams(others);
         this.checkRunFailedCompletedOrAborted();
         for (let i = 0; i < turns; i++) {
           await this.writer.awaitPostAction(() => {
@@ -104,7 +114,9 @@ export class GenericSkulptService implements SceneSkulptService {
         }
       },
 
-      left: async (turns: number = 1) => {
+      left: async (turns: number = 1, ...others: any[]) => {
+        this.validationService.validateNonNegativeIntegers([turns]);
+        this.validationService.validateNoParams(others);
         this.checkRunFailedCompletedOrAborted();
         for (let i = 0; i < turns; i++) {
           await this.writer.awaitPostAction(() => {
@@ -117,7 +129,9 @@ export class GenericSkulptService implements SceneSkulptService {
         }
       },
 
-      inspect: async (x: number = 0, y: number = 1) => {
+      inspect: async (x: number = 0, y: number = 1, ...others: any[]) => {
+        this.validationService.validateIntegers([x, y]);
+        this.validationService.validateNoParams(others);
         this.checkRunFailedCompletedOrAborted();
         return await this.writer.awaitPostAction(() => {
           this.checkRunFailedCompletedOrAborted();
@@ -128,11 +142,16 @@ export class GenericSkulptService implements SceneSkulptService {
           if (this.inGameConsoleService.getCurrentModel()) {
             throw new GameFailError('PLAYER_MOVE_WITH_OPEN_CONSOLE');
           }
-          return [...player.getAllTagsRelativeToPlayer(this.reader, {x, y}, [player], true)];
+          return [ ...player.getAllTagsRelativeToPlayer(this.reader, {x, y}, [player], true) ].filter(
+            tag => !tag.startsWith('_') && !tag.startsWith('-')
+          );
         });
       },
 
-      look: async (tag: string, range: number) => {
+      look: async (tag: string, range: number, ...others: any[]) => {
+        this.validationService.validateTag([tag]);
+        this.validationService.validateNonNegativeIntegers([range]);
+        this.validationService.validateNoParams(others);
         this.checkRunFailedCompletedOrAborted();
         await this.writer.awaitPostAction(() => {
           this.checkRunFailedCompletedOrAborted();
@@ -147,7 +166,9 @@ export class GenericSkulptService implements SceneSkulptService {
         });
       },
 
-      interact: async (x: number, y: number) => {
+      interact: async (x: number = 0, y: number = 1, ...others: any[]) => {
+        this.validationService.validateIntegers([x, y]);
+        this.validationService.validateNoParams(others);
         this.checkRunFailedCompletedOrAborted();
         return await this.writer.awaitPostAction(() => {
           this.checkRunFailedCompletedOrAborted();
@@ -162,7 +183,10 @@ export class GenericSkulptService implements SceneSkulptService {
         });
       },
 
-      pickup: async (tags: string | string[], x: number, y: number) => {
+      pickup: async (tags: string | string[], x: number = 0, y: number = 0, ...others: any[]) => {
+        this.validationService.validateTagOrTagArray([tags]);
+        this.validationService.validateIntegers([x, y]);
+        this.validationService.validateNoParams(others);
         if (!Array.isArray(tags)) {
           tags = [ tags as string ];
         }
@@ -180,7 +204,10 @@ export class GenericSkulptService implements SceneSkulptService {
         });
       },
 
-      place: async (tags: string | string[], x: number, y: number) => {
+      place: async (tags: string | string[], x: number = 0, y: number = 0, ...others: any[]) => {
+        this.validationService.validateTagOrTagArray([tags]);
+        this.validationService.validateIntegers([x, y]);
+        this.validationService.validateNoParams(others);
         if (!Array.isArray(tags)) {
           tags = [ tags as string ];
         }
@@ -198,7 +225,9 @@ export class GenericSkulptService implements SceneSkulptService {
         });
       },
 
-      has_item: (tags: string | string[]) => {
+      has_item: (tags: string | string[], ...others: any[]) => {
+        this.validationService.validateTagOrTagArray([tags]);
+        this.validationService.validateNoParams(others);
         if (!Array.isArray(tags)) {
           tags = [ tags as string ];
         }
@@ -207,17 +236,20 @@ export class GenericSkulptService implements SceneSkulptService {
     });
 
     injector.addModule('console', {
-      output: async (value: any) => {
+      output: async (...values: any[]) => {
         // do not wait for next step, because it is just print and has no impact on a game
         this.checkRunFailedCompletedOrAborted();
         const model = this.inGameConsoleService.getCurrentModel();
         if (!model) {
           throw new GameFailError('CONSOLE_NOT_OPEN');
         }
-        this.inGameConsoleService.getWriter().printToConsole(model, value + '');
+        for (const value of values) {
+          this.inGameConsoleService.getWriter().printToConsole(model, InGameConsoleWindow.valueToString(value));
+        }
       },
 
-      has_more: () => {
+      has_more: (...others: any[]) => {
+        this.validationService.validateNoParams(others);
         this.checkRunFailedCompletedOrAborted();
         const model = this.inGameConsoleService.getCurrentModel();
         if (!model) {
@@ -226,7 +258,8 @@ export class GenericSkulptService implements SceneSkulptService {
         return this.inGameConsoleService.getWriter().hasMoreInputs(model);
       },
 
-      read: async () => {
+      read: async (...others: any[]) => {
+        this.validationService.validateNoParams(others);
         this.checkRunFailedCompletedOrAborted();
         await this.writer.awaitNextStep();
         this.checkRunFailedCompletedOrAborted();
@@ -237,7 +270,8 @@ export class GenericSkulptService implements SceneSkulptService {
         return this.inGameConsoleService.getWriter().readNextInput(model);
       },
 
-      write: async (value: any) => {
+      write: async (value: any, ...others: any[]) => {
+        this.validationService.validateNoParams(others);
         this.checkRunFailedCompletedOrAborted();
         await this.writer.awaitNextStep();
         this.checkRunFailedCompletedOrAborted();
@@ -248,7 +282,8 @@ export class GenericSkulptService implements SceneSkulptService {
         this.inGameConsoleService.getWriter().addNextOutput(model, value);
       },
 
-      close: async () => {
+      close: async (...others: any[]) => {
+        this.validationService.validateNoParams(others);
         this.checkRunFailedCompletedOrAborted();
         await this.writer.awaitNextStep();
         this.checkRunFailedCompletedOrAborted();
@@ -265,7 +300,6 @@ export class GenericSkulptService implements SceneSkulptService {
 
   onExecutionFinished(): void {
     this.executor.stop().then();
-    this.inGameWindowService.closeAllWindows();
   }
 
   public handleSceneRuntimeError(err: Error): void {
