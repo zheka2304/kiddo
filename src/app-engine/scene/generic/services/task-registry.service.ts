@@ -2,17 +2,18 @@ import {Singleton} from '../../../singleton.decorator';
 import {SimplexTaskTest} from '../tasks/simplex/task_test';
 import {SimplexTask1_1} from '../tasks/simplex/task1_1';
 import {SimplexTask1_2} from '../tasks/simplex/task1_2';
-import {SimplexTask2} from '../tasks/simplex/task2';
-import {SimplexTask3} from '../tasks/simplex/task3';
+import {SimplexTask2_1} from '../tasks/simplex/task2_1';
+import {SimplexTask3_1} from '../tasks/simplex/task3_1';
 import {SimplexTask4_2} from '../tasks/simplex/task4_2';
 import {SimplexTask4_1} from '../tasks/simplex/task4_1';
 import {SimplexTask5_1} from '../tasks/simplex/task5_1';
 import {SimplexTask5_2} from '../tasks/simplex/task5_2';
 import {SimplexTask6_1} from '../tasks/simplex/task6_1';
-import {SimplexTask7} from '../tasks/simplex/task7';
+import {SimplexTask7_1} from '../tasks/simplex/task7_1';
 import {SimplexTask8_1} from '../tasks/simplex/task8_1';
 import {SimplexTask8_2} from '../tasks/simplex/task8_2';
 import {SimplexTask6_2} from '../tasks/simplex/task6_2';
+import {SimplexTask9_1} from '../tasks/simplex/task9_1';
 
 
 @Singleton
@@ -23,17 +24,18 @@ export class TaskRegistryService {
     this.registerTask('simplex_test', SimplexTaskTest);
     this.registerTask('simplex_task1_1', SimplexTask1_1);
     this.registerTask('simplex_task1_2', SimplexTask1_2);
-    this.registerTask('simplex_task2', SimplexTask2);
-    this.registerTask('simplex_task3', SimplexTask3);
+    this.registerTask('simplex_task2_1', SimplexTask2_1);
+    this.registerTask('simplex_task3_1', SimplexTask3_1);
     this.registerTask('simplex_task4_1', SimplexTask4_1);
     this.registerTask('simplex_task4_2', SimplexTask4_2);
     this.registerTask('simplex_task5_1', SimplexTask5_1);
     this.registerTask('simplex_task5_2', SimplexTask5_2);
     this.registerTask('simplex_task6_1', SimplexTask6_1);
     this.registerTask('simplex_task6_2', SimplexTask6_2);
-    this.registerTask('simplex_task7', SimplexTask7);
+    this.registerTask('simplex_task7_1', SimplexTask7_1);
     this.registerTask('simplex_task8_1', SimplexTask8_1);
     this.registerTask('simplex_task8_2', SimplexTask8_2);
+    this.registerTask('simplex_task9_1', SimplexTask9_1);
   }
 
   registerTask(name: string, initFunc: () => void): void {
