@@ -20,7 +20,7 @@ declare const DefaultCheckingLogic: { [key: string]: CheckingLogic };
 
 
 // tslint:disable-next-line
-export const SimplexTask7 = () => {
+export const SimplexTask7_1 = () => {
   // --------- registration -------------
 
   TileRegistry.addBasicTile('wood-tile', {
