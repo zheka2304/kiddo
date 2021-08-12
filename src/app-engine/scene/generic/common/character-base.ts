@@ -204,7 +204,7 @@ export class CharacterBase extends GameObjectBase {
   removeItemFromInventory(item: GenericItemGameObject): boolean {
     const index = this.inventory.indexOf(item);
     if (index !== -1) {
-      this.inventory.splice(index);
+      this.inventory.splice(index, 1);
       return true;
     } else {
       return false;

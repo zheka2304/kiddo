@@ -153,7 +153,7 @@ export class GenericSkulptService implements SceneSkulptService {
         this.validationService.validateNonNegativeIntegers([range]);
         this.validationService.validateNoParams(others);
         this.checkRunFailedCompletedOrAborted();
-        await this.writer.awaitPostAction(() => {
+        return await this.writer.awaitPostAction(() => {
           this.checkRunFailedCompletedOrAborted();
           const player = this.getPlayer();
           if (!player.validateLookRange(range)) {
@@ -191,7 +191,7 @@ export class GenericSkulptService implements SceneSkulptService {
           tags = [ tags as string ];
         }
         this.checkRunFailedCompletedOrAborted();
-        await this.writer.awaitPostAction(() => {
+        return await this.writer.awaitPostAction(() => {
           this.checkRunFailedCompletedOrAborted();
           const player = this.getPlayer();
           if (!player.validateInteractOffset({x, y})) {
@@ -212,7 +212,7 @@ export class GenericSkulptService implements SceneSkulptService {
           tags = [ tags as string ];
         }
         this.checkRunFailedCompletedOrAborted();
-        await this.writer.awaitPostAction(() => {
+        return await this.writer.awaitPostAction(() => {
           this.checkRunFailedCompletedOrAborted();
           const player = this.getPlayer();
           if (!player.validateInteractOffset({x, y})) {

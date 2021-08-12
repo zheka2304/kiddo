@@ -25,7 +25,7 @@ export class InGameWindowService {
       if (window.state !== InGameWindowState.CLOSED) {
         window.onTick(writer);
       } else {
-        windows.splice(index);
+        windows.splice(index, 1);
         return;
       }
 
