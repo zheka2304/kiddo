@@ -165,7 +165,7 @@ export const SimplexTask9_1 = () => {
     if (levelPassed) {
       return null;
     } else {
-      return 'INVALID_OUTPUT';
+      return 'NOT_ALL_NEURONS_PLACED';
     }
   });
 };
