@@ -136,7 +136,7 @@ export class CodeEditorToolbarComponent implements OnInit {
   }
 
   private changeExecutionSpeed(): void {
-    const timePerTickBySpeed = [500, 250, 20, 1000];
+    const timePerTickBySpeed = [500, 250, 50, 1000];
     const speedIndex = this.preferredExecutionSpeedIndex;
     const timePerTick = timePerTickBySpeed[speedIndex];
     if (this.waitingForSpeedChange) {
@@ -170,7 +170,7 @@ export class CodeEditorToolbarComponent implements OnInit {
   }
 
   getChangeSpeedButtonText(): string {
-    const textBySpeed = ['1X', '2X', '25X', '0.5X'];
+    const textBySpeed = ['1X', '2X', '10X', '0.5X'];
     return textBySpeed[this.preferredExecutionSpeedIndex];
   }
 
