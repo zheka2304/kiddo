@@ -10,7 +10,7 @@ import {GenericGridCell} from '../entities/generic-grid-field';
 
 
 export interface SimpleGridTileDefinition {
-  texture: TextureAtlasItemCollection;
+  texture?: TextureAtlasItemCollection;
   ctCheckConnected?: (cell: GenericGridCell) => boolean;
 
   initialState?: string;
@@ -67,10 +67,15 @@ export class SimpleGridTile extends GridTileBase {
 
   async onGraphicsInit(context: GenericSceneRenderContext): Promise<void> {
     let texture = this.definition.texture;
-    if (this.params?.offset) {
-      texture = context.getTextureLoader().addOffsetToTextureItemCollection(texture, {x: this.params.offset[0], y: this.params.offset[1]});
+    if (texture) {
+      if (this.params?.offset) {
+        texture = context.getTextureLoader().addOffsetToTextureItemCollection(texture, {
+          x: this.params.offset[0],
+          y: this.params.offset[1]
+        });
+      }
+      this.texture = await context.getTextureLoader().getTextureCollectionFromAtlas(texture);
     }
-    this.texture = await context.getTextureLoader().getTextureCollectionFromAtlas(texture);
   }
 
   draw(

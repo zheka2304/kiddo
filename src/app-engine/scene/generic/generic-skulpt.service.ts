@@ -12,7 +12,8 @@ import {InGameConsoleService} from './services/in-game-console.service';
 import {InGameWindowService} from './services/in-game-window-service';
 import {GenericSceneExecutor, GenericSceneExecutorService} from './generic-scene-executor.service';
 import {GenericSceneInputValidatorService} from './generic-scene-input-validator.service';
-import {InGameConsoleWindow} from "./common/in-game-console-window";
+import {InGameConsoleWindow} from './common/in-game-console-window';
+import {CharacterActionType} from "./common/character-base";
 
 
 @Singleton
@@ -42,7 +43,7 @@ export class GenericSkulptService implements SceneSkulptService {
     const injector = this.skulptService.getModuleInjector();
     injector.removeAllInjectedModules();
 
-    injector.addModule('debug', {
+    const debugModule = injector.addModule('debug', {
       output: (...args: any) => {
         const output: string[] = [];
         for (const arg of args) {
@@ -56,7 +57,25 @@ export class GenericSkulptService implements SceneSkulptService {
       }
     });
 
-    injector.addModule('player', {
+    const playerLookBase =  async (tag: string, range: number = -1, showAction: boolean) => {
+      this.checkRunFailedCompletedOrAborted();
+      return await this.writer.awaitPostAction(() => {
+        this.checkRunFailedCompletedOrAborted();
+        const player = this.getPlayer();
+        if (range < 0) {
+          range = player.getLookRange();
+        }
+        if (!player.validateLookRange(range)) {
+          throw new GameFailError('INVALID_PLAYER_LOOK_RANGE');
+        }
+        if (this.inGameConsoleService.getCurrentModel()) {
+          throw new GameFailError('PLAYER_MOVE_WITH_OPEN_CONSOLE');
+        }
+        return player.lookForCellsWithTag(this.reader, tag, range, showAction).map(coords => [coords.x, coords.y]);
+      });
+    };
+
+    const playerModule = injector.addModule('player', {
       get_direction: (...others: any[]) => {
         this.validationService.validateNoParams(others);
         return this.getPlayer().direction.toLowerCase();
@@ -148,22 +167,24 @@ export class GenericSkulptService implements SceneSkulptService {
         });
       },
 
-      look: async (tag: string, range: number, ...others: any[]) => {
+      look: async (tag: string, range: number = -1, ...others: any[]) => {
         this.validationService.validateTag([tag]);
-        this.validationService.validateNonNegativeIntegers([range]);
+        this.validationService.validateIntegers([range]);
         this.validationService.validateNoParams(others);
-        this.checkRunFailedCompletedOrAborted();
-        return await this.writer.awaitPostAction(() => {
-          this.checkRunFailedCompletedOrAborted();
-          const player = this.getPlayer();
-          if (!player.validateLookRange(range)) {
-            throw new GameFailError('INVALID_PLAYER_LOOK_RANGE');
-          }
-          if (this.inGameConsoleService.getCurrentModel()) {
-            throw new GameFailError('PLAYER_MOVE_WITH_OPEN_CONSOLE');
-          }
-          return player.lookForCellsWithTag(this.reader, tag, range, true).map(coords => [coords.x, coords.y]);
-        });
+        return await playerLookBase(tag, range, true);
+      },
+
+      look_one: async (tag: string, range: number = -1, ...others: any[]) => {
+        this.validationService.validateTag([tag]);
+        this.validationService.validateIntegers([range]);
+        this.validationService.validateNoParams(others);
+        const arr = await playerLookBase(tag, range, false);
+        let result = null;
+        if (arr.length > 0) {
+          result = arr[0];
+          this.getPlayer().addActionRelative({ x: result[0], y: result[1] }, CharacterActionType.READ);
+        }
+        return result;
       },
 
       interact: async (x: number = 0, y: number = 1, ...others: any[]) => {
@@ -235,7 +256,7 @@ export class GenericSkulptService implements SceneSkulptService {
       }
     });
 
-    injector.addModule('console', {
+    const consoleModule = injector.addModule('console', {
       output: async (...values: any[]) => {
         // do not wait for next step, because it is just print and has no impact on a game
         this.checkRunFailedCompletedOrAborted();

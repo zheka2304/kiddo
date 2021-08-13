@@ -80,8 +80,8 @@ export class GenericSceneRenderContext {
 
     // check for the size change
     let { x, y, width, height } = this.outputWrapperElement.getBoundingClientRect();
-    this.outputCanvasElement.style.left = Math.floor(x) + 'px';
-    this.outputCanvasElement.style.top = Math.floor(y) + 'px';
+    // this.outputCanvasElement.style.left = Math.floor(x) + 'px';
+    // this.outputCanvasElement.style.top = Math.floor(y) + 'px';
     this.outputCanvasElement.style.width = width + 'px';
     this.outputCanvasElement.style.height = height + 'px';
     width *= devicePixelRatio;

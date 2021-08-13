@@ -15,7 +15,7 @@ export class SkulptModuleInjectorService {
         return `src/lib/${name}/__init__.js`;
     }
 
-    addModule(name: string, module: any): void {
+    addModule<T>(name: string, module: T): T {
         this.addedModules.add(name);
 
         Sk.builtins[name] = module;
@@ -51,6 +51,8 @@ export class SkulptModuleInjectorService {
                 return Sk.buildModuleFromJs(\"${name}\");
             };
         `;
+
+        return module;
     }
 
     removeModule(name: string): void {

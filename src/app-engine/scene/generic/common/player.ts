@@ -74,6 +74,11 @@ export class GenericPlayer extends CharacterBase {
     return lookRange ? range <= lookRange : true;
   }
 
+  getLookRange(): number {
+    const lookRange = this.parameters?.lookRange;
+    return lookRange ? lookRange : 32;
+  }
+
   getLightSources(): LightSourceParams[] {
     return this.parameters?.defaultLightSources || [];
   }
@@ -127,6 +132,7 @@ export class GenericPlayer extends CharacterBase {
         }
       }
     }
+    result.sort((a, b) => (Math.abs(a.x) + Math.abs(a.y)) - (Math.abs(b.x) + Math.abs(b.y)));
     return result;
   }
 

@@ -1,6 +1,6 @@
 import {Singleton} from '../../singleton.decorator';
 import {GameFailError} from '../common/errors';
-import {type} from "os";
+import {Direction} from "../common/entities";
 
 
 @Singleton
@@ -28,6 +28,11 @@ export class GenericSceneInputValidatorService {
 
   validateStrings(params: any[], error: string = 'EXPECTED_STRING'): void {
     this.validateEach(params, value => (typeof(value) === 'string'), error);
+  }
+
+  validateDirections(params: any[], error: string = 'EXPECTED_DIRECTION_STRING'): void {
+    const directions = [Direction.RIGHT, Direction.LEFT, Direction.UP, Direction.DOWN];
+    this.validateEach(params, value => (typeof(value) === 'string' && directions.indexOf(value.toUpperCase() as Direction) !== -1), error);
   }
 
   private checkIsTag(value: any): boolean {
