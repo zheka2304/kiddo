@@ -293,6 +293,19 @@ export class GenericBuilderService implements SceneBuilder {
     }
   }
 
+  getTileTagsAt(x: number, y: number): Set<string> {
+    const tags = new Set<string>();
+    const cell = this.getCell(x, y);
+    if (cell) {
+      for (const tile of cell.tiles) {
+        tile.getTags().forEach(tag => tags.add(tag));
+      }
+    } else {
+      tags.add(DefaultTags.OUTSIDES);
+    }
+    return tags;
+  }
+
   setTile(x: number, y: number, description: TileOrDescription | TileOrDescription[], addTiles?: boolean): void {
     const tiles = this.parseTileArray({ x, y }, description, true);
     const cell = this.getCell(x, y);
