@@ -9,6 +9,7 @@ import {DefaultTags} from '../../entities/default-tags.enum';
 import {CharacterBase} from '../../common/character-base';
 import {GenericWriterService} from '../../writers/generic-writer.service';
 import {GameObjectBase} from '../../common/game-object-base';
+import {ConnectedTextureFormatType} from '../../../../../app/scene/generic-scene/graphics/connected-texture-region';
 
 // declarations for generic task init function
 declare const Builder: GenericBuilderService;
@@ -34,11 +35,11 @@ class GameWatcher extends GameObjectBase {
       return;
     }
     if (this.robot === null || this.robot.state === 'dead') {
-      const positionX = Math.floor(Math.random() * 3 + 2) * (Math.random() > .5 ? 1 : -1) + this.player.position.x;
-      const positionY = Math.floor(Math.random() * 3 + 2) * (Math.random() > .5 ? 1 : -1) + this.player.position.y;
+      const positionX = Math.floor(Math.random() * 3 + 7) * (Math.random() > .5 ? 1 : -1) + this.player.position.x;
+      const positionY = Math.floor(Math.random() * 3 + 7) * (Math.random() > .5 ? 1 : -1) + this.player.position.y;
       this.robot = new EvilRobot({x: positionX, y: positionY}, Direction.RIGHT, 'robot');
       this.robot.player = this.player;
-      this.crow = new CrowHero({x: positionX, y: positionY - 16 }, Direction.RIGHT, 'crow');
+      this.crow = new CrowHero({x: positionX, y: positionY - 20 }, Direction.RIGHT, 'crow');
       this.crow.robot = this.robot;
 
       this.robot.addTag(DefaultTags.DEADLY);
@@ -55,26 +56,29 @@ class GameWatcher extends GameObjectBase {
 class EvilRobot extends CharacterBase {
   public player: GenericPlayer;
 
-  onTick(writer: GenericWriterService): void {
-    super.onTick(writer);
+  onPostTick(writer: GenericWriterService): void {
+    super.onPostTick(writer);
 
     if (this.state === 'dead') {
       return;
     }
 
-    if (this.player.position.x > this.position.x) {
-      this.direction = Direction.RIGHT;
-      this.position.x++;
-    } else if (this.player.position.x < this.position.x) {
-      this.direction = Direction.LEFT;
-      this.position.x--;
-    } else if (this.player.position.y > this.position.y) {
-      this.direction = Direction.DOWN;
-      this.position.y++;
-    } else if (this.player.position.y < this.position.y) {
-      this.direction = Direction.UP;
-      this.position.y--;
+    for (let i = 0; i < 2; i++) {
+      if (this.player.position.x > this.position.x) {
+        this.direction = Direction.RIGHT;
+        this.position.x++;
+      } else if (this.player.position.x < this.position.x) {
+        this.direction = Direction.LEFT;
+        this.position.x--;
+      } else if (this.player.position.y > this.position.y) {
+        this.direction = Direction.DOWN;
+        this.position.y++;
+      } else if (this.player.position.y < this.position.y) {
+        this.direction = Direction.UP;
+        this.position.y--;
+      }
     }
+
   }
 }
 
@@ -92,8 +96,8 @@ class CrowHero extends CharacterBase {
     this.position = { ...this.robot.position };
   }
 
-  onTick(writer: GenericWriterService): void {
-    super.onTick(writer);
+  onPostTick(writer: GenericWriterService): void {
+    super.onPostTick(writer);
 
     if (this.robot.state === 'dead') {
       if (this.flyOffCoolDown <= 0) {
@@ -185,14 +189,13 @@ export const SimplexTask5_2 = () => {
 
   // --------- registration -------------
 
-  TileRegistry.addBasicTile('wood-tile', {
+  TileRegistry.addBasicTile('grass', {
     texture: {
-      atlas: {src: 'assets:/tile-atlas.png', width: 4, height: 4},
+      atlas: {src: 'assets:/connected-tile-atlas.png', width: 24, height: 16},
       items: {
-        [DefaultTileStates.MAIN]: [[1, 0]]
+        [DefaultTileStates.MAIN]: { ctType: ConnectedTextureFormatType.FULL_ONLY2, offset: [[0, 12]] }
       }
-    },
-    immutableTags: []
+    }
   });
 
 
@@ -207,7 +210,7 @@ export const SimplexTask5_2 = () => {
 
   for (let x = 0; x < 75; x++) {
     for (let y = 0; y < 75; y++) {
-      Builder.setTile(x, y, 'wood-tile');
+      Builder.setTile(x, y, 'grass');
     }
   }
 
@@ -220,7 +223,7 @@ export const SimplexTask5_2 = () => {
 
       minVisibleLightLevel: 0.1,
       interactRange: 1,
-      lookRange: 6
+      lookRange: 15
     }
   );
   Builder.setPlayer(player);

@@ -24,6 +24,7 @@ import { FormsModule } from '@angular/forms';
 import { AppRoutingModule } from './kiddo-routing.module';
 import { Router } from '@angular/router';
 import { AngularResizedEventModule } from 'angular-resize-event';
+import { TaskDemoComponent } from './demo/task-demo/task-demo.component';
 
 declare const assetsPath: string;
 
@@ -38,7 +39,8 @@ declare const assetsPath: string;
     TestLaunchComponent,
     GamePlayerComponent,
     ApiTestingComponent,
-    TaskEditorHelpComponent
+    TaskEditorHelpComponent,
+    TaskDemoComponent
   ],
   imports: [
     AppRoutingModule,

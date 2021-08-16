@@ -17,6 +17,9 @@
 </head>
 
 <body class="player-body">
+
+<kiddo-player></kiddo-player>
+
 <!-- case 1: sceneConfig from localStorage -->
 <!-- <kiddo-player local-storage-key="kiddo_default_task_from_storage"></kiddo-player>
 <script></script> -->
@@ -24,8 +27,7 @@
 <!-- case 2: sceneConfig from URL -->
 <!-- <kiddo-player kiddo-scene-config="http://192.168.196.173:91/ru/raccoon/task1/task.yaml"></kiddo-player>-->
 
-<!-- case3: sceneConfig from variable -->
-<kiddo-player></kiddo-player>
+<!--<kiddo-player kiddo-scene-config='assets/scene_config/generic/simplex/task1_1/task.yaml'></kiddo-player>-->
 
 
 <!--  <script>-->
@@ -59,7 +61,7 @@
   }
 </script> -->
 
-<script>
+<!-- <script>
     // sample raccoon task solution
     /*
     import raccoon
@@ -106,7 +108,7 @@ generatingFunc: "task: simplex_task7"`;
   const rootElement = document.querySelector('kiddo-player');
   rootElement.setAttribute('kiddo-scene-config', sceneConfig);
   rootElement.setAttribute('kiddo-app-config', JSON.stringify(appConfig));
-</script>
+</script> -->
 </body>
 
 </html>

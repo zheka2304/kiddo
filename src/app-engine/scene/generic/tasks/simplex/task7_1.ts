@@ -36,7 +36,7 @@ export const SimplexTask7_1 = () => {
   // --------- tile generation -------------
   Builder.setupGameField({width: 9, height: 9}, {
     lightMap: {
-      enabled: false,
+      enabled: true,
       ambient: 0.09
     },
     tilesPerScreen: 6
@@ -52,7 +52,7 @@ export const SimplexTask7_1 = () => {
   const player = new GenericPlayer({x: 4, y: 4}, {
       skin: 'link',
       defaultLightSources: [
-        {radius: 6, brightness: 1},
+        {radius: 3, brightness: 1},
       ],
 
       minVisibleLightLevel: 0.1,
@@ -84,9 +84,9 @@ export const SimplexTask7_1 = () => {
     foodPositions.push([positionX, positionY]);
     arrayFood.push(new SimpleGameObject({x: positionX, y: positionY}, {
       texture: {
-        atlas: {src: 'assets:/tile-atlas.png', width: 4, height: 4},
+        atlas: {src: 'assets:/connected-tile-atlas.png', width: 24, height: 16},
         items: {
-          [DefaultTileStates.MAIN]: [[2, 2]],
+          [DefaultTileStates.MAIN]: [[8, 12]],
         }
       },
       immutableTags: [DefaultTags.ITEM, 'food']

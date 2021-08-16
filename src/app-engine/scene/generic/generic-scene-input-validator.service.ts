@@ -1,6 +1,6 @@
 import {Singleton} from '../../singleton.decorator';
 import {GameFailError} from '../common/errors';
-import {Direction} from "../common/entities";
+import {Direction} from '../common/entities';
 
 
 @Singleton

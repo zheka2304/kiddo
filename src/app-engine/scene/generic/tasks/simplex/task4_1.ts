@@ -6,10 +6,10 @@ import {CheckingLogic} from '../../../common/entities';
 import {GenericPlayer} from '../../common/player';
 import {DefaultTileStates} from '../../entities/default-tile-states.enum';
 import {DefaultTags} from '../../entities/default-tags.enum';
-import {ConsoleTerminalGameObject} from '../../common/console-terminal-game-object';
-import {SimpleGameObject} from '../../common/simple-game-object';
 import {GameObjectBase} from '../../common/game-object-base';
 import {GenericWriterService} from '../../writers/generic-writer.service';
+import {ConnectedTextureFormatType} from '../../../../../app/scene/generic-scene/graphics/connected-texture-region';
+
 
 // declarations for generic task init function
 declare const Builder: GenericBuilderService;
@@ -17,6 +17,7 @@ declare const TileRegistry: CommonTileRegistryService;
 declare const CharacterSkinRegistry: CharacterSkinRegistryService;
 declare const InGameConsole: InGameConsoleService;
 declare const DefaultCheckingLogic: { [key: string]: CheckingLogic };
+declare const DefaultCTLogic: { [key: string]: any };
 
 
 class TickCounter extends GameObjectBase {
@@ -31,23 +32,37 @@ class TickCounter extends GameObjectBase {
 export const SimplexTask4_1 = () => {
   // --------- registration -------------
 
-  TileRegistry.addBasicTile('wood-tile', {
+  TileRegistry.addBasicTile('road', {
     texture: {
-      atlas: {src: 'assets:/tile-atlas.png', width: 4, height: 4},
+      atlas: {src: 'assets:/connected-tile-atlas.png', width: 24, height: 16},
       items: {
-        [DefaultTileStates.MAIN]: [[1, 0]]
+        [DefaultTileStates.MAIN]: { ctType: ConnectedTextureFormatType.DEFAULT, offset: [[6, 14]] }
       }
     },
-    immutableTags: []
+    ctCheckConnected: DefaultCTLogic.HAS_TAGS(['road']),
+    immutableTags: ['road'],
   });
 
-  TileRegistry.addBasicTile('wall', {
+  TileRegistry.addBasicTile('grass', {
     texture: {
-      atlas: {src: 'assets:/tile-atlas.png', width: 4, height: 4},
+      atlas: {src: 'assets:/connected-tile-atlas.png', width: 24, height: 16},
       items: {
-        [DefaultTileStates.MAIN]: [[0, 0]]
+        [DefaultTileStates.MAIN]: { ctType: ConnectedTextureFormatType.FULL_ONLY2, offset: [[0, 12]] }
+      }
+    }
+  });
+
+  TileRegistry.addBasicTile('road-grass', {
+    texture: {
+      atlas: {src: 'assets:/connected-tile-atlas.png', width: 24, height: 16},
+      items: {
+        [DefaultTileStates.MAIN]: { ctType: ConnectedTextureFormatType.DEFAULT, offset: [[4, 12]] }
       }
     },
+    ctCheckConnected: DefaultCTLogic.HAS_TAGS(['road']),
+  });
+
+  TileRegistry.addBasicTile('off-road', {
     immutableTags: [DefaultTags.OBSTACLE]
   });
 
@@ -67,19 +82,27 @@ export const SimplexTask4_1 = () => {
       enabled: false,
       ambient: 0.09
     },
-    tilesPerScreen: 21
+    tilesPerScreen: 15,
+    pixelPerfect: 32
   });
 
+  const addRoadGrass = (posX: number, posY: number) => {
+    if ((posX + posY) % 3 !== 0) {
+      Builder.setTile(posX, posY, ['road-grass'], true);
+    }
+  };
 
   for (let i = 0; i < 21; i++) {
     for (let j = 0; j < 21; j++) {
-      Builder.setTile(i, j, 'wall');
+      Builder.setTile(i, j, ['grass', 'off-road']);
       if (i === 0 || j === 20) {
-        Builder.setTile(i, j, 'wood-tile');
+        Builder.setTile(i, j, ['grass', 'road']);
+        addRoadGrass(i, j);
       }
     }
   }
-  Builder.setTile(10, 10, 'wood-tile');
+  Builder.setTile(10, 10, ['grass', 'road']);
+  addRoadGrass(10, 10);
 
   const x = 0;
   const y = 0;
@@ -102,22 +125,26 @@ export const SimplexTask4_1 = () => {
       offsetX += 2;
       offsetY += 2;
       for (width; width < turn.right[0]; width++) {
-        Builder.setTile(width, height, 'wood-tile');
+        Builder.setTile(width, height, ['grass', 'road']);
+        addRoadGrass(width, height);
       } // w = 20 h =0
       turn.down[1] = cY - offsetY;
       turn.down[0] = offsetX;
       for (height; height < turn.down[1]; height++) {
-        Builder.setTile(width, height, 'wood-tile');
+        Builder.setTile(width, height, ['grass', 'road']);
+        addRoadGrass(width, height);
       } // w = 20 h =  20
       turn.left[0] = offsetX;
       turn.left[1] = offsetY;
       for (width; width > turn.left[0]; width--) {
-        Builder.setTile(width, height, 'wood-tile');
+        Builder.setTile(width, height, ['grass', 'road']);
+        addRoadGrass(width, height);
       } // w = 0 h = 20
       turn.up[0] = offsetX;
       turn.up[1] = offsetY;
       for (height; height > turn.up[1]; height--) {
-        Builder.setTile(width, height, 'wood-tile');
+        Builder.setTile(width, height, ['grass', 'road']);
+        addRoadGrass(width, height);
       } // w = 0 h = 0
 
     }
@@ -137,7 +164,7 @@ export const SimplexTask4_1 = () => {
     {pos: [4, 16], limit: 103 + reserveTime},
   ];
   const positionIndex = Math.floor(Math.random() * positionFinish.length);
-  Builder.setTile(positionFinish[positionIndex].pos[0], positionFinish[positionIndex].pos[1], ['wood-tile', 'goal-flag']);
+  Builder.setTile(positionFinish[positionIndex].pos[0], positionFinish[positionIndex].pos[1], 'goal-flag', true);
 
 
 // ---------  player  -------------

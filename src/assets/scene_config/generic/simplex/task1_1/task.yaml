@@ -1,0 +1,12 @@
+sceneType: Generic
+generatingFunc: 'task: simplex_task1_1'
+initialScript: |-
+  import player
+
+  # Add your code here
+taskDescription: |-
+  Доведи Алёшу до туалета, используя методы для управления персонажем. Чтобы пройти вперед несколько, например 2
+  клетки, используй `player.move(2)`, чтобы повернуть направо — `player.right()`, налево — `player.left()`.
+  В разделе 'Помощь' (Знак вопроса на панели управления), можно прочитать про эти и другие методы подробнее и с примерами.
+
+
