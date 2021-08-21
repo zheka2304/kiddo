@@ -75,17 +75,6 @@ export const SimplexTask2_1 = () => {
     immutableTags: [DefaultTags.OBSTACLE]
   });
 
-  TileRegistry.addBasicTile('road', {
-    texture: {
-      atlas: {src: 'assets:/connected-tile-atlas.png', width: 24, height: 16},
-      items: {
-        [DefaultTileStates.MAIN]: { ctType: ConnectedTextureFormatType.DEFAULT, offset: [[0, 14]] },
-      }
-    },
-    immutableTags: ['-road-connect'],
-    ctCheckConnected: DefaultCTLogic.ANY_TAGS(['-road-connect']),
-  });
-
   // --------- tile generation -------------
   Builder.setupGameField({width: 7, height: 7}, {
     lightMap: {

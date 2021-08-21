@@ -11,6 +11,7 @@ import {SimpleGameObject} from '../../common/simple-game-object';
 import {CharacterBase} from '../../common/character-base';
 import {GenericWriterService} from '../../writers/generic-writer.service';
 import {GameObjectBase} from '../../common/game-object-base';
+import {ConnectedTextureFormatType} from '../../../../../app/scene/generic-scene/graphics/connected-texture-region';
 
 // declarations for generic task init function
 declare const Builder: GenericBuilderService;
@@ -29,7 +30,7 @@ class EvilTrash extends SimpleGameObject {
           [DefaultTileStates.MAIN]: [[1, 2]],
         }
       },
-      immutableTags: [DefaultTags.DEADLY]
+      immutableTags: [DefaultTags.DEADLY, 'trash']
     });
   }
 
@@ -45,7 +46,7 @@ class GameWatcher extends GameObjectBase {
   onTick(writer: GenericWriterService): void {
     super.onTick(writer);
     if (this.ticks % 3 === 0) {
-      for (let i = 0; i < 20; i++) {
+      for (let i = 0; i < 16; i++) {
         if (Math.random() < 0.45) {
           writer.addGameObject(new EvilTrash({x: 2 * i + 1, y: -1}));
         }
@@ -59,14 +60,13 @@ class GameWatcher extends GameObjectBase {
 export const SimplexTask6_1 = () => {
   // --------- registration -------------
 
-  TileRegistry.addBasicTile('wood-tile', {
+  TileRegistry.addBasicTile('grass', {
     texture: {
-      atlas: {src: 'assets:/tile-atlas.png', width: 4, height: 4},
+      atlas: {src: 'assets:/connected-tile-atlas.png', width: 24, height: 16},
       items: {
-        [DefaultTileStates.MAIN]: [[1, 0]]
+        [DefaultTileStates.MAIN]: { ctType: ConnectedTextureFormatType.FULL_ONLY2, offset: [[0, 12]] }
       }
-    },
-    immutableTags: []
+    }
   });
 
   TileRegistry.addBasicTile('goal-flag', {
@@ -81,7 +81,7 @@ export const SimplexTask6_1 = () => {
 
 
   // --------- tile generation -------------
-  Builder.setupGameField({width: 21, height: 10}, {
+  Builder.setupGameField({width: 31, height: 10}, {
     lightMap: {
       enabled: false,
       ambient: 0.09
@@ -90,13 +90,13 @@ export const SimplexTask6_1 = () => {
     pixelPerfect: 32
   });
 
-  for (let x = 0; x < 21; x++) {
+  for (let x = 0; x < 31; x++) {
     for (let y = 0; y < 10; y++) {
-      Builder.setTile(x, y, 'wood-tile');
+      Builder.setTile(x, y, 'grass');
     }
   }
 
-  Builder.setTile(20, 8, ['wood-tile', 'goal-flag']);
+  Builder.setTile(30, 8, ['grass', 'goal-flag']);
 
   // ---------  player  -------------
   const player = new GenericPlayer({x: 0, y: 8}, {

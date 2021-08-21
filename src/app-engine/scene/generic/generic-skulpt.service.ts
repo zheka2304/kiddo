@@ -13,7 +13,7 @@ import {InGameWindowService} from './services/in-game-window-service';
 import {GenericSceneExecutor, GenericSceneExecutorService} from './generic-scene-executor.service';
 import {GenericSceneInputValidatorService} from './generic-scene-input-validator.service';
 import {InGameConsoleWindow} from './common/in-game-console-window';
-import {CharacterActionType} from "./common/character-base";
+import {CharacterActionType} from './common/character-base';
 
 
 @Singleton
@@ -57,7 +57,7 @@ export class GenericSkulptService implements SceneSkulptService {
       }
     });
 
-    const playerLookBase =  async (tag: string, range: number = -1, showAction: boolean) => {
+    const playerFindBase =  async (tag: string, range: number = -1, showAction: boolean) => {
       this.checkRunFailedCompletedOrAborted();
       return await this.writer.awaitPostAction(() => {
         this.checkRunFailedCompletedOrAborted();
@@ -148,7 +148,7 @@ export class GenericSkulptService implements SceneSkulptService {
         }
       },
 
-      inspect: async (x: number = 0, y: number = 1, ...others: any[]) => {
+      inspect: async (x: number = 0, y: number = 0, ...others: any[]) => {
         this.validationService.validateIntegers([x, y]);
         this.validationService.validateNoParams(others);
         this.checkRunFailedCompletedOrAborted();
@@ -167,24 +167,24 @@ export class GenericSkulptService implements SceneSkulptService {
         });
       },
 
-      look: async (tag: string, range: number = -1, ...others: any[]) => {
+      find: async (tag: string, range: number = -1, ...others: any[]) => {
         this.validationService.validateTag([tag]);
         this.validationService.validateIntegers([range]);
         this.validationService.validateNoParams(others);
-        return await playerLookBase(tag, range, true);
-      },
-
-      look_one: async (tag: string, range: number = -1, ...others: any[]) => {
-        this.validationService.validateTag([tag]);
-        this.validationService.validateIntegers([range]);
-        this.validationService.validateNoParams(others);
-        const arr = await playerLookBase(tag, range, false);
+        const arr = await playerFindBase(tag, range, false);
         let result = null;
         if (arr.length > 0) {
           result = arr[0];
           this.getPlayer().addActionRelative({ x: result[0], y: result[1] }, CharacterActionType.READ);
         }
         return result;
+      },
+
+      find_all: async (tag: string, range: number = -1, ...others: any[]) => {
+        this.validationService.validateTag([tag]);
+        this.validationService.validateIntegers([range]);
+        this.validationService.validateNoParams(others);
+        return await playerFindBase(tag, range, true);
       },
 
       interact: async (x: number = 0, y: number = 1, ...others: any[]) => {

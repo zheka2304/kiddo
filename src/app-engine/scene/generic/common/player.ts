@@ -31,6 +31,7 @@ export class GenericPlayer extends CharacterBase {
 
   onTick(writer: GenericWriterService): void {
     super.onTick(writer);
+    this.checkForHazards(writer.getReader());
   }
 
   onPostTick(writer: GenericWriterService): void {

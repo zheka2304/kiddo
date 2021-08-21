@@ -1,0 +1,10 @@
+sceneType: Generic
+generatingFunc: 'task: simplex_task3_1'
+initialScript: |-
+  import player
+  import console
+
+  # Add your code here
+taskDescription: Описание **task3_1**
+
+

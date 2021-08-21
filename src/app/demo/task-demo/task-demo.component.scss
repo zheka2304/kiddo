@@ -1,0 +1,19 @@
+.task-wrapper {
+  background-color: #000;
+  box-shadow: 1px 2px 12px 1px rgba(0,0,0,0.75);
+  color: #fff;
+  min-width: 300px;
+  height: 100%;
+}
+
+.task-description {
+  padding: 2em;
+  text-align: left;
+  display: flex;
+  overflow: auto;
+
+  .description-text {
+    max-width: 100%;
+    max-height: 65vh;
+  }
+}

@@ -178,16 +178,90 @@
       "MESSAGE_NO": "Нет",
       "LEVEL_NOT_COMPLETE": "Уровень не пройден",
       "ERROR_IN_SCRIPT": "Ошибка в скрипте"
+    },
+    "GENERIC": {
+      "SERVICE": {
+        "GAME_FAIL_ERROR": {
+          "SCRIPT_STOPPED": "Выполнение скрипта было прервано",
+
+          "FINISH_NOT_REACHED":"Игрок не дошёл до финиша",
+          "DESTROYED": "Игрок выбыл из игры",
+          "CAUGHT_BY_MONSTER":"Монстр поймал игрока",
+          "IN_OBSTACLE": "Игрок застрял в препятствии",
+          "COULD_NOT_COMPILE_SCRIPT": "Ошибка в скрипте",
+          "INVALID_OUTPUT": "Неправильный или неполный вывод в консоль",
+          "TIME_LIMIT_EXCEEDED": "Уровень не пройден за нужное время",
+          "NO_REQUIRED_ITEM_IN_INVENTORY": "В инвентаре нет нужного предмета",
+          "ROBOTS_REMAINING": "Игрок убежал не от всех роботов",
+          "FOOD_REMAINING": "Осталась несобранная еда",
+          "NOT_ALL_NEURONS_PLACED": "Не все нейроны перемещены на нужные позиции",
+
+          "CONSOLE_NOT_OPEN": "Взаимодействие с консолью, когда она не открыта",
+          "PLAYER_MOVE_WITH_OPEN_CONSOLE": "Действие игрока при открытой консоли",
+          "INVALID_PLAYER_INTERACT_OFFSET": "Слишком большая дальность взаимодействия",
+          "INVALID_PLAYER_LOOK_RANGE": "Слишком большая дальность получения информации",
+
+          "UNEXPECTED_PARAMETER": "В метод передан лишний параметр",
+          "EXPECTED_INTEGER": "Неправильный тип параметра: ожидалось целое число",
+          "EXPECTED_NON_NEGATIVE_INTEGER": "Неправильный тип параметра: ожидалось целое неотрицательное число",
+          "EXPECTED_STRING": "Неправильный тип параметра: ожидалась строка",
+          "EXPECTED_DIRECTION_STRING": "Неправильный тип параметра: ожидалась строка-направление",
+          "EXPECTED_TAG": "Неправильный тип параметра: ожидалась строка-тег",
+          "EXPECTED_TAG_OR_TAG_ARRAY": "Неправильный тип параметра: ожидалась строка-тег или список тегов"
+        },
+        "SCENE_ESTABLISHED": "Сцена успешно настроена!"
+      },
+      "RESULT": "Результат",
+      "TASK_ACCOMPLISHED": "Задание выполнено",
+      "TASK_FAILED": "Задание не выполнено",
+      "FAIL_REASON": "Причина",
+      "FAIL_ROW_NUMBER": "Ошибка в строке",
+      "COOKIES_PICKED": "Собрано печенья",
+      "CELLS_PASSED": "Пройдено клеток",
+      "TRY_AGAIN": "Попробовать еще раз",
+      "LEVEL_NOT_COMPLETE": "Уровень не пройден",
+      "ERROR_IN_SCRIPT": "Ошибка в скрипте"
     }
   },
   "MARKDOWN": {
     "HELP_RACCOON": "{{ assetsPath }}/files/helpRaccoonRu.md?timestamp={{ timestamp }}",
     "HELP_CONSOLE": "{{ assetsPath }}/files/helpConsoleRu.md?timestamp={{ timestamp }}",
-    "HELP_PANDEMIC": "{{ assetsPath }}/files/helpPandemicRu.md?timestamp={{ timestamp }}"
+    "HELP_PANDEMIC": "{{ assetsPath }}/files/helpPandemicRu.md?timestamp={{ timestamp }}",
+    "HELP_GENERIC": "{{ assetsPath }}/files/helpGenericRu.md?timestamp={{ timestamp }}"
   },
   "SCENE-COMPONENT": {
     "LEVEL_COMPLETE": "Уровень успешно пройден!",
     "LEVEL_NOT_COMPLETE": "Уровень не пройден",
+    "GENERIC": {
+      "FAIL_REASON": {
+        "SCRIPT_STOPPED": "Выполнение скрипта было прервано",
+
+        "FINISH_NOT_REACHED":"Игрок не дошёл до финиша",
+        "DESTROYED": "Игрок выбыл из игры",
+        "CAUGHT_BY_MONSTER":"Монстр поймал игрока",
+        "IN_OBSTACLE": "Игрок застрял в препятствии",
+        "COULD_NOT_COMPILE_SCRIPT": "Ошибка в скрипте",
+        "INVALID_OUTPUT": "Неправильный или неполный вывод в консоль",
+        "TIME_LIMIT_EXCEEDED": "Уровень не пройден за нужное время",
+        "NO_REQUIRED_ITEM_IN_INVENTORY": "В инвентаре нет нужного предмета",
+        "ROBOTS_REMAINING": "Игрок убежал не от всех роботов",
+        "FOOD_REMAINING": "Осталась несобранная еда",
+        "NOT_ALL_NEURONS_PLACED": "Не все нейроны перемещены на нужные позиции",
+
+        "CONSOLE_NOT_OPEN": "Взаимодействие с консолью, когда она не открыта",
+        "PLAYER_MOVE_WITH_OPEN_CONSOLE": "Действие игрока при открытой консоли",
+        "INVALID_PLAYER_INTERACT_OFFSET": "Слишком большая дальность взаимодействия",
+        "INVALID_PLAYER_LOOK_RANGE": "Слишком большая дальность получения информации",
+
+        "UNEXPECTED_PARAMETER": "В метод передан лишний параметр",
+        "EXPECTED_INTEGER": "Неправильный тип параметра: ожидалось целое число",
+        "EXPECTED_NON_NEGATIVE_INTEGER": "Неправильный тип параметра: ожидалось целое неотрицательное число",
+        "EXPECTED_STRING": "Неправильный тип параметра: ожидалась строка",
+        "EXPECTED_DIRECTION_STRING": "Неправильный тип параметра: ожидалась строка-направление",
+        "EXPECTED_TAG": "Неправильный тип параметра: ожидалась строка-тег",
+        "EXPECTED_TAG_OR_TAG_ARRAY": "Неправильный тип параметра: ожидалась строка-тег или список тегов"
+      }
+    },
     "RACCOON": {
       "FAIL_REASON": {
         "FINISH_NOT_REACHED":"Енот не дошёл до финиша",
