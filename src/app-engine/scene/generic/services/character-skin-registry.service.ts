@@ -44,7 +44,7 @@ export class CharacterSkinRegistryService {
   private registerBuiltInSkins(): void {
     this.addCharacterSkin('link', {
       idleTexture: {
-        atlas: {src: 'assets:/link-atlas.png', width: 10, height: 8},
+        atlas: {src: 'assets:/character-atlas-link.png', width: 10, height: 8},
         items: {
           [Direction.DOWN]: [[0, 0]],
           [Direction.UP]: [[0, 2]],
@@ -53,7 +53,29 @@ export class CharacterSkinRegistryService {
         }
       },
       walkingTexture: {
-        atlas: {src: 'assets:/link-atlas.png', width: 10, height: 8},
+        atlas: {src: 'assets:/character-atlas-link.png', width: 10, height: 8},
+        items: {
+          [Direction.DOWN]: [[0, 9, 4, 4]],
+          [Direction.UP]: [[0, 9, 6, 6]],
+          [Direction.LEFT]: [[0, 9, 5, 5]],
+          [Direction.RIGHT]: [[0, 9, 7, 7]],
+        },
+        fps: 12
+      }
+    });
+
+    this.addCharacterSkin('alexey', {
+      idleTexture: {
+        atlas: {src: 'assets:/character-atlas-alexey.png', width: 10, height: 8},
+        items: {
+          [Direction.DOWN]: [[0, 0]],
+          [Direction.UP]: [[0, 2]],
+          [Direction.LEFT]: [[0, 1]],
+          [Direction.RIGHT]: [[0, 3]],
+        }
+      },
+      walkingTexture: {
+        atlas: {src: 'assets:/character-atlas-alexey.png', width: 10, height: 8},
         items: {
           [Direction.DOWN]: [[0, 9, 4, 4]],
           [Direction.UP]: [[0, 9, 6, 6]],

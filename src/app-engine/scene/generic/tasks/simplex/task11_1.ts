@@ -143,6 +143,15 @@ export const SimplexTask11_1 = () => {
     immutableTags: [DefaultTags.OBSTACLE, '-station-wall']
   });
 
+  TileRegistry.addBasicTile('station-door', {
+    texture: {
+      atlas: {src: 'assets:/connected-tile-atlas.png', width: 24, height: 16},
+      items: {
+        [DefaultTileStates.MAIN]: [[19, 2]]
+      }
+    }
+  });
+
   TileRegistry.addBasicTile('station-wall-front', {
     texture: {
       atlas: {src: 'assets:/connected-tile-atlas.png', width: 24, height: 16},
@@ -188,7 +197,8 @@ export const SimplexTask11_1 = () => {
       enabled: false,
       ambient: 0.09
     },
-    tilesPerScreen: 35,
+    tilesPerScreen: 7,
+    pixelPerfect: 32
   });
 
   const consoleObject = (ox, oy) => {
@@ -349,6 +359,15 @@ export const SimplexTask11_1 = () => {
       }
     }
   }
+
+  Builder.setTile(5, 2, 'station-door:{"offset":[0, 0]}', true);
+  Builder.setTile(5, 3, 'station-door:{"offset":[0, 1]}', true);
+  Builder.setTile(2, 4, 'station-wall', true);
+  Builder.setTile(3, 4, 'station-wall', true);
+  Builder.setTile(4, 4, 'station-wall', true);
+  Builder.setTile(5, 4, 'station-wall', true);
+  Builder.setTile(6, 4, 'station-wall', true);
+  Builder.setTile(7, 4, 'station-wall', true);
 
   let offsetY = 5;
   while (offsetY < 101) {

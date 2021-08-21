@@ -55,25 +55,14 @@ class Target extends SimpleGameObject {
 export const SimplexTask9_1 = () => {
   // --------- registration -------------
 
-  TileRegistry.addBasicTile('wood-tile', {
+  TileRegistry.addBasicTile('brain-background', {
     texture: {
       atlas: {src: 'assets:/connected-tile-atlas.png', width: 24, height: 16},
       items: {
-        [DefaultTileStates.MAIN]: {ctType: ConnectedTextureFormatType.FULL_ONLY2, offset: [[0, 6]]}
+        [DefaultTileStates.MAIN]: {ctType: ConnectedTextureFormatType.FULL_ONLY, offset: [[0, 0]]}
       }
     },
     immutableTags: []
-  });
-
-  TileRegistry.addBasicTile('wall', {
-    texture: {
-      atlas: {src: 'assets:/connected-tile-atlas.png', width: 24, height: 16},
-      items: {
-        [DefaultTileStates.MAIN]: {ctType: ConnectedTextureFormatType.DEFAULT, offset: [[0, 8]]}
-      }
-    },
-    ctCheckConnected: DefaultCTLogic.ANY_TAGS(['-wall-connect']),
-    immutableTags: [DefaultTags.OBSTACLE, '-wall-connect']
   });
 
 
@@ -83,18 +72,12 @@ export const SimplexTask9_1 = () => {
       enabled: false,
       ambient: 0.09
     },
-    tilesPerScreen: 15
+    tilesPerScreen: 9
   });
 
   for (let x = 0; x < 15; x++) {
     for (let y = 0; y < 15; y++) {
-      Builder.setTile(x, y, 'wood-tile');
-      if (y === 0 || y === 14) {
-        Builder.setTile(x, y, 'wall');
-      }
-      if (x === 0 || x === 14) {
-        Builder.setTile(x, y, 'wall');
-      }
+      Builder.setTile(x, y, 'brain-background');
     }
   }
 

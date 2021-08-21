@@ -86,7 +86,7 @@ export const SimplexTask7_1 = () => {
       texture: {
         atlas: {src: 'assets:/connected-tile-atlas.png', width: 24, height: 16},
         items: {
-          [DefaultTileStates.MAIN]: [[8, 12]],
+          [DefaultTileStates.MAIN]: [[8, 13]],
         }
       },
       immutableTags: [DefaultTags.ITEM, 'food']

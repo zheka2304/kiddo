@@ -155,12 +155,28 @@ export class GenericWriterService implements SceneWriter {
   addGameObject(obj: GenericGameObject): void {
     if (obj) {
       this.sceneModel.gameObjects = [ ...this.sceneModel.gameObjects, obj ];
+      if (obj.isStationary && obj.isStationary()) {
+        const cell = this.reader.getCellAt(obj.position.x, obj.position.y);
+        if (cell) {
+          cell.stationaryGameObjects = cell.stationaryGameObjects.filter(o => o !== obj);
+        }
+      } else {
+        this.sceneModel.nonStationaryGameObjects = [ ...this.sceneModel.nonStationaryGameObjects, obj ];
+      }
     }
   }
 
   removeGameObject(obj: GenericGameObject): void {
     if (obj) {
       this.sceneModel.gameObjects = this.sceneModel.gameObjects.filter(o => o !== obj);
+      if (obj.isStationary && obj.isStationary()) {
+        const cell = this.reader.getCellAt(obj.position.x, obj.position.y);
+        if (cell) {
+          cell.stationaryGameObjects = cell.stationaryGameObjects.filter(o => o !== obj);
+        }
+      } else {
+        this.sceneModel.nonStationaryGameObjects = this.sceneModel.nonStationaryGameObjects.filter(o => o !== obj);
+      }
     }
   }
 

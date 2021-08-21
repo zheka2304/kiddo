@@ -91,13 +91,24 @@ export class GenericReaderService implements SceneReader {
     x = Math.floor(x);
     y = Math.floor(y);
     const gameObjects: GenericGameObject[] = [];
-    for (const gameObject of this.sceneModel.gameObjects) {
+    for (const gameObject of this.sceneModel.nonStationaryGameObjects) {
       if (
         gameObject.position.x === x && gameObject.position.y === y &&
         (!exclude || exclude.indexOf(gameObject) === -1) &&
         !gameObject.getTags().has(DefaultTags.DESTROYED)
       ) {
         gameObjects.push(gameObject);
+      }
+    }
+    const cell = this.getCellAt(x, y);
+    if (cell) {
+      for (const gameObject of cell.stationaryGameObjects) {
+        if (
+          (!exclude || exclude.indexOf(gameObject) === -1) &&
+          !gameObject.getTags().has(DefaultTags.DESTROYED)
+        ) {
+          gameObjects.push(gameObject);
+        }
       }
     }
     return gameObjects;

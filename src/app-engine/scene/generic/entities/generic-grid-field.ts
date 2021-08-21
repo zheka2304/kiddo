@@ -1,5 +1,6 @@
 import {GenericGridTile} from './generic-grid-tile';
 import {Coords} from '../../common/entities';
+import {GenericGameObject} from './generic-game-object';
 
 
 export interface GenericGridField {
@@ -11,6 +12,7 @@ export interface GenericGridField {
 export interface GenericGridCell {
   position: Coords;
   tiles: GenericGridTile[];
+  stationaryGameObjects: GenericGameObject[];
   light: {
     level: number,
     color: number[],

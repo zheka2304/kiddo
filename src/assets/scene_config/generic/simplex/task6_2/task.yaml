@@ -2,6 +2,7 @@ sceneType: Generic
 generatingFunc: 'task: simplex_task6_2'
 initialScript: |-
   import player
+  import console
 
   # Add your code here
 taskDescription: |-

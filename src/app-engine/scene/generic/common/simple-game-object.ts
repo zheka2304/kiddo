@@ -19,6 +19,8 @@ export interface SimpleGameObjectDefinition {
   mutableTags?: string[];
   immutableTags?: string[];
 
+  stationary?: boolean;
+
   item?: {
     name?: string;
     ignoreObstacle?: boolean;
@@ -89,5 +91,10 @@ export class SimpleGameObject extends GameObjectBase implements GenericItem {
 
   canBePlaced(reader: GenericReaderService, character: GenericGameObject, position: Coords): boolean {
     return this.definition?.item?.ignoreObstacle || !reader.getAllTagsAt(position.x, position.y).has(DefaultTags.OBSTACLE);
+  }
+
+
+  isStationary(): boolean {
+    return this.definition?.stationary || false;
   }
 }

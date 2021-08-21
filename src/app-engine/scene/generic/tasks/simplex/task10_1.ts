@@ -83,7 +83,6 @@ export const SimplexTask10_1 = () => {
       }
     }
   }
-  console.log(arrayPrimeNumbers);
 
   const generateRandomNumber = () => {
     if (Math.random() < 0.3) {

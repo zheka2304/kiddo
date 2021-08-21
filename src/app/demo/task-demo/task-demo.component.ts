@@ -2,8 +2,8 @@ import {Component, OnInit, ViewChild} from '@angular/core';
 import {KiddoInitService} from '../../kiddo-init.service';
 import {MarkdownComponent} from 'ngx-markdown';
 import {SceneConfigService} from '../../config/scene-config.service';
-import {ActivatedRoute} from "@angular/router";
-import {map} from "rxjs/operators";
+import {ActivatedRoute} from '@angular/router';
+import {map} from 'rxjs/operators';
 
 
 @Component({

@@ -26,6 +26,7 @@ import {SimpleGameObject} from './common/simple-game-object';
 import {SimpleGridTile} from './common/simple-grid-tile';
 import {CharacterBase} from './common/character-base';
 import {TaskRegistryService} from './services/task-registry.service';
+import {ConnectedTextureFormatType} from '../../../app/scene/generic-scene/graphics/connected-texture-region';
 import {GenericSceneContextProvider} from './common/generic-scene-context-provider';
 
 
@@ -73,6 +74,7 @@ export class GenericBuilderService implements SceneBuilder {
 
       field: null,
       gameObjects: [],
+      nonStationaryGameObjects: [],
       player: null,
 
       lightMapEnabled: false,
@@ -107,6 +109,7 @@ export class GenericBuilderService implements SceneBuilder {
       // helpful defaults
       DefaultTags,
       DefaultTileStates,
+      ConnectedTextureFormatType,
 
       // inline defaults
       DefaultCheckingLogic: {
@@ -222,6 +225,7 @@ export class GenericBuilderService implements SceneBuilder {
         const cell: GenericGridCell = {
           position: { x, y },
           tiles: this.parseTileArray({ x, y }, data[y][x], abortOnError),
+          stationaryGameObjects: [],
           light: {
             level: ambientLight,
             ambient: ambientLight,
@@ -254,6 +258,7 @@ export class GenericBuilderService implements SceneBuilder {
         field.grid.push({
           position: { x, y },
           tiles: [],
+          stationaryGameObjects: [],
           light: {
             level: ambientLight,
             ambient: ambientLight,
@@ -325,6 +330,14 @@ export class GenericBuilderService implements SceneBuilder {
       throw new Error('null is passed to Build.addGameObject');
     }
     this.sceneModel.gameObjects.push(obj);
+    if (obj.isStationary && obj.isStationary()) {
+      const cell = this.getCell(obj.position.x, obj.position.y);
+      if (cell) {
+        cell.stationaryGameObjects.push(obj);
+      }
+    } else {
+      this.sceneModel.nonStationaryGameObjects.push(obj);
+    }
   }
 
   setPlayer(player: GenericPlayer): void {

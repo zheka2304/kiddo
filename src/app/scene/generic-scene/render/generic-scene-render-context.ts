@@ -11,7 +11,10 @@ export class GenericSceneRenderContext {
   private bufferCanvasElement: HTMLCanvasElement = null;
   private staticCanvasElement: HTMLCanvasElement = null;
   private lightMapCanvasElement: HTMLCanvasElement = null;
-  private canvasSize: {width: number, height: number} = { width: 0, height: 0 };
+  private canvasSize: { width: number, height: number } = { width: 0, height: 0 };
+
+  private draggedViewOffset: { x: number, y: number } = { x: 0, y: 0 };
+  private draggedViewOffsetLastChange = 0;
 
   constructor(
     private textureLoaderService: SceneTextureLoaderService,
@@ -39,6 +42,29 @@ export class GenericSceneRenderContext {
   setRenderer(renderer: GenericSceneRenderer): void {
     this.renderer = renderer;
     this.isFirstFrame = true;
+  }
+
+  public onMouseDrag(x: number, y: number): void {
+    this.draggedViewOffset.x -= x;
+    this.draggedViewOffset.y -= y;
+
+    const backTimeout = 1000;
+    this.draggedViewOffsetLastChange = Date.now();
+    const returnBack = () => {
+      if (Date.now() >= this.draggedViewOffsetLastChange + backTimeout) {
+        let vx = this.draggedViewOffset.x;
+        let vy = this.draggedViewOffset.y;
+        const d = Math.sqrt(vx * vx + vy * vy);
+        if (d > 20) {
+          vx /= d / 20;
+          vy /= d / 20;
+          setTimeout(returnBack, 10);
+        }
+        this.draggedViewOffset.x -= vx;
+        this.draggedViewOffset.y -= vy;
+      }
+    };
+    setTimeout(returnBack, backTimeout);
   }
 
   private onStaticDraw(viewport: Rect): void {
@@ -179,6 +205,16 @@ export class GenericSceneRenderContext {
       x: position.x * interpolation + lastPosition.x * (1 - interpolation),
       y: position.y * interpolation + lastPosition.y * (1 - interpolation),
     };
+  }
+
+
+  public getDraggedViewOffset(): Coords {
+    return this.draggedViewOffset;
+  }
+
+  public setDraggedViewOffset(x: number, y: number): void {
+    this.draggedViewOffset.x = x;
+    this.draggedViewOffset.y = y;
   }
 
   public renderDataAndPositionToRect(

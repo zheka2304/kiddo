@@ -18,6 +18,7 @@ export class GenericSceneComponent implements AfterViewInit, OnDestroy {
   private sceneAccessorsService: SceneAccessorsService;
   private renderContext: GenericSceneRenderContext = null;
 
+  isDragging = false;
 
   constructor(
     private sceneRenderService: GenericSceneRenderService,
@@ -35,4 +36,9 @@ export class GenericSceneComponent implements AfterViewInit, OnDestroy {
     this.sceneRenderService.destroyRenderContext(this.renderContext);
   }
 
+  onMouseDrag(event: MouseEvent): void {
+    if (this.renderContext) {
+      this.renderContext.onMouseDrag(event.movementX, event.movementY);
+    }
+  }
 }

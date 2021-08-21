@@ -1,0 +1,15 @@
+<div class="task-wrapper" #taskWrapper>
+    <div *ngIf="activated">
+        <div #descriptionWrapper>
+            <main class="task-description">
+                <markdown class="description-text" [data]="taskDescription"></markdown>
+            </main>
+        </div>
+        <div #playerWrapper class="iframe-player-wrapper" [ngStyle]="{height: playerWrapperHeight}">
+            <kiddo-game-player></kiddo-game-player>
+        </div>
+    </div>
+    <div *ngIf="!activated" (click)="onActivateClick()" class="iframe-activate-button">
+        <div>{{'MODAL.CLICK_TO_ACTIVATE' | translate | uppercase}}</div>
+    </div>
+</div>

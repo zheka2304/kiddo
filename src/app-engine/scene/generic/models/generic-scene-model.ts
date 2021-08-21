@@ -10,6 +10,7 @@ export interface GenericSceneModel extends SceneModel {
 
   field: GenericGridField;
   gameObjects: GenericGameObject[];
+  nonStationaryGameObjects: GenericGameObject[];
   player: GenericPlayer;
 
   lightMapEnabled: boolean;

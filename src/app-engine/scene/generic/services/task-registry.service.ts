@@ -38,6 +38,7 @@ export class TaskRegistryService {
     this.registerTask('simplex_task8_1', SimplexTask8_1);
     this.registerTask('simplex_task8_2', SimplexTask8_2);
     this.registerTask('simplex_task9_1', SimplexTask9_1);
+    this.registerTask('simplex_task10_1', SimplexTask10_1);
     this.registerTask('simplex_task11_1', SimplexTask11_1);
   }
 

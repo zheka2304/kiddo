@@ -45,7 +45,7 @@ class GameWatcher extends GameObjectBase {
 
   onTick(writer: GenericWriterService): void {
     super.onTick(writer);
-    if (this.ticks % 3 === 0) {
+    if (this.ticks % 3 === 1) {
       for (let i = 0; i < 16; i++) {
         if (Math.random() < 0.45) {
           writer.addGameObject(new EvilTrash({x: 2 * i + 1, y: -1}));
@@ -100,7 +100,7 @@ export const SimplexTask6_1 = () => {
 
   // ---------  player  -------------
   const player = new GenericPlayer({x: 0, y: 8}, {
-      skin: 'link',
+      skin: 'alexey',
       defaultLightSources: [
         {radius: 1, brightness: 1},
       ],

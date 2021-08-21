@@ -207,9 +207,20 @@ export class GenericSceneRenderer {
       position.y += 0.5;
       const backgroundSize = this.getBackgroundSize(defaultViewport);
       const cellSize = this.getCellSizeInPixels(defaultViewport);
+      position.x = Math.max(0, Math.min(backgroundSize.width - canvasWidth, position.x * cellSize - canvasWidth / 2));
+      position.y = Math.max(0, Math.min(backgroundSize.height - canvasHeight, position.y * cellSize - canvasHeight / 2));
+
+      // calculate and correct drag
+      const drag = context.getDraggedViewOffset();
+      const dragged = {
+        x: Math.round(Math.max(0, Math.min(backgroundSize.width - canvasWidth, position.x + drag.x))),
+        y: Math.round(Math.max(0, Math.min(backgroundSize.height - canvasHeight, position.y + drag.y)))
+      };
+      context.setDraggedViewOffset(dragged.x - position.x, dragged.y - position.y);
+
       return {
-        x: Math.round(Math.max(0, Math.min(backgroundSize.width - canvasWidth, position.x * cellSize - canvasWidth / 2))),
-        y: Math.round(Math.max(0, Math.min(backgroundSize.height - canvasHeight, position.y * cellSize - canvasHeight / 2))),
+        x: dragged.x,
+        y: dragged.y,
         width: canvasWidth,
         height: canvasHeight
       };
