@@ -100,11 +100,6 @@ export const SimplexTask8_2 = () => {
     }
   }
 
-  console.log('start');
-  console.log(votes);
-  console.log('next');
-  console.log(arrayVoter);
-
   const answer = [];
   let levelPassed = false;
   Builder.addGameObject(new ConsoleTerminalGameObject({x: 3, y: 4}, {

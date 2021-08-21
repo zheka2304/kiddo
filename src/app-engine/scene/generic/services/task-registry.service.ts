@@ -79,7 +79,7 @@ export class TaskRegistryService {
           if (overrides.hasOwnProperty(key)) {
             window[key] = overrides[key];
           } else {
-            delete window[key];
+            // delete window[key];
           }
         }
       }

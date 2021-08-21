@@ -26,6 +26,7 @@ import {SimpleGameObject} from './common/simple-game-object';
 import {SimpleGridTile} from './common/simple-grid-tile';
 import {CharacterBase} from './common/character-base';
 import {TaskRegistryService} from './services/task-registry.service';
+import {GenericSceneContextProvider} from './common/generic-scene-context-provider';
 
 
 declare type TileOrDescription = string | GenericGridTile;
@@ -91,6 +92,7 @@ export class GenericBuilderService implements SceneBuilder {
       TileRegistry: this.commonTileRegistryService,
       CharacterSkinRegistry: this.characterSkinRegistryService,
       InGameConsole: this.inGameConsoleService,
+      SceneContextProvider: new GenericSceneContextProvider(this.writer),
 
       // classes
       TaggableBase,
