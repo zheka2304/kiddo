@@ -9,9 +9,8 @@ import {DefaultTags} from '../../entities/default-tags.enum';
 import {ConsoleTerminalGameObject} from '../../common/console-terminal-game-object';
 import {SimpleGameObject} from '../../common/simple-game-object';
 import {ConnectedTextureFormatType} from '../../../../../app/scene/generic-scene/graphics/connected-texture-region';
-import {GameObjectBase} from '../../common/game-object-base';
 import {GenericWriterService} from '../../writers/generic-writer.service';
-import {CharacterActionType} from '../../common/character-base';
+import {CharacterBase} from '../../common/character-base';
 import {GenericSceneContextProvider} from '../../common/generic-scene-context-provider';
 
 // declarations for generic task init function
@@ -24,21 +23,57 @@ declare const DefaultCheckingLogic: { [key: string]: CheckingLogic };
 declare const DefaultCTLogic: { [key: string]: any };
 
 
+class EvilRobot extends CharacterBase {
+  public path = null;
+  public fiftyPath = 0;
+  public counter = 0;
+
+  onPostTick(writer: GenericWriterService): void {
+    super.onPostTick(writer);
+    if (!this.path || this.counter === this.fiftyPath) {
+      this.path = BFS(this.position, SceneContextProvider.getReader().getPlayer().position);
+      if (this.path) {
+        this.path.shift();
+        this.fiftyPath = Math.floor(this.path.length / 2);
+        this.counter = 0;
+      }
+    }
+    if (this.path) {
+      const coord = this.path.shift();
+      if (coord) {
+        const tags = writer.getReader().getAllTagsAt(coord.x, coord.y);
+        if (!tags.has('robot') && !tags.has(DefaultTags.OBSTACLE)) {
+          this.position.x = coord.x;
+          this.position.y = coord.y;
+          this.counter++;
+        } else {
+          this.path.unshift(coord);
+        }
+      }
+    }
+  }
+}
+
+class StationaryConsole extends ConsoleTerminalGameObject {
+  isStationary(): boolean {
+    return true;
+  }
+}
+
 const roomIdByCoords = (x, y) => {
- const ox = Math.floor(x / 10) ;
- const oy = Math.floor(y / 10) ;
- return `${ox}:${oy}`;
+  const ox = Math.floor(x / 10);
+  const oy = Math.floor(y / 10);
+  return `${ox}:${oy}`;
 };
 
 const roomCenterById = (roomId: string) => {
   const coords = roomId.split(':').map(n => parseInt(n, 10));
-  return coords.length === 2 && !isNaN(coords[0]) && !isNaN(coords[1]) ? { x: coords[0] * 10 + 5, y: coords[1] * 10 + 5 } : null;
+  return coords.length === 2 && !isNaN(coords[0]) && !isNaN(coords[1]) ? {x: coords[0] * 10 + 5, y: coords[1] * 10 + 5} : null;
 };
 
 // ------------ BFS ----------------
-const BFS = (target: Coords) => {
+const BFS = (start: Coords, target: Coords) => {
   const reader = SceneContextProvider.getReader();
-  const start = reader.getPlayer().position;
   // reader.getPlayer().addAction(target, CharacterActionType.ITEM);
 
   const queue = [];
@@ -191,14 +226,32 @@ export const SimplexTask11_1 = () => {
     immutableTags: []
   });
 
+
+// ---------  player  -------------
+  const player = new GenericPlayer({x: 3, y: 3}, {
+      skin: 'link',
+      defaultLightSources: [
+        {radius: 3, brightness: 1},
+      ],
+
+      initialRotation: Direction.RIGHT,
+      minVisibleLightLevel: 0.1,
+      interactRange: 1,
+      lookRange: 35
+    }
+  );
+  Builder.setPlayer(player);
+
+  const robot = new EvilRobot({x: 15, y: 15}, Direction.UP, 'link');
+  Builder.addGameObject(robot);
+
   // --------- tile generation -------------
   Builder.setupGameField({width: 101, height: 101}, {
     lightMap: {
       enabled: false,
       ambient: 0.09
     },
-    tilesPerScreen: 7,
-    pixelPerfect: 32
+    tilesPerScreen: 15,
   });
 
   const consoleObject = (ox, oy) => {
@@ -210,7 +263,8 @@ export const SimplexTask11_1 = () => {
         }
       },
       immutableTags: [DefaultTags.ITEM, 'console'],
-      item: {ignoreObstacle: true}
+      item: {ignoreObstacle: true},
+      stationary: true,
     }));
 
     const generateString = () => {
@@ -234,7 +288,7 @@ export const SimplexTask11_1 = () => {
     const password = consoleInputs[randomIndex + 1];
     let passwordCorrect = false;
 
-    Builder.addGameObject(new ConsoleTerminalGameObject({x: 3 + ox, y: 1 + oy}, {
+    Builder.addGameObject(new StationaryConsole({x: 3 + ox, y: 1 + oy}, {
       enableEcho: true,
       disablePreview: true,
 
@@ -262,7 +316,7 @@ export const SimplexTask11_1 = () => {
             };
             const targetPosition = arrayEnergyPositions[indexByTarget[target]];
             if (targetPosition) {
-              const rawPath = BFS(targetPosition);
+              const rawPath = BFS(SceneContextProvider.getReader().getPlayer().position, targetPosition);
               if (rawPath) {
                 consoleInputs = pathToCommands(rawPath);
                 setTimeout(() => model.lines.push(`!{green}ПУТЬ ПОСТРОЕН, ДЛИНА ${rawPath.length}`), 0);
@@ -292,10 +346,12 @@ export const SimplexTask11_1 = () => {
             }
 
             const doorPositions = [
-              { x: roomPos.x, y: roomPos.y - 3 },
-              { x: roomPos.x, y: roomPos.y + 7 },
-              { x: roomPos.x - 5, y: roomPos.y },
-              { x: roomPos.x + 5, y: roomPos.y },
+              {x: roomPos.x, y: roomPos.y - 3},
+              {x: roomPos.x, y: roomPos.y + 7},
+              {x: roomPos.x - 5, y: roomPos.y},
+              {x: roomPos.x + 5, y: roomPos.y},
+              {x: roomPos.x + 5, y: roomPos.y - 1},
+              {x: roomPos.x - 5, y: roomPos.y - 1},
             ];
             const reader = SceneContextProvider.getReader();
             let doorCounter = 0;
@@ -360,15 +416,7 @@ export const SimplexTask11_1 = () => {
     }
   }
 
-  Builder.setTile(5, 2, 'station-door:{"offset":[0, 0]}', true);
-  Builder.setTile(5, 3, 'station-door:{"offset":[0, 1]}', true);
-  Builder.setTile(2, 4, 'station-wall', true);
-  Builder.setTile(3, 4, 'station-wall', true);
-  Builder.setTile(4, 4, 'station-wall', true);
-  Builder.setTile(5, 4, 'station-wall', true);
-  Builder.setTile(6, 4, 'station-wall', true);
-  Builder.setTile(7, 4, 'station-wall', true);
-
+// horizontal passage
   let offsetY = 5;
   while (offsetY < 101) {
     for (let x = 10; x < 101; x += 10) {
@@ -378,25 +426,46 @@ export const SimplexTask11_1 = () => {
             texture: {
               atlas: {src: 'assets:/connected-tile-atlas.png', width: 24, height: 16},
               items: {
-                close: [[16, 2]],
-                open: [[17, 2]],
+                close: [[19, 3]],
+                open: [[20, 3]],
               }
             },
             immutableTags: ['door'],
             initialState: 'open',
+            stationary: true,
           });
           Builder.addGameObject(door);
+          const doorTop = new SimpleGameObject({x, y: offsetY - 1}, {
+            texture: {
+              atlas: {src: 'assets:/connected-tile-atlas.png', width: 24, height: 16},
+              items: {
+                close: [[19, 2]],
+                open: [[20, 2]],
+              }
+            },
+            immutableTags: ['door'],
+            initialState: 'open',
+            stationary: true,
+          });
+          Builder.addGameObject(doorTop);
 
-          Builder.setTile(x, offsetY - 1, 'station-wall');
           Builder.setTile(x - 1, offsetY, 'station-floor');
           Builder.setTile(x, offsetY, 'station-floor');
           Builder.setTile(x + 1, offsetY, 'station-floor');
+
+          Builder.setTile(x, offsetY - 2, 'station-wall');
           Builder.setTile(x, offsetY + 1, 'station-wall');
+
+          Builder.setTile(x + 1, offsetY - 1, 'station-wall-front');
+          Builder.setTile(x - 1, offsetY - 1, 'station-wall-front');
+          Builder.setTile(x, offsetY - 1, 'station-wall-front');
         }
       }
     }
     offsetY += 10;
   }
+
+// vertical passage
   let offsetX = 5;
   while (offsetX < 102) {
     for (let y = 10; y < 102; y += 10) {
@@ -408,11 +477,12 @@ export const SimplexTask11_1 = () => {
               atlas: {src: 'assets:/connected-tile-atlas.png', width: 24, height: 16},
               items: {
                 close: [[16, 2]],
-                open: [[17, 2]],
+                open: [[18, 2]],
               }
             },
             immutableTags: ['door'],
             initialState: 'open',
+            stationary: true
           });
           Builder.addGameObject(new ConsoleTerminalGameObject({x: offsetX, y: y + 2}, {
             enableEcho: true,
@@ -444,8 +514,6 @@ export const SimplexTask11_1 = () => {
       randomPositionX = Math.floor(Math.random() * 10) * 10 + 6;
       randomPositionY = Math.floor(Math.random() * 10) * 10 + 2;
       regenerate = false;
-      // for (let j = 0; j < arrayEnergyPositions.length; j++) {
-      //    const last = arrayEnergyPositions[j];
       for (const last of arrayEnergyPositions) {
         if (last.x === randomPositionX && last.y === randomPositionY ||
           !Builder.getTileTagsAt(randomPositionX, randomPositionY).has('-station-wall-front')) {
@@ -454,7 +522,7 @@ export const SimplexTask11_1 = () => {
         }
       }
     }
-    arrayEnergyPositions.push({ x: randomPositionX, y: randomPositionY });
+    arrayEnergyPositions.push({x: randomPositionX, y: randomPositionY});
 
     arrayEnergy.push(new SimpleGameObject({x: randomPositionX, y: randomPositionY}, {
       texture: {
@@ -463,30 +531,14 @@ export const SimplexTask11_1 = () => {
           [DefaultTileStates.MAIN]: [[17, 3]],
         }
       },
-      mutableTags: [DefaultTags.OBSTACLE]
+      mutableTags: [DefaultTags.OBSTACLE],
+      stationary: true,
     }));
   }
+
   for (let j = 0; j < arrayEnergy.length; j++) {
     Builder.addGameObject(arrayEnergy[j]);
-    console.log('start');
-    console.log(arrayEnergy[j].position.x, arrayEnergy[j].position.y);
   }
-
-
-// ---------  player  -------------
-  const player = new GenericPlayer({x: 3, y: 3}, {
-      skin: 'link',
-      defaultLightSources: [
-        {radius: 3, brightness: 1},
-      ],
-
-      initialRotation: Direction.RIGHT,
-      minVisibleLightLevel: 0.1,
-      interactRange: 1,
-      lookRange: 15
-    }
-  );
-  Builder.setPlayer(player);
 
   // ---------- logic ---------------
 
