@@ -1,6 +1,6 @@
 import {GenericBuilderService} from '../../generic-builder.service';
 import {CommonTileRegistryService} from '../../services/common-tile-registry.service';
-import {CharacterSkinRegistryService} from '../../services/character-skin-registry.service';
+import {CharacterSkin, CharacterSkinRegistryService} from '../../services/character-skin-registry.service';
 import {InGameConsoleService} from '../../services/in-game-console.service';
 import {CheckingLogic, Coords, Direction} from '../../../common/entities';
 import {GenericPlayer} from '../../common/player';
@@ -12,6 +12,8 @@ import {ConnectedTextureFormatType} from '../../../../../app/scene/generic-scene
 import {GenericWriterService} from '../../writers/generic-writer.service';
 import {CharacterBase} from '../../common/character-base';
 import {GenericSceneContextProvider} from '../../common/generic-scene-context-provider';
+import {GenericGameObject} from '../../entities/generic-game-object';
+import {GenericReaderService} from '../../readers/generic-reader.service';
 
 // declarations for generic task init function
 declare const Builder: GenericBuilderService;
@@ -27,8 +29,20 @@ class EvilRobot extends CharacterBase {
   public path = null;
   public fiftyPath = 0;
   public counter = 0;
+  public idleTicks = 20;
+  constructor(
+    position: Coords
+  ) {
+    super(position,  Direction.UP, 'link');
+    this.addImmutableTag('robot');
+    this.addImmutableTag('deadly');
+  }
 
   onPostTick(writer: GenericWriterService): void {
+    if (this.idleTicks > 0) {
+      this.idleTicks --;
+      return;
+    }
     super.onPostTick(writer);
     if (!this.path || this.counter === this.fiftyPath) {
       this.path = BFS(this.position, SceneContextProvider.getReader().getPlayer().position);
@@ -53,6 +67,52 @@ class EvilRobot extends CharacterBase {
     }
   }
 }
+
+class EnergyAccess extends SimpleGameObject {
+  constructor(
+    position: Coords
+  ) {
+    super(position, {
+      texture: {
+        atlas: {src: 'assets:/connected-tile-atlas.png', width: 24, height: 16},
+        items: {
+          main: [[17, 3]],
+          broken: [[18, 3]],
+        }
+      },
+      initialState: 'main',
+      mutableTags: [DefaultTags.OBSTACLE],
+      stationary: true,
+    });
+  }
+
+  onInteract(writer: GenericWriterService, interactingObject: GenericGameObject): boolean {
+    if (this.state === 'broken') return false;
+    this.state = 'broken';
+    const arrayRobots = [];
+
+    for (let i = 0; i < 5; i++) {
+      let regenerate = true;
+      while (regenerate) {
+        const randomPositionX = Math.floor(Math.random() * 60 + 40);
+        const randomPositionY = Math.floor(Math.random() * 60 + 40);
+        if (writer.getReader().getAllTagsAt(randomPositionX, randomPositionY).has('-station-floor')) {
+          arrayRobots.push(
+            new EvilRobot({x: randomPositionX, y: randomPositionY})
+          );
+          regenerate = false;
+        }
+      }
+    }
+
+    for (const robot of arrayRobots) {
+      writer.addGameObject(robot);
+    }
+    return true;
+  }
+
+}
+
 
 class StationaryConsole extends ConsoleTerminalGameObject {
   isStationary(): boolean {
@@ -242,8 +302,8 @@ export const SimplexTask11_1 = () => {
   );
   Builder.setPlayer(player);
 
-  const robot = new EvilRobot({x: 15, y: 15}, Direction.UP, 'link');
-  Builder.addGameObject(robot);
+  const robot = new EvilRobot({x: 15, y: 15});
+ // Builder.addGameObject(robot);
 
   // --------- tile generation -------------
   Builder.setupGameField({width: 101, height: 101}, {
@@ -251,7 +311,7 @@ export const SimplexTask11_1 = () => {
       enabled: false,
       ambient: 0.09
     },
-    tilesPerScreen: 15,
+    tilesPerScreen: 50,
   });
 
   const consoleObject = (ox, oy) => {
@@ -347,11 +407,11 @@ export const SimplexTask11_1 = () => {
 
             const doorPositions = [
               {x: roomPos.x, y: roomPos.y - 3},
-              {x: roomPos.x, y: roomPos.y + 7},
-              {x: roomPos.x - 5, y: roomPos.y},
-              {x: roomPos.x + 5, y: roomPos.y},
-              {x: roomPos.x + 5, y: roomPos.y - 1},
-              {x: roomPos.x - 5, y: roomPos.y - 1},
+              {x: roomPos.x, y: roomPos.y + 4},
+              {x: roomPos.x - 4, y: roomPos.y},
+              {x: roomPos.x + 4, y: roomPos.y},
+              {x: roomPos.x + 4, y: roomPos.y - 1},
+              {x: roomPos.x - 4, y: roomPos.y - 1},
             ];
             const reader = SceneContextProvider.getReader();
             let doorCounter = 0;
@@ -371,6 +431,29 @@ export const SimplexTask11_1 = () => {
             }
 
             setTimeout(() => model.lines.push(`!{yellow} ЗАДЕЙСТВОВАНО ${doorCounter} ДВЕРЕЙ`), 0);
+          } else if (command[0] === 'поиск') {
+            if (command[1] === 'робот') {
+              consoleInputs = SceneContextProvider.getSceneModel().gameObjects
+                .filter(o => o.getTags().has('robot'))
+                .map(r => roomIdByCoords(r.position.x, r.position.y));
+            } else {
+              // noinspection NonAsciiCharacters
+              const posByTarget = {
+                энергия1: arrayEnergyPositions[0],
+                энергия2: arrayEnergyPositions[1],
+                энергия3: arrayEnergyPositions[2],
+                энергия4: arrayEnergyPositions[3],
+              };
+              const targetPosition = posByTarget[command[1]];
+              if (targetPosition) {
+                consoleInputs = [ roomIdByCoords(targetPosition.x, targetPosition.y) ];
+                return true;
+              } else {
+                setTimeout(() => model.lines.push('!{red}НЕПРАВИЛЬНАЯ ЦЕЛЬ: ' + command[1]), 0);
+                consoleInputs = [];
+                return false;
+              }
+            }
           }
         }
         return true;
@@ -422,32 +505,36 @@ export const SimplexTask11_1 = () => {
     for (let x = 10; x < 101; x += 10) {
       if (Math.random() < 1) {
         if (Builder.getTileTagsAt(x + 2, offsetY).has('-station-floor') && Builder.getTileTagsAt(x - 2, offsetY).has('-station-floor')) {
-          const door = new SimpleGameObject({x, y: offsetY}, {
-            texture: {
-              atlas: {src: 'assets:/connected-tile-atlas.png', width: 24, height: 16},
-              items: {
-                close: [[19, 3]],
-                open: [[20, 3]],
-              }
-            },
-            immutableTags: ['door'],
-            initialState: 'open',
-            stationary: true,
-          });
-          Builder.addGameObject(door);
-          const doorTop = new SimpleGameObject({x, y: offsetY - 1}, {
-            texture: {
-              atlas: {src: 'assets:/connected-tile-atlas.png', width: 24, height: 16},
-              items: {
-                close: [[19, 2]],
-                open: [[20, 2]],
-              }
-            },
-            immutableTags: ['door'],
-            initialState: 'open',
-            stationary: true,
-          });
-          Builder.addGameObject(doorTop);
+          for (let i = 0; i < 2; i++) {
+            const door = new SimpleGameObject({x: x + i * 2 - 1, y: offsetY}, {
+              texture: {
+                atlas: {src: 'assets:/connected-tile-atlas.png', width: 24, height: 16},
+                items: {
+                  close: [[19, 3]],
+                  open: [[20, 3]],
+                }
+              },
+              immutableTags: ['door'],
+              initialState: 'open',
+              stationary: true,
+            });
+            Builder.addGameObject(door);
+          }
+          for (let j = 0; j < 2; j++) {
+            const doorTop = new SimpleGameObject({x: x + j * 2 - 1, y: offsetY - 1}, {
+              texture: {
+                atlas: {src: 'assets:/connected-tile-atlas.png', width: 24, height: 16},
+                items: {
+                  close: [[19, 2]],
+                  open: [[20, 2]],
+                }
+              },
+              immutableTags: ['door'],
+              initialState: 'open',
+              stationary: true,
+            });
+            Builder.addGameObject(doorTop);
+          }
 
           Builder.setTile(x - 1, offsetY, 'station-floor');
           Builder.setTile(x, offsetY, 'station-floor');
@@ -472,23 +559,25 @@ export const SimplexTask11_1 = () => {
       if (Math.random() < 1) {
         if (Builder.getTileTagsAt(offsetX, y + 3).has('-station-floor') &&
           Builder.getTileTagsAt(offsetX, y - 3).has('-station-floor')) {
-          const door = new SimpleGameObject({x: offsetX, y: y + 2}, {
-            texture: {
-              atlas: {src: 'assets:/connected-tile-atlas.png', width: 24, height: 16},
-              items: {
-                close: [[16, 2]],
-                open: [[18, 2]],
-              }
-            },
-            immutableTags: ['door'],
-            initialState: 'open',
-            stationary: true
-          });
+          for (let i = 0; i < 2; i++) {
+            const door = new SimpleGameObject({x: offsetX, y: y + i * 3 - 1}, {
+              texture: {
+                atlas: {src: 'assets:/connected-tile-atlas.png', width: 24, height: 16},
+                items: {
+                  close: [[16, 2]],
+                  open: [[18, 2]],
+                }
+              },
+              immutableTags: ['door'],
+              initialState: 'open',
+              stationary: true
+            });
+            Builder.addGameObject(door);
+          }
           Builder.addGameObject(new ConsoleTerminalGameObject({x: offsetX, y: y + 2}, {
             enableEcho: true,
           }));
 
-          Builder.addGameObject(door);
           Builder.setTile(offsetX - 1, y, 'station-wall');
           Builder.setTile(offsetX, y - 1, 'station-floor');
           Builder.setTile(offsetX, y, 'station-floor');
@@ -511,7 +600,7 @@ export const SimplexTask11_1 = () => {
     let randomPositionY = 0;
     let regenerate = true;
     while (regenerate) {
-      randomPositionX = Math.floor(Math.random() * 10) * 10 + 6;
+      randomPositionX = (Math.floor(Math.random() * 10) * 10 + 6) + 1;
       randomPositionY = Math.floor(Math.random() * 10) * 10 + 2;
       regenerate = false;
       for (const last of arrayEnergyPositions) {
@@ -524,16 +613,7 @@ export const SimplexTask11_1 = () => {
     }
     arrayEnergyPositions.push({x: randomPositionX, y: randomPositionY});
 
-    arrayEnergy.push(new SimpleGameObject({x: randomPositionX, y: randomPositionY}, {
-      texture: {
-        atlas: {src: 'assets:/connected-tile-atlas.png', width: 24, height: 16},
-        items: {
-          [DefaultTileStates.MAIN]: [[17, 3]],
-        }
-      },
-      mutableTags: [DefaultTags.OBSTACLE],
-      stationary: true,
-    }));
+    arrayEnergy.push(new EnergyAccess({x: randomPositionX, y: randomPositionY}));
   }
 
   for (let j = 0; j < arrayEnergy.length; j++) {
@@ -541,6 +621,15 @@ export const SimplexTask11_1 = () => {
   }
 
   // ---------- logic ---------------
+
+  Builder.addCheckingLogic((reader: GenericReaderService) => {
+    for (const energy of arrayEnergy) {
+      if (energy.state !== 'broken') {
+       return 'NOT_ALL_OBJECTIVES_REACHED';
+      }
+    }
+    return null;
+  });
 
 };
 
