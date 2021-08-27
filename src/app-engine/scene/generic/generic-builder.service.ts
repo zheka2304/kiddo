@@ -161,6 +161,7 @@ export class GenericBuilderService implements SceneBuilder {
       }
     });
     initializerFunc();
+    console.log('generic scene built, scene model: ', this.sceneModel);
 
     this.validateSceneModel();
     return {

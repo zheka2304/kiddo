@@ -48,7 +48,7 @@ export class InGameConsoleWindow extends InGameWindowBase {
     renderParams: { width: number; height: number; interpolation: number }
   ): void {
     const windowParams: InGameConsoleWindowParams = {
-      bgColor: '#1e1e1e',
+      bgColor: '#1e1e1edd',
       fgColor: 'white',
       errColor: 'red',
       borderWidth: 20,

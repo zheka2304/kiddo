@@ -112,7 +112,7 @@ export const SimplexTask8_1 = () => {
 
   // ---------  player  -------------
   const player = new GenericPlayer({x: 4, y: 5}, {
-      skin: 'link',
+      skin: 'alexey',
 
       minVisibleLightLevel: 0.1,
       interactRange: 1,

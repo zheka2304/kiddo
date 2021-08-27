@@ -103,7 +103,7 @@ export const SimplexTask2_1 = () => {
 
   // ---------  player  -------------
   Builder.setPlayer(new GenericPlayer({x: 3, y: 3}, {
-      skin: 'link',
+      skin: 'kadabra',
 
       minVisibleLightLevel: 0.1,
       interactRange: 1,
@@ -120,7 +120,7 @@ export const SimplexTask2_1 = () => {
         [DefaultTileStates.MAIN]: [[8, 8]],
       }
     },
-    lightSources: [{brightness: 2, radius: 2, color: [0.2, 0.2, 1]}],
+    lightSources: [{brightness: 2, radius: 3, color: [0.15, 0.15, 1]}],
     mutableTags: [DefaultTags.OBSTACLE]
   });
   Builder.addGameObject(monitor);

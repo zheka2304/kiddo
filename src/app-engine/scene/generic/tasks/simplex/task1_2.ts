@@ -182,7 +182,7 @@ export const SimplexTask1_2 = () => {
 
   for (const lightX of [2, 4, 6]) {
     for (const lightY of [2, 6]) {
-      addLightSource(lightX, lightY, { brightness: 0.75, radius: 3 });
+      addLightSource(lightX, lightY, { brightness: 0.75, radius: 4 });
     }
   }
 

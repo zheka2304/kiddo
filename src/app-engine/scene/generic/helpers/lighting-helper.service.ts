@@ -67,7 +67,7 @@ export class LightingHelperService {
           const cell = reader.getCellAt(x + position.x, y + position.y);
           if (cell) {
             const src = cell.light.level;
-            const dst = (1 - Math.sqrt(d2) / radius) * brightness;
+            const dst = Math.pow(1 - Math.sqrt(d2) / radius, 2) * brightness;
             const f = src / (src + dst);
             cell.light.level = src + dst;
             const c = cell.light.color;

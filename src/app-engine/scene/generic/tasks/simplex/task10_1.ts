@@ -23,11 +23,44 @@ declare const DefaultCTLogic: { [key: string]: any };
 export const SimplexTask10_1 = () => {
   // --------- registration -------------
 
+  TileRegistry.addBasicTile('station-wall', {
+    texture: {
+      atlas: {src: 'assets:/connected-tile-atlas.png', width: 24, height: 16},
+      items: {
+        [DefaultTileStates.MAIN]: {ctType: ConnectedTextureFormatType.DEFAULT, offset: [[6, 2]]}
+      }
+    },
+    ctCheckConnected: DefaultCTLogic.ANY_TAGS(['-station-wall']),
+    immutableTags: [DefaultTags.OBSTACLE, '-station-wall']
+  });
+
+  TileRegistry.addBasicTile('station-wall-front', {
+    texture: {
+      atlas: {src: 'assets:/connected-tile-atlas.png', width: 24, height: 16},
+      items: {
+        [DefaultTileStates.MAIN]: {ctType: ConnectedTextureFormatType.DEFAULT, offset: [[14, 2]]}
+      }
+    },
+    ctCheckConnected: DefaultCTLogic.ANY_TAGS(['-station-wall-front']),
+    immutableTags: [DefaultTags.OBSTACLE, '-station-wall-front']
+  });
+
   TileRegistry.addBasicTile('moon-tile', {
     texture: {
       atlas: {src: 'assets:/connected-tile-atlas.png', width: 24, height: 16},
       items: {
-        [DefaultTileStates.MAIN]: {ctType: ConnectedTextureFormatType.DEFAULT, offset: [[0, 4]]}
+        [DefaultTileStates.MAIN]: {ctType: ConnectedTextureFormatType.FULL_ONLY, offset: [[6, 0]]}
+      }
+    },
+    ctCheckConnected: DefaultCTLogic.ANY_TAGS(['-moon-tile-connect']),
+    immutableTags: ['-moon-tile-connect']
+  });
+
+  TileRegistry.addBasicTile('moon-tile-decoration', {
+    texture: {
+      atlas: {src: 'assets:/connected-tile-atlas.png', width: 24, height: 16},
+      items: {
+        [DefaultTileStates.MAIN]: {ctType: ConnectedTextureFormatType.FULL_ONLY2, offset: [[8, 0]]}
       }
     },
     ctCheckConnected: DefaultCTLogic.ANY_TAGS(['-moon-tile-connect']),
@@ -48,20 +81,21 @@ export const SimplexTask10_1 = () => {
   // --------- tile generation -------------
   Builder.setupGameField({width: 11, height: 11}, {
     lightMap: {
-      enabled: false,
-      ambient: 0.09
+      enabled: true,
+      ambient: 0.3
     },
-    tilesPerScreen: 11
+    tilesPerScreen: 11,
+    pixelPerfect: 32
   });
 
   for (let x = 0; x < 11; x++) {
     for (let y = 0; y < 11; y++) {
-      Builder.setTile(x, y, 'moon-tile');
-      if (y === 0 || y === 10) {
-        Builder.setTile(x, y, 'wall');
+      Builder.setTile(x, y, 'moon-tile;moon-tile-decoration');
+      if (y === 0) {
+        Builder.setTile(x, y, 'station-wall');
       }
-      if (x === 0 || x === 10) {
-        Builder.setTile(x, y, 'wall');
+      if (y === 1) {
+        Builder.setTile(x, y, 'station-wall-front');
       }
     }
   }
@@ -138,10 +172,10 @@ export const SimplexTask10_1 = () => {
     texture: {
       atlas: {src: 'assets:/connected-tile-atlas.png', width: 24, height: 16},
       items: {
-        [DefaultTileStates.MAIN]: [[8, 8]],
+        [DefaultTileStates.MAIN]: [[16, 3]],
       }
     },
-    lightSources: [{brightness: 2, radius: 2, color: [0.2, 0.2, 1]}],
+    lightSources: [{brightness: 1, radius: 4, color: [0.2, 0.2, 1]}],
     mutableTags: [DefaultTags.OBSTACLE]
   });
   Builder.addGameObject(monitor);
@@ -153,14 +187,14 @@ export const SimplexTask10_1 = () => {
   for (let i = 0; i < 5; i++) {
     arrayRobots.push(new SimpleGameObject({x: 1 + p, y: 6}, {
       texture: {
-        atlas: {src: 'assets:/connected-tile-atlas.png', width: 24, height: 16},
+        atlas: {src: 'assets:/character-atlas-robot.png', width: 6, height: 6},
         items: {
-          on: [[11, 9]],
-          off: [[10, 9]],
+          on: [[0, 2]],
+          off: [[0, 0]],
         }
       },
       initialState: 'on',
-      lightSources: [{brightness: 2, radius: 2, color: [0.2, 0.2, 1]}],
+      lightSources: [{brightness: 0.5, radius: 2, color: [1, 0.5, 0.5]}],
       mutableTags: [DefaultTags.OBSTACLE]
     }));
 
@@ -195,9 +229,9 @@ export const SimplexTask10_1 = () => {
 
   // ---------  player  -------------
   const player = new GenericPlayer({x: 1, y: 5}, {
-      skin: 'link',
+      skin: 'kadabra',
       defaultLightSources: [
-        {radius: 3, brightness: 1},
+        {radius: 4, brightness: 0.7},
       ],
 
       initialRotation: Direction.RIGHT,

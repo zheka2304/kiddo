@@ -26,42 +26,66 @@ declare const DefaultCTLogic: { [key: string]: any };
 
 
 class EvilRobot extends CharacterBase {
-  public path = null;
+  public path: { x: number, y: number, dir: string }[] = null;
   public fiftyPath = 0;
   public counter = 0;
-  public idleTicks = 20;
+  public idleTicks = 0;
   constructor(
     position: Coords
   ) {
-    super(position,  Direction.UP, 'link');
+    super(position,  Direction.UP, 'robot');
     this.addImmutableTag('robot');
     this.addImmutableTag('deadly');
   }
 
   onPostTick(writer: GenericWriterService): void {
+    super.onPostTick(writer);
+
     if (this.idleTicks > 0) {
-      this.idleTicks --;
+      this.idleTicks--;
       return;
     }
-    super.onPostTick(writer);
-    if (!this.path || this.counter === this.fiftyPath) {
-      this.path = BFS(this.position, SceneContextProvider.getReader().getPlayer().position);
+
+    if (
+      !this.path || this.counter === this.fiftyPath ||
+      writer.getReader().getTileTagsAt(this.position.x, this.position.y).has('-passage-robot-flag')
+    ) {
+      const { path, reached } = BFS(this.position, SceneContextProvider.getReader().getPlayer().position);
+      this.path = path;
       if (this.path) {
+        if (!reached) {
+          const reader = writer.getReader();
+          let endIndex = this.path.length - 1;
+          for (; endIndex >= 0; endIndex--) {
+            const pos = this.path[endIndex];
+            if (!reader.getTileTagsAt(pos.x, pos.y).has('-passage-robot-flag')) {
+              endIndex++;
+              break;
+            }
+          }
+          this.path = this.path.slice(0, endIndex + 1);
+        }
         this.path.shift();
         this.fiftyPath = Math.floor(this.path.length / 2);
         this.counter = 0;
       }
     }
     if (this.path) {
-      const coord = this.path.shift();
-      if (coord) {
-        const tags = writer.getReader().getAllTagsAt(coord.x, coord.y);
-        if (!tags.has('robot') && !tags.has(DefaultTags.OBSTACLE)) {
-          this.position.x = coord.x;
-          this.position.y = coord.y;
-          this.counter++;
+      const pos = this.path.shift();
+      if (pos) {
+        const tags = writer.getReader().getAllTagsAt(pos.x, pos.y);
+        if (tags.has('robot')) {
+          this.path.unshift(pos);
+        } else if (tags.has(DefaultTags.OBSTACLE)) {
+          if (tags.has(DefaultTags.OBSTACLE)) {
+            this.path = null;
+            this.idleTicks = 5;
+          }
         } else {
-          this.path.unshift(coord);
+          this.position.x = pos.x;
+          this.position.y = pos.y;
+          this.direction = pos.dir.toUpperCase() as Direction;
+          this.counter++;
         }
       }
     }
@@ -91,12 +115,14 @@ class EnergyAccess extends SimpleGameObject {
     this.state = 'broken';
     const arrayRobots = [];
 
-    for (let i = 0; i < 5; i++) {
+    const playerPos = writer.getReader().getPlayer().position;
+    for (let i = 0; i < 2; i++) {
       let regenerate = true;
       while (regenerate) {
-        const randomPositionX = Math.floor(Math.random() * 60 + 40);
-        const randomPositionY = Math.floor(Math.random() * 60 + 40);
-        if (writer.getReader().getAllTagsAt(randomPositionX, randomPositionY).has('-station-floor')) {
+        const randomPositionX = Math.floor(Math.random() * 10 + 20) * (Math.random() > .5 ? 1 : -1) + playerPos.x;
+        const randomPositionY = Math.floor(Math.random() * 10 + 20) * (Math.random() > .5 ? 1 : -1) + playerPos.y;
+        const tags = writer.getReader().getAllTagsAt(randomPositionX, randomPositionY);
+        if (tags.has('-station-floor') && !tags.has('-passage-robot-flag')) {
           arrayRobots.push(
             new EvilRobot({x: randomPositionX, y: randomPositionY})
           );
@@ -163,7 +189,32 @@ const BFS = (start: Coords, target: Coords) => {
       }
     }
   }
-  return visited[`${target.x}: ${target.y}`];
+
+  const targetPath = visited[`${target.x}: ${target.y}`];
+  if (targetPath) {
+    return { path: targetPath, reached: true };
+  } else {
+    const pathLen = path => {
+      const { x, y } = path[path.length - 1];
+      const dx = x - target.x;
+      const dy = y - target.y;
+      return Math.sqrt(dx * dx + dy * dy) * 4 + path.length;
+    };
+
+    let shortestLen = Infinity;
+    return {
+      path: Object.values(visited).reduce((shortest, current) => {
+        const len = pathLen(current);
+        if (len < shortestLen) {
+          shortestLen = len;
+          return current;
+        } else {
+          return shortest;
+        }
+      }, null),
+      reached: false
+    };
+  }
 };
 
 const pathToCommands = (targetPath) => {
@@ -178,34 +229,34 @@ const pathToCommands = (targetPath) => {
       continue;
     }
     if (counterStep > 0) {
-      newTurn.push('move');
+      newTurn.push('вперед');
       newTurn.push(counterStep);
       counterStep = 1;
     }
     if (lastStep === 'left' && dir === 'down') {
-      newTurn.push('left');
+      newTurn.push('влево');
     } else if (lastStep === 'left' && dir === 'up') {
-      newTurn.push('right');
+      newTurn.push('вправо');
     } else if (lastStep === 'right' && dir === 'down') {
-      newTurn.push('right');
+      newTurn.push('вправо');
     } else if (lastStep === 'right' && dir === 'up') {
-      newTurn.push('left');
+      newTurn.push('влево');
     } else if (lastStep === 'down' && dir === 'right') {
-      newTurn.push('left');
+      newTurn.push('влево');
     } else if (lastStep === 'down' && dir === 'left') {
-      newTurn.push('right');
+      newTurn.push('вправо');
     } else if (lastStep === 'up' && dir === 'right') {
-      newTurn.push('right');
+      newTurn.push('вправо');
     } else if (lastStep === 'up' && dir === 'left') {
-      newTurn.push('left');
+      newTurn.push('влево');
     } else if (lastStep === 'up' && dir === 'down') {
-      newTurn.push('right');
-      newTurn.push('right');
+      newTurn.push('вправо');
+      newTurn.push('вправо');
     }
     lastStep = dir;
   }
   if (counterStep > 0) {
-    newTurn.push('move');
+    newTurn.push('вперед');
     newTurn.push(counterStep);
     counterStep = 1;
   }
@@ -214,6 +265,30 @@ const pathToCommands = (targetPath) => {
 
 // tslint:disable-next-line
 export const SimplexTask11_1 = () => {
+  CharacterSkinRegistry.addCharacterSkin('robot', {
+    idleTexture: {
+      atlas: {src: 'assets:/character-atlas-robot.png', width: 6, height: 6},
+      items: {
+        [Direction.DOWN]: [[0, 2]],
+        [Direction.UP]: [[0, 4]],
+        [Direction.LEFT]: [[0, 3]],
+        [Direction.RIGHT]: [[0, 5]],
+        dead: [[0, 1]],
+      }
+    },
+    walkingTexture: {
+      atlas: {src: 'assets:/character-atlas-robot.png', width: 6, height: 6},
+      items: {
+        [Direction.DOWN]: [[0, 5, 2, 2]],
+        [Direction.UP]: [[0, 5, 4, 4]],
+        [Direction.LEFT]: [[0, 5, 3, 3]],
+        [Direction.RIGHT]: [[0, 5, 5, 5]],
+        dead: [[0, 1]],
+      },
+      fps: 12
+    }
+  });
+
   // --------- registration -------------
 
   TileRegistry.addBasicTile('station-floor', {
@@ -225,6 +300,17 @@ export const SimplexTask11_1 = () => {
     },
     ctCheckConnected: DefaultCTLogic.ANY_TAGS(['-station-floor']),
     immutableTags: ['-station-floor']
+  });
+
+
+  TileRegistry.addBasicTile('passage-robot-flag', {
+    /* texture: {
+      atlas: {src: 'assets:/character-action-atlas.png', width: 4, height: 4},
+      items: {
+        [DefaultTileStates.MAIN]: [[0, 0]]
+      }
+    }, */
+    immutableTags: ['-passage-robot-flag']
   });
 
   TileRegistry.addBasicTile('station-wall', {
@@ -289,7 +375,7 @@ export const SimplexTask11_1 = () => {
 
 // ---------  player  -------------
   const player = new GenericPlayer({x: 3, y: 3}, {
-      skin: 'link',
+      skin: 'kadabra',
       defaultLightSources: [
         {radius: 3, brightness: 1},
       ],
@@ -302,16 +388,14 @@ export const SimplexTask11_1 = () => {
   );
   Builder.setPlayer(player);
 
-  const robot = new EvilRobot({x: 15, y: 15});
- // Builder.addGameObject(robot);
-
   // --------- tile generation -------------
-  Builder.setupGameField({width: 101, height: 101}, {
+  Builder.setupGameField({width: 71, height: 71}, {
     lightMap: {
       enabled: false,
       ambient: 0.09
     },
     tilesPerScreen: 50,
+    pixelPerfect: 32
   });
 
   const consoleObject = (ox, oy) => {
@@ -376,10 +460,10 @@ export const SimplexTask11_1 = () => {
             };
             const targetPosition = arrayEnergyPositions[indexByTarget[target]];
             if (targetPosition) {
-              const rawPath = BFS(SceneContextProvider.getReader().getPlayer().position, targetPosition);
-              if (rawPath) {
-                consoleInputs = pathToCommands(rawPath);
-                setTimeout(() => model.lines.push(`!{green}ПУТЬ ПОСТРОЕН, ДЛИНА ${rawPath.length}`), 0);
+              const { path, reached } = BFS(SceneContextProvider.getReader().getPlayer().position, targetPosition);
+              if (path && reached) {
+                consoleInputs = pathToCommands(path);
+                setTimeout(() => model.lines.push(`!{green}ПУТЬ ПОСТРОЕН, ДЛИНА ${path.length}`), 0);
               } else {
                 consoleInputs = [];
                 setTimeout(() => model.lines.push('!{yellow}ПУТЬ НЕ НАЙДЕН'), 0);
@@ -406,12 +490,12 @@ export const SimplexTask11_1 = () => {
             }
 
             const doorPositions = [
-              {x: roomPos.x, y: roomPos.y - 3},
-              {x: roomPos.x, y: roomPos.y + 4},
-              {x: roomPos.x - 4, y: roomPos.y},
-              {x: roomPos.x + 4, y: roomPos.y},
-              {x: roomPos.x + 4, y: roomPos.y - 1},
-              {x: roomPos.x - 4, y: roomPos.y - 1},
+              {x: roomPos.x, y: roomPos.y - 3, count: true},
+              {x: roomPos.x, y: roomPos.y + 4, count: true},
+              {x: roomPos.x - 4, y: roomPos.y, count: true},
+              {x: roomPos.x + 4, y: roomPos.y, count: true},
+              {x: roomPos.x + 4, y: roomPos.y - 1, count: false},
+              {x: roomPos.x - 4, y: roomPos.y - 1, count: false},
             ];
             const reader = SceneContextProvider.getReader();
             let doorCounter = 0;
@@ -425,7 +509,7 @@ export const SimplexTask11_1 = () => {
                     (gameObject as SimpleGameObject).state = 'close';
                     gameObject.addTag(DefaultTags.OBSTACLE);
                   }
-                  doorCounter++;
+                  if (doorPosition.count) doorCounter++;
                 }
               }
             }
@@ -436,6 +520,9 @@ export const SimplexTask11_1 = () => {
               consoleInputs = SceneContextProvider.getSceneModel().gameObjects
                 .filter(o => o.getTags().has('robot'))
                 .map(r => roomIdByCoords(r.position.x, r.position.y));
+            } else if (command[1] === 'игрок') {
+              const playerPos = SceneContextProvider.getReader().getPlayer().position;
+              consoleInputs = [ roomIdByCoords(playerPos.x, playerPos.y) ];
             } else {
               // noinspection NonAsciiCharacters
               const posByTarget = {
@@ -475,23 +562,22 @@ export const SimplexTask11_1 = () => {
         if (x === 0 || x === 8) {
           Builder.setTile(x + ox, y + oy, 'station-wall');
         }
-
-        consoleObject(ox, oy);
       }
     }
+    consoleObject(ox, oy);
   };
 
   {
-    for (let w = 0; w < 101; w++) {
-      for (let h = 0; h < 101; h++) {
+    for (let w = 0; w < 71; w++) {
+      for (let h = 0; h < 71; h++) {
         Builder.setTile(w, h, 'moon-stone', true);
       }
     }
   }
 
   {
-    for (let i = 0; i < 101; i += 10) {
-      for (let j = 0; j < 101; j += 10) {
+    for (let i = 0; i < 71; i += 10) {
+      for (let j = 0; j < 71; j += 10) {
         if (Math.random() < 1 || i === 0 && j === 0) {
           generateRoom(i + 1, j + 1);
         }
@@ -501,8 +587,8 @@ export const SimplexTask11_1 = () => {
 
 // horizontal passage
   let offsetY = 5;
-  while (offsetY < 101) {
-    for (let x = 10; x < 101; x += 10) {
+  while (offsetY < 71) {
+    for (let x = 10; x < 71; x += 10) {
       if (Math.random() < 1) {
         if (Builder.getTileTagsAt(x + 2, offsetY).has('-station-floor') && Builder.getTileTagsAt(x - 2, offsetY).has('-station-floor')) {
           for (let i = 0; i < 2; i++) {
@@ -546,6 +632,10 @@ export const SimplexTask11_1 = () => {
           Builder.setTile(x + 1, offsetY - 1, 'station-wall-front');
           Builder.setTile(x - 1, offsetY - 1, 'station-wall-front');
           Builder.setTile(x, offsetY - 1, 'station-wall-front');
+
+          for (let k = -2; k <= 2; k++) {
+            Builder.setTile(x + k, offsetY, 'passage-robot-flag', true);
+          }
         }
       }
     }
@@ -554,8 +644,8 @@ export const SimplexTask11_1 = () => {
 
 // vertical passage
   let offsetX = 5;
-  while (offsetX < 102) {
-    for (let y = 10; y < 102; y += 10) {
+  while (offsetX < 72) {
+    for (let y = 10; y < 72; y += 10) {
       if (Math.random() < 1) {
         if (Builder.getTileTagsAt(offsetX, y + 3).has('-station-floor') &&
           Builder.getTileTagsAt(offsetX, y - 3).has('-station-floor')) {
@@ -584,6 +674,10 @@ export const SimplexTask11_1 = () => {
           Builder.setTile(offsetX, y + 1, 'station-floor');
           Builder.setTile(offsetX, y + 2, ['station-floor']);
           Builder.setTile(offsetX + 1, y, 'station-wall');
+
+          for (let k = -2; k <= 3; k++) {
+            Builder.setTile(offsetX, y + k, 'passage-robot-flag', true);
+          }
         }
       }
     }
@@ -600,8 +694,8 @@ export const SimplexTask11_1 = () => {
     let randomPositionY = 0;
     let regenerate = true;
     while (regenerate) {
-      randomPositionX = (Math.floor(Math.random() * 10) * 10 + 6) + 1;
-      randomPositionY = Math.floor(Math.random() * 10) * 10 + 2;
+      randomPositionX = (Math.floor(Math.random() * 7) * 10 + 6) + 1;
+      randomPositionY = Math.floor(Math.random() * 7) * 10 + 2;
       regenerate = false;
       for (const last of arrayEnergyPositions) {
         if (last.x === randomPositionX && last.y === randomPositionY ||

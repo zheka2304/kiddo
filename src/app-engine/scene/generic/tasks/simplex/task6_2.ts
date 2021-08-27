@@ -160,7 +160,7 @@ export const SimplexTask6_2 = () => {
 
   // ---------  player  -------------
   const player = new GenericPlayer({x: 3, y: 4}, {
-      skin: 'link',
+      skin: 'parrot',
       defaultLightSources: [
         {radius: 3, brightness: 1},
       ],

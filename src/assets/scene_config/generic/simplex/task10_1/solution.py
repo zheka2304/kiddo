@@ -52,7 +52,7 @@ for i in range(5):
 player.left()
 player.move(3)
 player.left()
-player.move(4)
+player.move(5)
 player.right()
 player.interact()
 

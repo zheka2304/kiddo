@@ -25,10 +25,11 @@ class EvilTrash extends SimpleGameObject {
   constructor(position: Coords) {
     super(position, {
       texture: {
-        atlas: {src: 'assets:/tile-atlas.png', width: 4, height: 4},
+        atlas: {src: 'assets:/object-atlas-trash-can.png', width: 8, height: 1},
         items: {
-          [DefaultTileStates.MAIN]: [[1, 2]],
-        }
+          [DefaultTileStates.MAIN]: [[0, 7, 0, 0]],
+        },
+        fps: 6
       },
       immutableTags: [DefaultTags.DEADLY, 'trash']
     });

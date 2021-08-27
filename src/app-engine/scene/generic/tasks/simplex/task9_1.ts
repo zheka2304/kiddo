@@ -28,7 +28,7 @@ class Neuron extends SimpleGameObject {
       texture: {
         atlas: {src: 'assets:/connected-tile-atlas.png', width: 24, height: 16},
         items: {
-          [DefaultTileStates.MAIN]: [[9, 8]],
+          [DefaultTileStates.MAIN]: [[4, 0]],
         }
       },
       immutableTags: [DefaultTags.ITEM, 'neuron'],
@@ -42,7 +42,7 @@ class Target extends SimpleGameObject {
       texture: {
         atlas: {src: 'assets:/connected-tile-atlas.png', width: 24, height: 16},
         items: {
-          [DefaultTileStates.MAIN]: [[8, 8]],
+          [DefaultTileStates.MAIN]: [[4, 1]],
         }
       },
       immutableTags: ['target'],
@@ -53,6 +53,27 @@ class Target extends SimpleGameObject {
 
 // tslint:disable-next-line
 export const SimplexTask9_1 = () => {
+  CharacterSkinRegistry.addCharacterSkin('nanobot', {
+    idleTexture: {
+      atlas: {src: 'assets:/character-atlas-nanobot.png', width: 4, height: 1},
+      items: {
+        [Direction.DOWN]: [[0, 0]],
+        [Direction.UP]: [[2, 0]],
+        [Direction.LEFT]: [[3, 0]],
+        [Direction.RIGHT]: [[1, 0]],
+      }
+    },
+    walkingTexture: {
+      atlas: {src: 'assets:/character-atlas-nanobot.png', width: 4, height: 1},
+      items: {
+        [Direction.DOWN]: [[0, 0]],
+        [Direction.UP]: [[2, 0]],
+        [Direction.LEFT]: [[3, 0]],
+        [Direction.RIGHT]: [[1, 0]],
+      }
+    }
+  });
+
   // --------- registration -------------
 
   TileRegistry.addBasicTile('brain-background', {
@@ -118,7 +139,7 @@ export const SimplexTask9_1 = () => {
 
   // ---------  player  -------------
   const player = new GenericPlayer({x: 3, y: 4}, {
-      skin: 'link',
+      skin: 'nanobot',
       defaultLightSources: [
         {radius: 3, brightness: 1},
       ],

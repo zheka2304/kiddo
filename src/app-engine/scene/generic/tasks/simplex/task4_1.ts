@@ -169,7 +169,7 @@ export const SimplexTask4_1 = () => {
 
 // ---------  player  -------------
   Builder.setPlayer(new GenericPlayer({x: 10, y: 10}, {
-      skin: 'link',
+      skin: 'alexey',
       defaultLightSources: [
         {radius: 1, brightness: 1},
       ],

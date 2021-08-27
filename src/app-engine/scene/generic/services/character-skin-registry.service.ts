@@ -85,5 +85,40 @@ export class CharacterSkinRegistryService {
         fps: 12
       }
     });
+
+    this.addCharacterSkin('kadabra', {
+      idleTexture: {
+        atlas: {src: 'assets:/character-atlas-kadabra.png', width: 4, height: 8},
+        items: {
+          [Direction.DOWN]: [[0, 0]],
+          [Direction.UP]: [[0, 2]],
+          [Direction.LEFT]: [[0, 3]],
+          [Direction.RIGHT]: [[0, 1]],
+        }
+      },
+      walkingTexture: {
+        atlas: {src: 'assets:/character-atlas-kadabra.png', width: 4, height: 8},
+        items: {
+          [Direction.DOWN]: [[0, 3, 4, 4]],
+          [Direction.UP]: [[0, 3, 6, 6]],
+          [Direction.LEFT]: [[0, 3, 7, 7]],
+          [Direction.RIGHT]: [[0, 3, 5, 5]],
+        },
+        fps: 6
+      }
+    });
+
+    this.addCharacterSkin('parrot', {
+      walkingTexture: {
+        atlas: {src: 'assets:/character-atlas-parrot.png', width: 3, height: 4},
+        items: {
+          [Direction.DOWN]: [[0, 2, 0, 0]],
+          [Direction.UP]: [[0, 2, 2, 2]],
+          [Direction.LEFT]: [[0, 2, 3, 3]],
+          [Direction.RIGHT]: [[0, 2, 1, 1]],
+        },
+        fps: 6
+      }
+    });
   }
 }

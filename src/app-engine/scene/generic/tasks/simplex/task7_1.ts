@@ -50,7 +50,7 @@ export const SimplexTask7_1 = () => {
 
   // ---------  player  -------------
   const player = new GenericPlayer({x: 4, y: 4}, {
-      skin: 'link',
+      skin: 'parrot',
       defaultLightSources: [
         {radius: 3, brightness: 1},
       ],

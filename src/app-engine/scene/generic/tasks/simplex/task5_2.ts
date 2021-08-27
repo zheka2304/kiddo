@@ -35,8 +35,8 @@ class GameWatcher extends GameObjectBase {
       return;
     }
     if (this.robot === null || this.robot.state === 'dead') {
-      const positionX = Math.floor(Math.random() * 3 + 7) * (Math.random() > .5 ? 1 : -1) + this.player.position.x;
-      const positionY = Math.floor(Math.random() * 3 + 7) * (Math.random() > .5 ? 1 : -1) + this.player.position.y;
+      const positionX = Math.floor(Math.random() * 2 + 7) * (Math.random() > .5 ? 1 : -1) + this.player.position.x;
+      const positionY = Math.floor(Math.random() * 2 + 7) * (Math.random() > .5 ? 1 : -1) + this.player.position.y;
       this.robot = new EvilRobot({x: positionX, y: positionY}, Direction.RIGHT, 'robot');
       this.robot.player = this.player;
       this.crow = new CrowHero({x: positionX, y: positionY - 20 }, Direction.RIGHT, 'crow');
@@ -142,46 +142,37 @@ class CrowHero extends CharacterBase {
 export const SimplexTask5_2 = () => {
   // --------- skin registration ---------
   CharacterSkinRegistry.addCharacterSkin('crow', {
-    idleTexture: {
-      atlas: {src: 'assets:/tile-atlas.png', width: 4, height: 4},
-      items: {
-        [Direction.DOWN]: [[3, 2]],
-        [Direction.UP]: [[3, 2]],
-        [Direction.LEFT]: [[3, 2]],
-        [Direction.RIGHT]: [[3, 2]],
-      }
-    },
     walkingTexture: {
-      atlas: {src: 'assets:/tile-atlas.png', width: 4, height: 4},
+      atlas: {src: 'assets:/character-atlas-crow.png', width: 3, height: 2},
       items: {
-        [Direction.DOWN]: [[3, 2]],
-        [Direction.UP]: [[3, 2]],
-        [Direction.LEFT]: [[3, 2]],
-        [Direction.RIGHT]: [[3, 2]],
+        [Direction.DOWN]: [[0, 2, 1, 1]],
+        [Direction.UP]: [[0, 2, 0, 0]],
+        [Direction.LEFT]: [[0, 2, 1, 1]],
+        [Direction.RIGHT]: [[0, 2, 0, 0]],
       },
-      fps: 12
+      fps: 6
     }
   });
 
   CharacterSkinRegistry.addCharacterSkin('robot', {
     idleTexture: {
-      atlas: {src: 'assets:/tile-atlas.png', width: 4, height: 4},
+      atlas: {src: 'assets:/character-atlas-robot.png', width: 6, height: 6},
       items: {
-        [Direction.DOWN]: [[1, 2]],
-        [Direction.UP]: [[1, 2]],
-        [Direction.LEFT]: [[1, 2]],
-        [Direction.RIGHT]: [[1, 2]],
-        dead: [[2, 2]],
+        [Direction.DOWN]: [[0, 2]],
+        [Direction.UP]: [[0, 4]],
+        [Direction.LEFT]: [[0, 3]],
+        [Direction.RIGHT]: [[0, 5]],
+        dead: [[0, 1]],
       }
     },
     walkingTexture: {
-      atlas: {src: 'assets:/tile-atlas.png', width: 4, height: 4},
+      atlas: {src: 'assets:/character-atlas-robot.png', width: 6, height: 6},
       items: {
-        [Direction.DOWN]: [[1, 2]],
-        [Direction.UP]: [[1, 2]],
-        [Direction.LEFT]: [[1, 2]],
-        [Direction.RIGHT]: [[1, 2]],
-        dead: [[2, 2]],
+        [Direction.DOWN]: [[0, 5, 2, 2]],
+        [Direction.UP]: [[0, 5, 4, 4]],
+        [Direction.LEFT]: [[0, 5, 3, 3]],
+        [Direction.RIGHT]: [[0, 5, 5, 5]],
+        dead: [[0, 1]],
       },
       fps: 12
     }
@@ -205,7 +196,8 @@ export const SimplexTask5_2 = () => {
       enabled: false,
       ambient: 0.09
     },
-    tilesPerScreen: 16,
+    tilesPerScreen: 20,
+    pixelPerfect: 32
   });
 
   for (let x = 0; x < 75; x++) {
@@ -216,7 +208,7 @@ export const SimplexTask5_2 = () => {
 
   // ---------  player  -------------
   const player = new GenericPlayer({x: 37, y: 37}, {
-      skin: 'link',
+      skin: 'parrot',
       defaultLightSources: [
         {radius: 1, brightness: 1},
       ],
