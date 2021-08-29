@@ -8,8 +8,8 @@ import {DefaultTileStates} from '../../entities/default-tile-states.enum';
 import {DefaultTags} from '../../entities/default-tags.enum';
 import {SimpleGameObject} from '../../common/simple-game-object';
 import {GenericReaderService} from '../../readers/generic-reader.service';
-import {ConnectedTextureFormatType} from "../../../../../app/scene/generic-scene/graphics/connected-texture-region";
-import {ConsoleTerminalGameObject} from "../../common/console-terminal-game-object";
+import {ConnectedTextureFormatType} from '../../../../../app/scene/generic-scene/graphics/connected-texture-region';
+import {ConsoleTerminalGameObject} from '../../common/console-terminal-game-object';
 
 // declarations for generic task init function
 declare const Builder: GenericBuilderService;

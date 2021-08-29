@@ -14,7 +14,7 @@ import {CommonTileRegistryService} from './services/common-tile-registry.service
 import {GridTileBase} from './common/grid-tile-base';
 import {GameObjectBase} from './common/game-object-base';
 import {TaggableBase} from './common/taggable-base';
-import {CheckingLogic, Coords} from '../common/entities';
+import {CheckingLogic, Coords, Direction} from '../common/entities';
 import {GenericGameObject} from './entities/generic-game-object';
 import {SceneConfigError} from '../common/errors/game-fail-error';
 import {DefaultTags} from './entities/default-tags.enum';
@@ -107,6 +107,7 @@ export class GenericBuilderService implements SceneBuilder {
       CharacterBase,
 
       // helpful defaults
+      Direction,
       DefaultTags,
       DefaultTileStates,
       ConnectedTextureFormatType,
