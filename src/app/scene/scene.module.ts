@@ -34,6 +34,7 @@ import { PandemicTileClassDirective } from './pandemic-scene/directives/raccoon-
 import { PandemicGameObjectComponent } from './pandemic-scene/game-objects/game-object/game-object.component';
 import { GameObjectCellSizePipe } from './raccoon-scene/pipes/game-field-cell-size.pipe';
 import { PandemicGameObjectCellSizePipe } from './pandemic-scene/pipes/game-field-cell-size.pipe';
+import { GenericSceneComponent } from './generic-scene/generic-scene.component';
 
 
 @NgModule({
@@ -70,7 +71,8 @@ import { PandemicGameObjectCellSizePipe } from './pandemic-scene/pipes/game-fiel
     PandemicPlayerComponent,
     PandemicHeroComponent,
     PandemicInventoryComponent,
-    PandemicGameObjectComponent
+    PandemicGameObjectComponent,
+    GenericSceneComponent
   ],
   exports: [
     SceneComponent,

@@ -18,6 +18,9 @@
     },
     "TOOLTIP": {
       "LAUNCH": "Launch",
+      "RESUME": "Resume",
+      "STEP": "Step",
+      "SPEED": "Speed",
       "START_OVER": "Start over",
       "RERENDER": "Regenerate the level",
       "RESET_CODE": "Reset the code",
@@ -34,6 +37,7 @@
     "BUTTON": {
       "PLAY": "RUN",
       "STOP": "STOP",
+      "STOPPING": "STOPPING...",
       "REPLAY": "REPLAY"
     },
     "OPTIONS": {

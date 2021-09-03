@@ -78,7 +78,7 @@ export class SceneComponent implements OnInit {
     this.scriptRunResult = '';
     this.statistics = this.sceneModelService.gameStatistics;
     if (this.statistics.failReason !== 'SCRIPT_STOPPED'
-      || !(this.sceneReader as RaccoonReaderService).checkPlayerReachedFinish()) {
+      || !this.sceneReader.isLevelFinished()) {
       this.scriptRunResult = this.statistics.levelPassed ? 'LEVEL_COMPLETE' : 'LEVEL_NOT_COMPLETE';
       this.gameFinishModal.open();
     }

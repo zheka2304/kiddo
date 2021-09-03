@@ -1,19 +1,27 @@
-import { Component, ViewChild, OnInit } from '@angular/core';
-import { GoogleAnalyticsService, ScenePositionService } from '../../shared/services';
-import { CodeEditorService } from '../code-editor-service/code-editor.service';
-import { TranslateService } from '@ngx-translate/core';
-import { Observable } from 'rxjs';
-import { map, take } from 'rxjs/operators';
-import { CodeSaverService } from '../code-saver/code-saver.service';
-import { ModalDirective } from '../../shared/directives/modal/modal.directive';
-import { ScriptRunnerService } from '../../../app-engine/script-runner/script-runner.service';
-import { TerminalService } from '../terminal/terminal.service';
-import { SnackbarDirective } from '../../shared/directives/snackbar/snackbar.directive';
-import { scriptExecutionState } from '../../../app-engine/script-runner/script-runner.types';
-import { SceneModelService } from '../../../app-engine/scene/scene-model.service';
-import { SceneAccessorsService } from '../../../app-engine/scene/scene-accessors.service';
-import { environment } from 'src/environments/environment';
-import { ConfigurationService } from 'src/app/config/configuration.service';
+import {Component, OnInit, ViewChild} from '@angular/core';
+import {GoogleAnalyticsService, ScenePositionService} from '../../shared/services';
+import {CodeEditorService} from '../code-editor-service/code-editor.service';
+import {TranslateService} from '@ngx-translate/core';
+import {Observable} from 'rxjs';
+import {map, take} from 'rxjs/operators';
+import {CodeSaverService} from '../code-saver/code-saver.service';
+import {ModalDirective} from '../../shared/directives/modal/modal.directive';
+import {ScriptRunnerService} from '../../../app-engine/script-runner/script-runner.service';
+import {TerminalService} from '../terminal/terminal.service';
+import {SnackbarDirective} from '../../shared/directives/snackbar/snackbar.directive';
+import {scriptExecutionState} from '../../../app-engine/script-runner/script-runner.types';
+import {SceneModelService} from '../../../app-engine/scene/scene-model.service';
+import {SceneAccessorsService} from '../../../app-engine/scene/scene-accessors.service';
+import {environment} from 'src/environments/environment';
+import {ConfigurationService} from 'src/app/config/configuration.service';
+import {GenericSkulptService} from '../../../app-engine/scene/generic/generic-skulpt.service';
+import {
+  GenericSceneExecutor,
+  GenericSceneExecutorService,
+  GenericSceneExecutorState
+} from '../../../app-engine/scene/generic/generic-scene-executor.service';
+import {GenericWriterService} from '../../../app-engine/scene/generic/writers/generic-writer.service';
+import {GenericSceneModel} from '../../../app-engine/scene/generic/models/generic-scene-model';
 
 @Component({
   selector: 'kiddo-code-editor-toolbar',
@@ -36,9 +44,17 @@ export class CodeEditorToolbarComponent implements OnInit {
       map(state => {
         if (state === scriptExecutionState.READY) return 'play';
         if (state === scriptExecutionState.RUNNING) return 'stop';
+        if (state === scriptExecutionState.FINISHING) return 'stopping';
         if (state === scriptExecutionState.FINISHED) return 'replay';
       })
     );
+
+  debugToolsExpanded = false;
+  preferredExecutionSpeedIndex = 0;
+
+  waitingForManualInterrupt = false;
+  waitingForResume = false;
+  waitingForSpeedChange = false;
 
   @ViewChild('initialCodeModal') initialCodeModal: ModalDirective;
   @ViewChild('saveCodeModal') saveCodeModal: ModalDirective;
@@ -55,6 +71,8 @@ export class CodeEditorToolbarComponent implements OnInit {
 
   private sceneModelService: SceneModelService;
   private sceneAccessorsService: SceneAccessorsService;
+  private genericExecutorService: GenericSceneExecutorService;
+
   constructor(
     private codeEditorService: CodeEditorService,
     private scenePositionService: ScenePositionService,
@@ -63,10 +81,11 @@ export class CodeEditorToolbarComponent implements OnInit {
     private googleAnalyticsService: GoogleAnalyticsService,
     private codeSaverService: CodeSaverService,
     private scriptRunnerService: ScriptRunnerService,
-    private configService: ConfigurationService,
+    private configService: ConfigurationService
   ) {
     this.sceneModelService = new SceneModelService();
     this.sceneAccessorsService = new SceneAccessorsService();
+    this.genericExecutorService = new GenericSceneExecutorService();
   }
 
   ngOnInit(): void {
@@ -91,11 +110,127 @@ export class CodeEditorToolbarComponent implements OnInit {
     const colorsLookup = {
       play: 'green',
       stop: 'red',
-      replay: 'blue'
+      stopping: 'red',
+      replay: 'blue',
     };
     return this.launchButtonState.pipe(
       map(state => colorsLookup[state])
     );
+  }
+
+
+  showDebugTools(): boolean {
+    return this.sceneAccessorsService.sceneSkulptService instanceof GenericSkulptService;
+  }
+
+  private getGenericSceneModel(): GenericSceneModel {
+    const writer = this.sceneAccessorsService.writer;
+    if (writer instanceof GenericWriterService) {
+      return (writer as GenericWriterService).sceneModel;
+    }
+    return null;
+  }
+
+  private getGenericSceneExecutor(): GenericSceneExecutor {
+    return this.genericExecutorService.getExecutorFor(this.getGenericSceneModel());
+  }
+
+  private changeExecutionSpeed(): void {
+    const timePerTickBySpeed = [500, 250, 50, 1000];
+    const speedIndex = this.preferredExecutionSpeedIndex;
+    const timePerTick = timePerTickBySpeed[speedIndex];
+    if (this.waitingForSpeedChange) {
+      return;
+    }
+
+    this.waitingForSpeedChange = true;
+    this.genericExecutorService.setPreferredTimePerTick(timePerTick);
+    const executor = this.getGenericSceneExecutor();
+    if (executor) {
+      if (executor.getState() === GenericSceneExecutorState.RUNNING) {
+        executor.runLoop(timePerTick).then(() => {
+          this.waitingForSpeedChange = false;
+          if (speedIndex !== this.preferredExecutionSpeedIndex) {
+            this.changeExecutionSpeed();
+          }
+        });
+      } else {
+        // in manual mode update animation duration
+        executor.writer.setTimePerFrame(timePerTick);
+        this.waitingForSpeedChange = false;
+      }
+    } else {
+      this.waitingForSpeedChange = false;
+    }
+  }
+
+  onChangeSpeedButtonClick(): void {
+    this.preferredExecutionSpeedIndex = (this.preferredExecutionSpeedIndex + 1) % 4;
+    this.changeExecutionSpeed();
+  }
+
+  getChangeSpeedButtonText(): string {
+    const textBySpeed = ['1X', '2X', '10X', '0.5X'];
+    return textBySpeed[this.preferredExecutionSpeedIndex];
+  }
+
+  disableDebugButton(): Observable<boolean> {
+    return this.scriptRunnerService.executionState.pipe(
+      map(state => {
+        if (this.sceneAccessorsService.sceneSkulptService instanceof GenericSkulptService) {
+          return state !== scriptExecutionState.READY && state !== scriptExecutionState.RUNNING;
+        }
+        return true;
+      })
+    );
+  }
+
+  private playWithManualControl(): void {
+    if (this.waitingForManualInterrupt) {
+      return;
+    }
+    this.waitingForManualInterrupt = true;
+    this.play();
+    const executor = this.getGenericSceneExecutor();
+    if (executor) {
+      setTimeout(() => executor.interrupt().then(() => this.waitingForManualInterrupt = false), 0);
+    }
+  }
+
+  onDebugButtonClick(): void {
+    const executor = this.getGenericSceneExecutor();
+    if (executor && executor.getState() !== GenericSceneExecutorState.IDLE) {
+      if (!this.waitingForManualInterrupt) {
+        this.waitingForManualInterrupt = true;
+        if (executor.getState() === GenericSceneExecutorState.MANUAL) {
+          executor.manualStep().then(() => this.waitingForManualInterrupt = false);
+        } else {
+          executor.interrupt().then(() => this.waitingForManualInterrupt = false);
+        }
+      }
+    } else {
+      this.scriptRunnerService.executionState.pipe(
+        take(1),
+        map(state => {
+          if (state === scriptExecutionState.READY) {
+            this.playWithManualControl();
+          }
+        })
+      ).subscribe();
+    }
+  }
+
+  disableResumeButton(): boolean {
+    const executor = this.getGenericSceneExecutor();
+    return !executor || executor.getState() !== GenericSceneExecutorState.MANUAL;
+  }
+
+  onResumeButtonClick(): void {
+    const executor = this.getGenericSceneExecutor();
+    if (!this.waitingForResume && executor && executor.getState() === GenericSceneExecutorState.MANUAL) {
+      this.waitingForResume = true;
+      executor.runLoop(this.genericExecutorService.getPreferredTimePerTick()).then(() => this.waitingForResume = false);
+    }
   }
 
 
@@ -114,11 +249,27 @@ export class CodeEditorToolbarComponent implements OnInit {
       environment.googleAnalytics.events.buttonClick, 'code-editor: stop_script_click', this.codeEditorService.userCode
     );
     this.scriptRunnerService.stopScript();
+
+    const executor = this.getGenericSceneExecutor();
+    if (executor) {
+      executor.stop().then();
+    }
   }
 
   replay(): void {
     this.googleAnalyticsService.emitEvent(environment.googleAnalytics.events.buttonClick, 'code-editor: replay_script_click');
     this.scriptRunnerService.resetScene();
+  }
+
+  stopping(): void {
+  }
+
+  disableResetButton(): Observable<boolean> {
+    return this.scriptRunnerService.executionState.pipe(
+      map((state) => {
+        return state === scriptExecutionState.RUNNING || state === scriptExecutionState.FINISHING;
+      })
+    );
   }
 
   resetApp(): void {

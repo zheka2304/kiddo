@@ -18,6 +18,19 @@ export class SceneConfigService {
     if (configOptions.sceneConfig != null && isSceneConfig(configOptions.sceneConfig)) {
       return configOptions.sceneConfig;
     }
+
+    // try to parse given string as yaml
+    if (configOptions.sceneConfig != null) {
+      try {
+        const configFromYaml = parseYaml(configOptions.sceneConfig as string);
+        if (isSceneConfig(configFromYaml)) {
+          return configFromYaml;
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
     // else assume that config stores a URL path to the YAML file
     if (configOptions.sceneConfig != null) {
       let sceneConfigUrl: URL;

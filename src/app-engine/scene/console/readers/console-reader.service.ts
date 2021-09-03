@@ -67,4 +67,8 @@ export class ConsoleReaderService implements SceneReader {
           throw new GameFailError('UNKNOWN_VARIABLE');
         }
     }
+
+    isLevelFinished(): boolean {
+        return true;
+    }
 }

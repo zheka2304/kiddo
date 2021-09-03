@@ -1,21 +1,62 @@
 <section class="toolbar">
-        <div class="toolbar-dummy"></div>
-        <div class="launch-button-wrapper">
-            <button class="button launch-button small"
-                    [ngClass]="getLaunchButtonColor() | async"
-                    (click)="onLaunchButtonClick()"
-                    [disabled]="playbackIsLaunched | async">
-                <span class="launch-button-content">
-                    <i class="icon-{{launchButtonState | async}}"></i>
-                    <span class="launch-button-text">
-                        {{ prefixButton + (launchButtonState | async) | uppercase | translate }}
-                    </span>
+    <div class="toolbar-dummy"></div>
+    <div class="launch-button-wrapper">
+        <button class="button launch-button small"
+                [ngClass]="getLaunchButtonColor() | async"
+                (click)="onLaunchButtonClick()"
+                [disabled]="playbackIsLaunched | async">
+            <span class="launch-button-content">
+                <i class="icon-{{launchButtonState | async}}"></i>
+                <span class="launch-button-text">
+                    {{ prefixButton + (launchButtonState | async) | uppercase | translate }}
                 </span>
+            </span>
         </button>
+        &nbsp;
+        <div *ngIf="showDebugTools()" class="debug-buttons-wrapper">
+            <div *ngIf="debugToolsExpanded" class="debug-buttons-wrapper">
+                <button class="button small purple" (click)="debugToolsExpanded = false">
+                    <span class="launch-button-content">
+                        <i class="icon-debug-collapse"></i>
+                    </span>
+                </button>
+                <button class="button small purple"
+                        (click)="onDebugButtonClick()"
+                        [disabled]="disableDebugButton() | async"
+                        [title]="'CODE-EDITOR.TOOLTIP.STEP' | translate">
+                    <span class="launch-button-content">
+                        <i class="icon-step"></i>
+                    </span>
+                </button>
+                <button class="button small purple"
+                        (click)="onResumeButtonClick()"
+                        [disabled]="disableResumeButton()"
+                        [title]="'CODE-EDITOR.TOOLTIP.RESUME' | translate">
+                    <span class="launch-button-content">
+                        <i class="icon-play"></i>
+                    </span>
+                </button>
+                <button class="button small purple"
+                        (click)="onChangeSpeedButtonClick()"
+                        [title]="'CODE-EDITOR.TOOLTIP.SPEED' | translate">
+                    <span class="launch-button-content">
+                        {{getChangeSpeedButtonText()}}
+                    </span>
+                </button>
+            </div>
+            <div *ngIf="!debugToolsExpanded" class="debug-buttons-wrapper">
+                <button class="button small purple" (click)="debugToolsExpanded = true">
+                    <span class="launch-button-content">
+                        <i class="icon-debug-expand"></i>
+                    </span>
+                </button>
+            </div>
+        </div>
     </div>
     <div class="toolbar-buttons-wrapper">
         <span class="tooltip-container">
             <button class="toolbar-button"
+                    [disabled]="disableResetButton() | async"
                     (click)="resetApp()">
                 <i class="icon-reset toolbar-button-content"></i>
             </button>

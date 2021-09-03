@@ -2,5 +2,6 @@ export enum SceneType {
   RACCOON = 'RACCOON',
   PANDEMIC = 'PANDEMIC',
   CONSOLE = 'CONSOLE',
+  GENERIC = 'GENERIC',
   CONSOLEMATH = 'CONSOLEMATH',
 }

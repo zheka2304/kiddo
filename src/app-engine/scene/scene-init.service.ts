@@ -22,6 +22,13 @@ import { ConsoleValidationService } from './console/console-validation.service';
 import { PandemicValidationService } from './pandemic/pandemic-validation.service';
 import {ConsoleMathSkulptService} from './consolemath/consolemath-skulpt.service';
 import {SkulptService} from '../script-runner/skulpt.service';
+import {GenericReaderService} from './generic/readers/generic-reader.service';
+import {GenericWriterService} from './generic/writers/generic-writer.service';
+import {GenericSkulptService} from './generic/generic-skulpt.service';
+import {GenericBuilderService} from './generic/generic-builder.service';
+import {TerminalService} from '../../app/code-editor/terminal/terminal.service';
+import {CommonTileRegistryService} from "./generic/services/common-tile-registry.service";
+
 
 interface BuildersMap {
   [sceneType: string]: () => SceneBuilder;
@@ -61,6 +68,12 @@ export class SceneInitService {
       const api = new ConsoleMathSkulptService(this.skulptService, reader, writer);
       const validation = new ConsoleValidationService();
       return new ConsoleBuilderService(reader, writer, api, validation);
+    },
+    [SceneType.GENERIC]: () => {
+      const reader = new GenericReaderService(this.sceneModelService);
+      const writer = new GenericWriterService(this.sceneModelService, reader);
+      const api = new GenericSkulptService(this.skulptService, this.terminalService, reader, writer);
+      return new GenericBuilderService(reader, writer, api);
     }
   };
 
@@ -68,12 +81,13 @@ export class SceneInitService {
 
   constructor(private sceneModelService: SceneModelService,
               private sceneAccessorsService: SceneAccessorsService,
-              private skulptService: SkulptService) {
+              private skulptService: SkulptService,
+              private terminalService: TerminalService
+  ) {
   }
 
   init(sceneConfig: SceneConfig): void {
     // ============= Initializing a scene takes the following steps: =============
-
     // 1. Get the scene descriptor from a builder
     this.sceneBuilder = this.buildersMap[sceneConfig.sceneType.toUpperCase()]();
     const sceneDescriptor = this.sceneBuilder.buildScene(sceneConfig);

@@ -65,6 +65,8 @@ export class KiddoInitService {
   }
 
   private handleConfigFailure(error: Error): void {
+    console.log('handleConfigFailure', error);
+
     this.isLoaded.next(true);
     this.noConfig.next(true);
 

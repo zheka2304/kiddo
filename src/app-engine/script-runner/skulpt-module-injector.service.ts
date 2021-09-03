@@ -15,7 +15,7 @@ export class SkulptModuleInjectorService {
         return `src/lib/${name}/__init__.js`;
     }
 
-    addModule(name: string, module: any): void {
+    addModule<T>(name: string, module: T): T {
         this.addedModules.add(name);
 
         Sk.builtins[name] = module;
@@ -29,9 +29,11 @@ export class SkulptModuleInjectorService {
                 };
                 pyModule[functionName] = new Sk.builtin.func((...args) => {
                     const result = func(...args.map(c => Sk.ffi.remapToJs(c)));
-                    return Sk.ffi.remapToPy(
-                        result instanceof Promise ? Sk.misceval.promiseToSuspension(result) : result
-                    );
+                    if (result instanceof Promise) {
+                        return Sk.misceval.promiseToSuspension(result.then(value => Sk.ffi.remapToPy(value)));
+                    } else {
+                        return Sk.ffi.remapToPy(result);
+                    }
                 });
             };
 
@@ -49,6 +51,8 @@ export class SkulptModuleInjectorService {
                 return Sk.buildModuleFromJs(\"${name}\");
             };
         `;
+
+        return module;
     }
 
     removeModule(name: string): void {

@@ -1,0 +1,16 @@
+<article class="generic-scene">
+    <section class="generic-scene-wrapper">
+        <div class="generic-scene-canvas-wrapper">
+            <div #genericSceneCanvasTarget class="generic-scene-canvas-target">
+                <canvas #genericSceneCanvas class="generic-scene-canvas"
+                        (mousedown)="isDragging = true"
+                        (mouseleave)="isDragging = true"
+                        (mouseout)="isDragging = true"
+                        (mouseup)="isDragging = false"
+                        (mouseenter)="isDragging = false"
+                        (mousemove)="isDragging && onMouseDrag($event)"
+                ></canvas>
+            </div>
+        </div>
+    </section>
+</article>

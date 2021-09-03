@@ -1,0 +1,33 @@
+.generic-scene-canvas {
+  position: absolute;
+}
+
+.generic-scene-canvas-target {
+  width: 100%;
+  height: 100%;
+}
+
+.generic-scene-canvas-wrapper {
+  padding-top: 2.5%;
+  padding-left: 2.5%;
+  height: 95%;
+  width: 95%;
+  image-rendering: pixelated;
+}
+
+.generic-scene-wrapper {
+  width: 100%;
+  height: 100%;
+  background-color: #1e1e1e;
+  box-sizing: border-box;
+}
+
+.generic-scene {
+  display: block;
+  height: 100%;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  color: #d4d4d4;
+  background-color: #363636;
+  box-sizing: border-box;
+}

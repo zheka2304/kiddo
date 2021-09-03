@@ -9,12 +9,11 @@ import { SkulptService } from './skulpt.service';
 import { scriptExecutionState } from './script-runner.types';
 import { SceneModelService } from '../scene/scene-model.service';
 import { SceneConfig } from '../scene/common/scene-config';
-import { RaccoonWriterService } from '../scene/raccoon/writers/raccoon-writer.service';
-import { PandemicWriterService } from '../scene/pandemic/writers/pandemic-writer.service';
 import { SceneAccessorsService } from '../scene/scene-accessors.service';
 import { SceneInitService } from '../scene/scene-init.service';
 import { GoogleAnalyticsService } from 'src/app/shared/services';
 import { environment } from 'src/environments/environment';
+import {GameCompletionInterruptError} from "../scene/common/errors/game-completion-interrupt-error";
 
 @Injectable({
   providedIn: 'root',
@@ -31,7 +30,7 @@ export class ScriptRunnerService {
   private prefixPath = 'CODE-EDITOR.SERVICE.';
 
   private scenePlayback = interval(500).pipe(
-    tap(_ => (this.sceneAccessorsService.writer as RaccoonWriterService | PandemicWriterService).moveGameObjects()),
+    tap(_ => this.sceneAccessorsService.writer.doPlaybackStep()),
     switchMap(_ => this.playbackIsRunning),
     takeWhile(Boolean)
   );
@@ -47,7 +46,12 @@ export class ScriptRunnerService {
   ) {
     this.sceneModelService = new SceneModelService();
     this.sceneAccessorsService = new SceneAccessorsService();
-    this.sceneInitService = new SceneInitService(this.sceneModelService, this.sceneAccessorsService, this.skulptService);
+    this.sceneInitService = new SceneInitService(
+      this.sceneModelService,
+      this.sceneAccessorsService,
+      this.skulptService,
+      this.terminalService
+    );
   }
 
   translate = this.i18n.translate(this.prefixPath);
@@ -66,11 +70,20 @@ export class ScriptRunnerService {
     this.resetScene();
     this.executionState.next(scriptExecutionState.RUNNING);
     this.terminalService.print('CODE-EDITOR.SERVICE.EXECUTING_SCRIPT');
+
+    if (this.sceneAccessorsService.sceneSkulptService.onExecutionStarted) {
+      this.sceneAccessorsService.sceneSkulptService.onExecutionStarted();
+    }
+
     try {
       await this.skulptService.executeSkulpt(script);
       this.processScriptCompletion();
     } catch (err) {
       this.processScriptFail(err);
+    } finally {
+      if (this.sceneAccessorsService.sceneSkulptService.onExecutionFinished) {
+          this.sceneAccessorsService.sceneSkulptService.onExecutionFinished();
+      }
     }
   }
 
@@ -90,7 +103,9 @@ export class ScriptRunnerService {
     }
 
     this.sceneAccessorsService.sceneSkulptService.executionWasAborted = true;
-    this.executionState.next(scriptExecutionState.FINISHED);
+
+    // script is not yet finished, so we put it into shutting down state
+    this.executionState.next(scriptExecutionState.FINISHING);
   }
 
   startScenePlayback(): void {
@@ -134,7 +149,12 @@ export class ScriptRunnerService {
   }
 
   private processScriptFail(err: SkulptError): void {
-    console.log(err);
+    if (err.nativeError instanceof GameCompletionInterruptError) {
+      this.processScriptCompletion();
+      return;
+    }
+
+    console.log('processScriptFail', err);
     this.googleAnalyticsService.emitEvent(environment.googleAnalytics.events.info, 'script-runner: script_execution_fail');
 
     const gameStatistics: GameStatistics = this.sceneAccessorsService.reader.getGameStatistics();

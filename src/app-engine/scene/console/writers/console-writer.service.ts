@@ -41,6 +41,7 @@ export class ConsoleWriterService implements SceneWriter {
     }
   }
 
-
+  doPlaybackStep(): void {
+  }
 
 }
